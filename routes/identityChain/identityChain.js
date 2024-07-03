@@ -25,7 +25,7 @@ module.exports = function (dbconnection) {
     // User and Org model (mongoose)
     const User = dbconnection.model('users', require('../../models/government/user'));
     const Organization = dbconnection.model('orgs', require('../../models/government/organization'));
-    
+
     router.get('/', async (req, res) => {
         // if (dbconnection.readyState === 1) {
 
@@ -224,22 +224,23 @@ module.exports = function (dbconnection) {
             ]
         };
         let user;
-        let portfolioOrg;
+        let portfolioOrg = config.leaseSystem.address;
         let type = req.user.type;
         if (req.user.type == "org") { // 
             user = await Organization.findOne(option)
         } else if (req.user.type == 'user') {
             user = await User.findOne(option);
-            portfolioOrg = await Organization.find({ "type": "physiological-data" })
+            // portfolioOrg = await Organization.find({ "type": "physiological-data" })
         } else {
             type = 'user';
             user = await User.findOne(option);
-            portfolioOrg = await Organization.find({ "type": "physiological-data" })
+            // portfolioOrg = await Organization.find({ "type": "physiological-data" })
             if (!user) {
                 type = 'org';
                 user = await Organization.findOne(option)
             }
         }
+        // portfolioOrg = config.leaseSystem.address;
         res.render('identityChain/profile.ejs', { 'user': user, 'type': type, 'portfolioOrg': portfolioOrg, 'contract_address': contract_address });
     })
 
@@ -326,11 +327,21 @@ module.exports = function (dbconnection) {
         let encode_tx = tx_builder.encodeABI();
         let transactionObject = {
             gas: 6721975,
+            gasPrice: await web3.eth.getGasPrice(),
             data: encode_tx,
             from: config.identityChain.address,
             to: contract_address
         };
-        await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key, async function (error, signedTx) {
+
+        // await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key, async function (error, signedTx) {
+        //     console.log("test");
+        //     if (error) {
+        //         console.log("sign error");
+        //     } else {
+        //         signedTxObj = signedTx;
+        //     }
+        // })
+        await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key).then(function (signedTx, error) {
             if (error) {
                 console.log("sign error");
             } else {
@@ -338,7 +349,7 @@ module.exports = function (dbconnection) {
             }
         })
 
-        web3.eth.sendSignedTransaction(signedTxObj.rawTransaction)
+        await web3.eth.sendSignedTransaction(signedTxObj.rawTransaction)
             .on('receipt', async function (receipt) {
                 user.set({
                     status: "true",
@@ -397,27 +408,38 @@ module.exports = function (dbconnection) {
                 msg: `User is not exist.`
             })
         }
-        let contractInstance = new web3.eth.Contract(identityManger.output.abi, contract_address);
 
+        let contractInstance = new web3.eth.Contract(identityManger.output.abi, contract_address);
+        console.log(config);
         let txHash;
         let signedTxObj;
         let tx_builder = contractInstance.methods.bindAccount(hashed, address, userType);
         let encode_tx = tx_builder.encodeABI();
         let transactionObject = {
             gas: 6721975,
+            gasPrice: await web3.eth.getGasPrice(),
+            // nonce: await web3.eth.getTransactionCount(config.admin_address.address),
             data: encode_tx,
-            from: config.admin_address,
+            from: config.identityChain.address,
             to: contract_address
         }
-        await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key, async function (error, signedTx) {
+
+        await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key).then(function (signedTx, error) {
             if (error) {
                 console.log("sign error");
             } else {
                 signedTxObj = signedTx;
             }
         })
+        // await web3.eth.accounts.signTransaction(transactionObject, config.identityChain.key, async function (signedTx, error) {
+        //     if (error) {
+        //         console.log("sign error");
+        //     } else {
+        //         signedTxObj = signedTx;
+        //     }
+        // })
 
-        web3.eth.sendSignedTransaction(signedTxObj.rawTransaction)
+        await web3.eth.sendSignedTransaction(signedTxObj.rawTransaction)
             .on('receipt', async function (receipt) {
                 user.set({
                     address: address.toLowerCase(),
@@ -430,6 +452,7 @@ module.exports = function (dbconnection) {
                 });
             })
             .catch((error) => {
+                console.log(error);
                 console.log(`Send signed transaction failed.`);
                 return res.send({
                     msg: "This address already binded."

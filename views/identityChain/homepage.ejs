@@ -167,7 +167,7 @@
             $.getJSON("../../contracts/IdentityManager.json", function (data) {
                 // This code will be executed when the request succeeds
                 let contractInstance = new web3.eth.Contract(
-                    data.abi,
+                    data.output.abi,
                     contract_address
                 );
 

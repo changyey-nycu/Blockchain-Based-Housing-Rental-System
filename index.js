@@ -62,6 +62,5 @@ app.use('/identityChain', require('./routes/identityChain/identityChain')(db1Con
 app.use('/leaseSystem', require('./routes/leaseSystem'));
 
 const PORT = process.env.PORT || 3000;
-// app.set('port', process.env.PORT || 3000);
 app.listen(PORT);
 module.exports = app;

@@ -25,7 +25,7 @@ module.exports = function (dbconnection) {
             next();
         } else {
             req.flash('info', 'Login first.');
-            res.redirect('/LeaseSystem/homepage');
+            res.redirect('/LeaseSystem/login');
         }
     };
 
@@ -46,7 +46,7 @@ module.exports = function (dbconnection) {
     }), async function (req, res) {
         const address = req.user.address;
         req.session.address = address;
-        res.send({ 'url': '/leaseSystem/profile' });
+        res.send({ 'url': '/leaseSystem/homepage' });
     });
 
     passport.use('verifySign_LeaseSystem', new LocalStrategy({
@@ -68,15 +68,15 @@ module.exports = function (dbconnection) {
         }
     ));
 
-    router.get('/leaseHouse', isAuthenticated, async (req, res) => {
+    router.get('/searchHouse', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        res.render('leaseSystem/leaseHouse', { address: address });
+        res.render('leaseSystem/searchHouse', { address: address });
     });
 
-    router.get('/estateManage', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        res.render('leaseSystem/estateManage', { address: address });
-    });
+    // router.post('/landlord', async (req, res) => {
+    //     const address = req.session.address;
+    //     res.render('leaseSystem/landlord/landlord');
+    // });
 
     router.get('/agent', isAuthenticated, async (req, res) => {
         const address = req.session.address;

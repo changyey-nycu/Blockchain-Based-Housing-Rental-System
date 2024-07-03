@@ -23,7 +23,7 @@ contract IdentityManager {
         uint userType;
     }
 
-    address[] _orgsArr = [0x550D18C47d5e9Dedb01e685975A94EB9FD9488f6];
+    address[] _orgsArr = [0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA];
     mapping(address => bool) _orgs;
     mapping(string => UserInfo) _uniqueIdenity; // hash(id) map userAcc
     mapping(string => bool) _uniqueState; // hash(id) is added by orgs  (addUser function)

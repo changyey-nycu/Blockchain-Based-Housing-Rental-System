@@ -1,12 +1,12 @@
 {
     "contracts": {
-        "identityManagerAddress": "0x4a41672e9a217C3193b12483400b03CE1851e145"
+        "identityManagerAddress": "0xE6042703475D0dd1bC2eB564a55F1832c2527171"
     },
     "identityChain": {
         "address": "0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA",
         "key": "0cc0c2de7e8c30525b4ca3b9e0b9703fb29569060d403261055481df7014f7fa"
     },
-    "databroker": {
+    "leaseSystem": {
         "address": "0xdbD548D1AD08b03d67C0401cb804Da056314D4C1",
         "key": "e1ed4e17029418475b92983efde03b6bc8d0eac6379a5b2565288cad5dc0782c"
     },

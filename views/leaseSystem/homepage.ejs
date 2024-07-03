@@ -1,15 +1,14 @@
 <%- include('partials/header') -%>
-
     <body>
         <div class="container mt-3">
             <div>
-                <h1>Welcome to System</h1>
+                <h1>test</h1>
             </div>
             <div class="row">
                 <div class="col-md-5 center-block" style="float: none; margin: auto">
                     <div style="margin-top: 10px" class="card text-center">
                         <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                            lease house list
+                            search house
                         </div>
                         <!-- <div style="margin-top: 20px">
                         <iconify-icon
@@ -20,21 +19,21 @@
                     </div> -->
                         <div class="card-body">
                             <p>description</p>
-                            <button id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
-                                line-height: 1px;
+                                line-height: 20px;
                                 text-align: center;
-                            ">
+                            " href="/leaseSystem/searchHouse">
                                 click
-                            </button>
+                        </a>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-5 center-block" style="float: none; margin: auto">
                     <div style="margin-top: 10px" class="card text-center">
                         <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                            Estate Manage
+                            landlord
                         </div>
                         <!-- <div style="margin-top: 20px">
                         <iconify-icon
@@ -45,14 +44,13 @@
                     </div> -->
                         <div class="card-body">
                             <p>description</p>
-                            <button id="estateManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
-                                line-height: 1px;
-                                text-align: center;
-                            ">
+                                line-height: 20px;
+                                text-align: center;" href="/leaseSystem/landlord">
                                 click
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -70,14 +68,14 @@
                     </div> -->
                         <div class="card-body">
                             <p>description</p>
-                            <button id="agent" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            <a id="agent" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
-                                line-height: 1px;
+                                line-height: 20px;
                                 text-align: center;
-                            ">
+                            " href="/leaseSystem/agent">
                                 click
-                            </button>
+                        </a>
                         </div>
                     </div>
                 </div>
@@ -95,14 +93,14 @@
                     </div> -->
                         <div class="card-body">
                             <p>description</p>
-                            <button id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
-                                line-height: 1px;
+                                line-height: 20px;
                                 text-align: center;
-                            ">
+                            " href="/leaseSystem/leaseManage">
                                 click
-                            </button>
+                        </a>
                         </div>
                     </div>
                 </div>
@@ -116,115 +114,47 @@
         const emptyAddress =
             '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-        //listener
-        async function buildListener() {
-            // window.ethereum.on('accountsChanged', function (accounts) {
-            //     account = accounts[0];
-            // });
+        // //listener
+        // async function buildListener() {
 
-            $('#leaseHouse').on('click', async function (e) {
+        //     $('#leaseHouse').on('click', async function (e) {
 
-                $.ajax({
-                    url: '/leaseSystem/leaseHouse',
-                    type: 'GET',
-                });
-            })
+        //         $.ajax({
+        //             url: '/leaseSystem/leaseHouse',
+        //             type: 'GET',
+        //         });
+        //     })
 
-            $('#estateManage').on('click', async function (e) {
+        //     $('#landlord').on('click', async function (e) {
 
-                $.ajax({
-                    url: '/leaseSystem/estateManage',
-                    type: 'GET',
-                });
-            })
+        //         $.ajax({
+        //             url: '/leaseSystem/landlord',
+        //             type: 'POST',
+        //         });
+        //     })
 
-            $('#agent').on('click', async function (e) {
+        //     $('#agent').on('click', async function (e) {
 
-                $.ajax({
-                    url: '/leaseSystem/agent',
-                    type: 'GET',
-                });
-            })
+        //         $.ajax({
+        //             url: '/leaseSystem/agent',
+        //             type: 'GET',
+        //         });
+        //     })
 
-            $('#leaseManage').on('click', async function (e) {
+        //     $('#leaseManage').on('click', async function (e) {
 
-                $.ajax({
-                    url: '/leaseSystem/leaseManage',
-                    type: 'GET',
-                });
-            })
+        //         $.ajax({
+        //             url: '/leaseSystem/leaseManage',
+        //             type: 'GET',
+        //         });
+        //     })
 
+        // }
 
-            // $('#loginWithMetamask').on('click', async function (e) {
-            //     $.getJSON('../../contracts/IdentityManager.json', function (data) {
-            //         // This code will be executed when the request succeeds
-            //         let contractInstance = new web3.eth.Contract(
-            //             data.abi,
-            //             contract_address
-            //         );
-
-            //         let identity, userType;
-            //         contractInstance.methods
-            //             .getId()
-            //             .call({ from: account })
-            //             .then((result) => {
-            //                 if (result === emptyAddress || !result) {
-            //                     return Promise.reject(
-            //                         'This account has not been bound yet!'
-            //                     );
-            //                 } else {
-            //                     identity = result;
-            //                     return contractInstance.methods
-            //                         .getUserType()
-            //                         .call({ from: account });
-            //                 }
-            //             })
-            //             .then((result) => {
-            //                 userType = result;
-            //                 if (userType !== '0') {
-            //                     return Promise.reject(
-            //                         'Only natural person can log in'
-            //                     );
-            //                 } else {
-            //                     return web3.eth.personal.sign(
-            //                         require_signature,
-            //                         account
-            //                     );
-            //                 }
-            //             })
-            //             .then((res) => {
-            //                 return $.ajax({
-            //                     url: '/leaseSystem/loginWithMetamask',
-            //                     data: {
-            //                         identity: identity, // DID
-            //                         signature: res, // signature
-            //                         account: account, // account
-            //                     },
-            //                     type: 'post',
-            //                 });
-            //             })
-            //             .then((res) => {
-            //                 console.log('success!');
-            //                 if (res.url) {
-            //                     window.location.href = res.url;
-            //                 }
-            //             })
-            //             .catch((err) => {
-            //                 alert(err);
-            //             });
-            //     }).fail(function (jqXHR, textStatus, errorThrown) {
-            //         // This code will be executed if the request fails
-            //         console.error(textStatus, errorThrown);
-            //     });
-            // });
-        }
-
-        async function main() {
-            // let accounts = await web3.eth.getAccounts();
-            // account = accounts[0];
-            buildListener();
-        }
-        main();
+        // async function main() {
+        //     buildListener();
+        // }
+        // main();
     </script>
 
     <%- include('partials/footer') -%>

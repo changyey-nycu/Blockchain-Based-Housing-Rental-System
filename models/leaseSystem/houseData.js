@@ -5,17 +5,14 @@ const Schema = new mongoose.Schema({
         require: true,
         type: String,
     },
-    bind: {
-        require: true,
+    date: {
         type: String
     },
-    status: {
-        type: Boolean,
-        default: false
+    city: {
+        type: String
     },
-    address: {
-        type: String,
-        default: '0x'
+    localtion: {
+        type: String
     },
     hashed: {
         type: String

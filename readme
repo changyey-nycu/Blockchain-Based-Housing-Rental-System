@@ -3,9 +3,9 @@ docker run --detach --publish 8545:8545 trufflesuite/ganache-cli:latest --seed 0
 
 Available Accounts
 ==================
-(0) 0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA (100 ETH)
-(1) 0xc0d8F541Ab8B71F20c10261818F2F401e8194049 (100 ETH)
-(2) 0xf1F8Ef6b4D4Ba31079E2263eC85c03fD5a0802bF (100 ETH)
+(0) 0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA (100 ETH)    DID chain
+(1) 0xc0d8F541Ab8B71F20c10261818F2F401e8194049 (100 ETH)    test user
+(2) 0xf1F8Ef6b4D4Ba31079E2263eC85c03fD5a0802bF (100 ETH)    
 (3) 0xc91579bB7972f76D595f8665BffaF92874C8084C (100 ETH)
 (4) 0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba (100 ETH)
 (5) 0x889735777f51c84272a7FEb0d763280179A529a9 (100 ETH)
@@ -30,7 +30,6 @@ Private Keys
 
 
 # mongodb
-docker run --name mongodb -p 27017:27017 -d mongodb/mongodb-community-server:latest
 docker run --name mongodb -p 27017:27017 mongo:4.4.29
 
 

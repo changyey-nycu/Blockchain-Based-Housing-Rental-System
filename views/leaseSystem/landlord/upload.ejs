@@ -1,0 +1,56 @@
+<%- include('../partials/header'); %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <body>
+        <!-- describe -->
+        <div class="container mt-3">
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px" class="card text-center">
+                    <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                        upload
+                    </div>
+                    <form style="margin-block: 10px" action="/leaseSystem/landlord/uploadCheck" method="post">
+                        <div class="input-group mt-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Address</span>
+                            </div>
+                            <input class="form-control" name="userAddress" id="disabledInput" type="text"
+                                value="there is user address" readonly>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">City name</span>
+                            </div>
+                            <select class="form-select" name="city" id="citySelect">
+                                <option selected>--Please choose city--</option>
+                                <option value="test">test</option>
+                            </select>
+                        </div>
+                        <div class="input-group mt-3">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text">house address</span>
+                            </div>
+                            <input type="text" name="houseAddress" placeholder="houseAddress" required="required"
+                                class="form-control">
+                        </div>
+                        <div>
+                            <button class="btn btn-primary btn-success mt-3" type="submit"
+                                id="estateUpload">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- test output -->
+        <div></div>
+    </body>
+    <script>
+        // async function buildListener() {
+        //     $('#estateUpload').on('click', async function (e) {
+                
+        //     })
+        // }
+        // buildListener();
+    </script>
+    <%- include('../partials/footer'); %>
