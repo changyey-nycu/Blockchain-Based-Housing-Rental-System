@@ -184,9 +184,9 @@ module.exports = function (dbconnection1, dbconnection3) {
 
         // save to chain
         try {
-            // let digest = await estateRegisterInstance.submitTransaction('NewPersonalEstate');
             let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userAddress, houseAddress, area);
-            return res.send({ msg: result })
+            console.log(result);
+            return res.send({ msg: "success?" })
         } catch (error) {
             console.log(error);
         }
@@ -230,24 +230,24 @@ module.exports = function (dbconnection1, dbconnection3) {
         }
 
         // save to blockchain
-        // check existreceived discovery error:failed constructing descriptor for chaincodes
-        let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
-        if (obj2) {
-            let errors = "The agent data already exists on chain.";
-            console.log(errors);
-            return res.send({ msg: errors });
-        }
+        // check exist
+        // let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
+        // if (obj2) {
+        //     let errors = "The agent data already exists on chain.";
+        //     console.log(errors);
+        //     return res.send({ msg: errors });
+        // }
 
         // save to chain
-        try {
-            const ChainAgencyData = new ChainAgency({
-                agentAddress: userAddress
-            })
-            await ChainAgencyData.save();
-        } catch (error) {
-            console.log(error);
-            return res.send({ msg: "save data error." });
-        }
+        // try {
+        //     const ChainAgencyData = new ChainAgency({
+        //         agentAddress: userAddress
+        //     })
+        //     await ChainAgencyData.save();
+        // } catch (error) {
+        //     console.log(error);
+        //     return res.send({ msg: "save data error." });
+        // }
 
         // save to chain
         try {

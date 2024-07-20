@@ -100,6 +100,8 @@ module.exports = function (dbconnection1, dbconnection2) {
     }
     init();
 
+    // Login PART
+
     var isAuthenticated = function (req, res, next) {
         // console.log('isAuthenticated : ' + req.isAuthenticated());
         if (req.isAuthenticated()) {
@@ -137,7 +139,6 @@ module.exports = function (dbconnection1, dbconnection2) {
         const identity = req.session.address;
         Profile.findOne({ address: identity }).then((obj) => {
             if (!obj) {
-                console.log("new user");
                 let obj2 = new Profile({
                     address: identity,
                     agent: false
@@ -243,7 +244,7 @@ module.exports = function (dbconnection1, dbconnection2) {
 
                     try {
                         const obj = new Profile({
-                            address: identity,
+                            address: account.toLowerCase(),
                             agent: false,
                             pubkey: pubkey_hex
                         })
@@ -272,16 +273,7 @@ module.exports = function (dbconnection1, dbconnection2) {
         });
 
 
-    router.get('/searchHouse', async (req, res) => {
-        const address = req.session.address;
-        res.render('leaseSystem/searchHouse', { address: address });
-    });
 
-
-    router.get('/leaseManage', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        res.render('leaseSystem/leaseManage', { address: address });
-    });
 
     router.get('/logout', (req, res) => {
         req.session.destroy((err) => {
@@ -351,6 +343,7 @@ module.exports = function (dbconnection1, dbconnection2) {
         const { userAddress, houseAddress } = req.body;
 
         // get chain data
+        console.log("get chain data");
         let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', userAddress, houseAddress);
         // let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
         console.log(obj2);
@@ -411,7 +404,22 @@ module.exports = function (dbconnection1, dbconnection2) {
         return res.render('leaseSystem/landlord/manageEstate', { address: userAddress, HouseData: obj });
     });
 
-    // end of landlord
+    // Agent PART
+
+    // Agreement PART
+    router.get('/leaseManage', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        res.render('leaseSystem/leaseManage', { address: address });
+    });
+
+    // Other PART
+    router.get('/searchHouse', async (req, res) => {
+        const address = req.session.address;
+        res.render('leaseSystem/searchHouse', { address: address });
+    });
+
+
+    
 
     return router;
 }
