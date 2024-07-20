@@ -4,7 +4,7 @@
     "fabricVersion": "2.4.7",
     "tls": false,
     "engine": "docker",
-    "peerDevMode": true
+    "peerDevMode": false
   },
   "orgs": [
     {
@@ -39,26 +39,6 @@
         "instances": 1,
         "db": "CouchDb"
       }
-    },
-    {
-      "organization": {
-        "name": "Org3",
-        "domain": "org3.example.com"
-      },
-      "peer": {
-        "instances": 1,
-        "db": "CouchDb"
-      }
-    },
-    {
-      "organization": {
-        "name": "Org4",
-        "domain": "org4.example.com"
-      },
-      "peer": {
-        "instances": 1,
-        "db": "CouchDb"
-      }
     }
   ],
   "channels": [
@@ -87,24 +67,6 @@
           "peers": ["peer0"]
         }
       ]
-    },
-    {
-      "name": "assets-channel",
-      "orgs" :[
-        {
-          "name": "Org3",
-          "peers":["peer0"]
-        }
-      ]
-    },
-    {
-      "name": "lease-channel",
-      "orgs" :[
-        {
-          "name": "Org4",
-          "peers":["peer0"]
-        }
-      ]
     }
   ],
   "chaincodes": [
@@ -113,35 +75,24 @@
       "version": "0.0.1",
       "lang": "node",
       "channel": "register-channel",
-      "directory": "./chaincodes/chaincode-EstateRegister-node"
+      "directory": "./chaincodes/chaincode-EstateRegister-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },
     {
       "name": "LeaseRegister",
       "version": "0.0.1",
       "lang": "node",
       "channel": "register-channel",
-      "directory": "./chaincodes/chaincode-LeaseRegister-node"
+      "directory": "./chaincodes/chaincode-LeaseRegister-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },
     {
       "name": "EstateAgent",
       "version": "0.0.1",
       "lang": "node",
       "channel": "entrust-channel",
-      "directory": "./chaincodes/chaincode-EstateAgent-node"
-    },
-    {
-      "name": "Assets",
-      "version": "0.0.1",
-      "lang": "node",
-      "channel": "assets-channel",
-      "directory": "./chaincodes/chaincode-Assets-node"
-    },
-    {
-      "name": "RentalAgreement",
-      "version": "0.0.1",
-      "lang": "node",
-      "channel": "lease-channel",
-      "directory": "./chaincodes/chaincode-RentalAgreement-node"
+      "directory": "./chaincodes/chaincode-EstateAgent-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     }
   ]
 }

@@ -1,4 +1,5 @@
 // gov use, to cert user estate and agent
+const path = require('path')
 const express = require('express');
 const fs = require('fs');
 const router = express.Router();
@@ -11,11 +12,25 @@ const config = JSON.parse(fs.readFileSync('./config/server_config.json', 'utf-8'
 const contract_address = config.contracts.identityManagerAddress;
 const identityManger = JSON.parse(fs.readFileSync('./contracts/identityChain/IdentityManager.json', 'utf-8'));
 const { Web3 } = require('web3');
-const keccak256 = require('keccak256');
 const web3 = new Web3(new Web3.providers.HttpProvider(config.web3_provider));
+const keccak256 = require('keccak256');
 const mongoose = require('mongoose');
 
+//fabric SDK and Util
+const fabric_common = require("fabric-common");
+const { Gateway, Wallets } = require('fabric-network');
+const FabricCAServices = require('fabric-ca-client');
+const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, buildCertUser } = require('../../util/CAUtil');
+const { buildCCPOrg1, buildWallet } = require('../../util/AppUtil');
+
 const require_signature = "LeaseSystem?nonce:778";
+
+var caClient;
+var registerChannel, estateRegisterInstance, estateAgentInstance;
+var wallet;
+var gateway;
+var adminUser;
+
 
 
 module.exports = function (dbconnection1, dbconnection3) {
@@ -26,6 +41,54 @@ module.exports = function (dbconnection1, dbconnection3) {
     const ChainRealEstate = dbconnection3.model('chainrealEstates', require('../../models/test/realEstate'));
     const ChainAgency = dbconnection3.model('agencies', require('../../models/test/agency'));
     // const Chainlease = dbconnection3.model('leases', require('../../models/test/lease'));
+
+    let delay = async (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms))
+    }
+
+    async function init() {
+        //console.log('google router init()');
+        await delay(1000);
+
+        // build an in memory object with the network configuration (also known as a connection profile)
+        const ccp = buildCCPOrg1();
+
+        // build an instance of the fabric ca services client based on
+        // the information in the network configuration
+        caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
+
+        const walletPath = path.join(__dirname, '../../wallet/interior');
+        wallet = await buildWallet(Wallets, walletPath);
+
+        mspOrg1 = 'Org1MSP';
+        await enrollAdmin(caClient, wallet, mspOrg1);//remember to change ca url http to https
+
+        //get ca admin to register and enroll user
+        adminUser = await getAdminIdentity(caClient, wallet)
+
+        // in a real application this would be done only when a new user was required to be added
+        // and would be part of an administrative flow
+        await registerAndEnrollUser(caClient, wallet, mspOrg1, 'interior' /*, 'org1.department1'*/);
+
+
+        // Create a new gateway instance for interacting with the fabric network.
+        // In a real application this would be done as the backend server session is setup for
+        // a user that has been verified.
+        gateway = new Gateway();
+
+        //console.log(JSON.stringify(gateway));
+        await gateway.connect(ccp, {
+            wallet,
+            identity: 'interior',
+            discovery: { enabled: true, asLocalhost: true }
+        });
+
+        registerChannel = await gateway.getNetwork('register-channel');
+        estateRegisterInstance = await registerChannel.getContract('EstateRegister');
+        estateAgentInstance = await registerChannel.getContract('EstateAgent');
+    }
+
+    init();
 
     var isAuthenticated = function (req, res, next) {
         // console.log('isAuthenticated : ' + req.isAuthenticated());
@@ -58,7 +121,7 @@ module.exports = function (dbconnection1, dbconnection3) {
 
     router.get('/', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        res.render('leaseSystem/certification/certification', { address: address});
+        res.render('leaseSystem/certification/certification', { address: address });
     });
 
     router.post('/estateUpload', async (req, res) => {
@@ -96,28 +159,38 @@ module.exports = function (dbconnection1, dbconnection3) {
             return res.send({ msg: "save data error." });
         }
 
-        // save to blockchain
+        // save to blockchain Test
         // check exist
-        let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
-        if (obj2) {
-            let errors = "The Real Estate data already exists on chain.";
-            console.log(errors);
-            return res.send({ msg: errors });
-        }
+        // let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
+        // if (obj2) {
+        //     let errors = "The Real Estate data already exists on chain.";
+        //     console.log(errors);
+        //     return res.send({ msg: errors });
+        // }
+
+        // // save to chain
+        // try {
+        //     const ChainRealEstateData = new ChainRealEstate({
+        //         ownerAddress: userAddress,
+        //         houseAddress: houseAddress,
+        //         area: area,
+        //         date: date
+        //     })
+        //     await ChainRealEstateData.save();
+        // } catch (error) {
+        //     console.log(error);
+        //     return res.send({ msg: "save data error." });
+        // }
 
         // save to chain
         try {
-            const ChainRealEstateData = new ChainRealEstate({
-                ownerAddress: userAddress,
-                houseAddress: houseAddress,
-                area: area,
-                date: date
-            })
-            await ChainRealEstateData.save();
+            // let digest = await estateRegisterInstance.submitTransaction('NewPersonalEstate');
+            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userAddress, houseAddress, area);
+            return res.send({ msg: result })
         } catch (error) {
             console.log(error);
-            return res.send({ msg: "save data error." });
         }
+
 
         return res.send({ msg: "success." })
     });
@@ -157,7 +230,7 @@ module.exports = function (dbconnection1, dbconnection3) {
         }
 
         // save to blockchain
-        // check exist
+        // check existreceived discovery error:failed constructing descriptor for chaincodes
         let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
         if (obj2) {
             let errors = "The agent data already exists on chain.";
@@ -174,6 +247,13 @@ module.exports = function (dbconnection1, dbconnection3) {
         } catch (error) {
             console.log(error);
             return res.send({ msg: "save data error." });
+        }
+
+        // save to chain
+        try {
+            await estateAgentInstance.submitTransaction('NewAgent', userAddress, date);
+        } catch (error) {
+            console.log(error);
         }
 
         return res.send({ msg: "success." })

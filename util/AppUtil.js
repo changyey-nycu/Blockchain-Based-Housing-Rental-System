@@ -11,7 +11,7 @@ const path = require('path');
 
 exports.buildCCPOrg1 = () => {
     // load the common connection configuration file
-    const ccpPath = path.resolve('./config', 'connection-org1.json');
+    const ccpPath = path.resolve('./config', 'connection-profile-org1.json');
     const fileExists = fs.existsSync(ccpPath);
     if (!fileExists) {
         throw new Error(`no such file or directory: ${ccpPath}`);
@@ -27,7 +27,7 @@ exports.buildCCPOrg1 = () => {
 
 exports.buildCCPOrg2 = () => {
     // load the common connection configuration file
-    const ccpPath = path.resolve('./config', 'connection-org2.json');
+    const ccpPath = path.resolve('./config', 'connection-profile-org2.json');
     const fileExists = fs.existsSync(ccpPath);
     if (!fileExists) {
         throw new Error(`no such file or directory: ${ccpPath}`);
@@ -43,7 +43,7 @@ exports.buildCCPOrg2 = () => {
 
 exports.buildCCPOrg3 = () => {
     // load the common connection configuration file
-    const ccpPath = path.resolve('./config', 'connection-org3.json');
+    const ccpPath = path.resolve('./config', 'connection-profile-org3.json');
     const fileExists = fs.existsSync(ccpPath);
     if (!fileExists) {
         throw new Error(`no such file or directory: ${ccpPath}`);
@@ -59,7 +59,7 @@ exports.buildCCPOrg3 = () => {
 
 exports.buildCCPOrg4 = () => {
     // load the common connection configuration file
-    const ccpPath = path.resolve('./config', 'connection-org4.json');
+    const ccpPath = path.resolve('./config', 'connection-profile-org4.json');
     const fileExists = fs.existsSync(ccpPath);
     if (!fileExists) {
         throw new Error(`no such file or directory: ${ccpPath}`);

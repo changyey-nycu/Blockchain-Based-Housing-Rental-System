@@ -26,7 +26,7 @@ class EstateAgent extends Contract {
     return pubkey;
   }
 
-  async NewAgent(ctx, userPubkey) {
+  async NewAgent(ctx, userPubkey, expDate) {
     //only admin can add a new User key
     let type = ctx.clientIdentity.getAttributeValue("hf.Type");
     let agent = await ctx.stub.getState(userPubkey);
@@ -40,11 +40,12 @@ class EstateAgent extends Contract {
       let agentData =
       {
         Certificate: {},
-        Data: {}
+        Agreement: {}
       };
 
       agentData.Certificate = {
-        "address": userPubkey
+        "address": userPubkey,
+        "expDate": expDate
       }
       await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentData)));
       return "Create Successfully."
@@ -52,43 +53,42 @@ class EstateAgent extends Contract {
   }
 
   async AddEstate(ctx, agentPubkey, estateAddress, ownerAddress, data) {
-    //only admin can add a new User data
-    let estate = await ctx.stub.getState(agentPubkey);
+    // only house owner can add a new agreement
+    let agent = await ctx.stub.getState(agentPubkey);
 
     let key = GetIdentity();
     if (ownerAddress != key) {
-      throw new Error(`only owner can execute.`);
+      throw new Error(`only house owner can execute.`);
     }
 
-    if (!estate || estate.length === 0) {
+    if (!agent || agent.length === 0) {
       throw new Error(`The agent key:${agentPubkey} does not exist`);
     }
 
-    let estateJson = JSON.parse(estate.toString());
+    let agentJson = JSON.parse(agent.toString());
 
-    if (!estateJson.Data[estateAddress]) {
-      estateJson.Data[estateAddress] = {};
+    if (!agentJson.Agreement[estateAddress]) {
+      agentJson.Agreement[estateAddress] = {};
     }
 
-    estateJson.Data[estateAddress] = {
+    agentJson.Agreement[estateAddress] = {
       "owner": ownerAddress,
-      "address": estateAddress,
       "data": data
     }
 
-    await ctx.stub.putState(agentPubkey, Buffer.from(JSON.stringify(estateJson)));
+    await ctx.stub.putState(agentPubkey, Buffer.from(JSON.stringify(agentJson)));
     return "Update Estate successfully." + agentPubkey;
   }
 
-  async GetEstate(ctx, userPubkey, estateAddress) {
-    let estate = await ctx.stub.getState(userPubkey);
-    if (!estate || estate.length === 0) {
+  async GetAgent(ctx, userPubkey) {
+    let agent = await ctx.stub.getState(userPubkey);
+    if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
-    let estateJson = JSON.parse(estate.toString());
-    const estateData = estateJson.Address[estateAddress];
+    let agentJson = JSON.parse(agent.toString());
+    const agentData = agentJson.Certificate;
 
-    return JSON.stringify(estateData);
+    return JSON.stringify(agentData);
   }
 
 }

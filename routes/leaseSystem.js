@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const LeaseSystemPage = require('./homepage/homepage.router');
-const LandlordPage = require('./landlord/landlord.router');
+// const LandlordPage = require('./landlord/landlord.router');
 const AgentPage = require('./agent/agent.router');
 
 const CertificationPage = require('./certification/identityCert.router');
@@ -23,9 +23,9 @@ const db3Connection = mongoose.createConnection(db3);
 db3Connection.once('open', () => console.log('\x1b[35m%s\x1b[0m', `${db3Connection.name}'s           DB connected by Bloockchain Test`));
 
 router.use('/certification', CertificationPage(db1Connection, db3Connection))
-router.use('/landlord', LandlordPage(db2Connection, db3Connection));
+// router.use('/landlord', LandlordPage(db2Connection, db3Connection));
 router.use('/agent', AgentPage(db2Connection, db3Connection));
-router.use('/', LeaseSystemPage(db2Connection));
+router.use('/', LeaseSystemPage(db2Connection, db3Connection));
 // router.use('/', (db3Connection));
 
 

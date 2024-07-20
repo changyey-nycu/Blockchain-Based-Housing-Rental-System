@@ -3,3 +3,4 @@ node_modules
 fablo/fablo-target
 fablo/*/node_modules
 wallet
+openssl

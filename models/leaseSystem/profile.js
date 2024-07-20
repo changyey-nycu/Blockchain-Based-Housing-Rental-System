@@ -6,6 +6,9 @@ const MappingSchema = new mongoose.Schema({
     },
     agent: {
         type: Boolean
+    },
+    pubkey: {
+        type: String
     }
 });
 
