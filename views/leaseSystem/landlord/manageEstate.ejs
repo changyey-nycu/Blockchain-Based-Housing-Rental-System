@@ -1,9 +1,77 @@
 <%- include('../partials/header'); %>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <body>
-        <!-- describe -->
-        <div>
+        <div class="container mt-3">
             <h2>manage estate data</h2>
+            <div style="margin-top: 10px">
+                <a href="/leaseSystem/landlord">back</a>
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">title</th>
+                        <th scope="col">houseAddress</th>
+                        <th scope="col">state</th>
+                        <th scope="col">edit</th>
+                        <th scope="col">rent</th>
+                        <th scope="col">agent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(var i=0;i<HouseData.length;i++){ %>
+                        <form action="/leaseSystem/landlord/estatePage" method="post">
+                            <tr>
+                                <th scope="row">
+                                    <% if (!HouseData[i].title) {%>
+                                        none
+                                        <%} else{%>
+                                            <%=HouseData[i].title%>
+                                                <%}%>
+                                </th>
+                                <td>
+                                    <input class="form-control" type="text" id="addr" name="addr"
+                                        value="<%=HouseData[i].houseAddress%>" readonly>
+                                </td>
+                                <td scope="col">state</td>
+                                <td><button type="submit" class="btn btn-primary">edit</button></td>
+                                <td><button type="button" class="btn btn-primary" id="rent">rent</button></td>
+                                <td><button type="button" class="btn btn-primary" id="agent">agent</button></td>
+                            </tr>
+                        </form>
+                        <% } %>
+                </tbody>
+            </table>
         </div>
     </body>
+    <script>
+        async function buildListener() {
+            $('#rent').on('click', async function (e) {
+                let houseAddress = $("#addr").val();
+
+                $.ajax({
+                    url: '/leaseSystem/landlord/rent',
+                    data: { "addr": houseAddress },
+                    type: 'post'
+                }).then((res) => {
+                    if (res.url) {
+                        window.location.href = res.url;
+                    }
+                })
+            })
+            $('#agent').on('click', async function (e) {
+                let houseAddress = $("#addr").val();
+
+                $.ajax({
+                    url: '/leaseSystem/landlord/agent',
+                    data: { "addr": houseAddress },
+                    type: 'post',
+                }).then((res) => {
+                    if (res.url) {
+                        window.location.href = res.url;
+                    }
+                })
+            })
+        }
+        buildListener();
+    </script>
     <%- include('../partials/footer'); %>

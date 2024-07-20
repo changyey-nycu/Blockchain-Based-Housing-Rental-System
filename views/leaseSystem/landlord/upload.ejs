@@ -1,56 +1,70 @@
 <%- include('../partials/header'); %>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <body>
-        <!-- describe -->
-        <div class="container mt-3">
+        <div class="container mt-7">
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <div style="margin-top: 10px" class="card text-center">
                     <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                        upload
+                        Binding Estate
                     </div>
-                    <form style="margin-block: 10px" action="/leaseSystem/landlord/uploadCheck" method="post">
+                    <form style="margin-block: 10px" method="dialog">
                         <div class="input-group mt-2">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Address</span>
                             </div>
-                            <input class="form-control" name="userAddress" id="disabledInput" type="text"
-                                value="there is user address" readonly>
+                            <input class="form-control" name="userAddress" id="userAddress" type="text"
+                                value="<%=address %>" readonly>
                         </div>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text">City name</span>
+                                <span id="" class="input-group-text">IDNumber</span>
                             </div>
-                            <select class="form-select" name="city" id="citySelect">
-                                <option selected>--Please choose city--</option>
-                                <option value="test">test</option>
-                            </select>
+                            <input type="text" name="IDNumberBind" id="IDNumberBind" required="required" class="form-control">
                         </div>
                         <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <span id="" class="input-group-text">house address</span>
+                                <span id="" class="input-group-text">House Address</span>
                             </div>
-                            <input type="text" name="houseAddress" placeholder="houseAddress" required="required"
+                            <input type="text" name="houseAddressBind" id="houseAddressBind" required="required"
                                 class="form-control">
                         </div>
                         <div>
-                            <button class="btn btn-primary btn-success mt-3" type="submit"
-                                id="estateUpload">Submit</button>
+                            <button class="btn btn-primary btn-success mt-3" id="estateBind">Submit</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- test output -->
-        <div></div>
+
     </body>
     <script>
-        // async function buildListener() {
-        //     $('#estateUpload').on('click', async function (e) {
-                
-        //     })
-        // }
-        // buildListener();
+        async function buildListener() {
+            $('#estateBind').on('click', async function (e) {
+                let userAddress = $("#userAddress").val();
+                let IDNumberBind = $("#IDNumberBind").val();
+                let houseAddressBind = $("#houseAddressBind").val();
+
+                let data;
+                data = {
+                    "userAddress": userAddress,
+                    "IDNumber": IDNumberBind,
+                    "houseAddress": houseAddressBind,
+                }
+
+                $.ajax({
+                    url: '/leaseSystem/landlord/estateBind',
+                    data: data,
+                    type: 'post',
+                    success: function (res) {
+                        alert(res.msg);
+                    },
+                    error: function (err) {
+                        console.log("error");
+                        alert(err);
+                    }
+                });
+            })
+        }
+        buildListener();
     </script>
     <%- include('../partials/footer'); %>

@@ -1,17 +1,14 @@
+// estate register chaincode
 const mongoose = require('mongoose');
 
-const realEstateSchema = new mongoose.Schema({
-    ownerName: {
+const chainRealEstateSchema = new mongoose.Schema({
+    ownerAddress: {
         require: true,
-        type: String,
-    },
-    IDNumber: {
-        require: true,
-        type: String,
+        type: String
     },
     houseAddress: {
         require: true,
-        type: String,
+        type: String
     },
     area: {
         require: true,
@@ -23,5 +20,5 @@ const realEstateSchema = new mongoose.Schema({
 });
 
 
-module.exports = realEstateSchema;
+module.exports = chainRealEstateSchema;
 

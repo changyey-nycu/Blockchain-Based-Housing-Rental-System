@@ -1,20 +1,42 @@
 <%- include('partials/header'); %>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-    .canvas_class {
-        position: absolute;
-        top: 20px;
-        left: 0;
-        position: relative;
-        z-index: 1;
-    }
-    .div_canvas_class {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-</style>
-<body>
-    <!-- choose city to show house -->
-</body>
-<%- include('partials/footer'); %>
+    <body>
+        <!-- choose city to show house -->
+        <div>
+            <form style="margin-block: 10px" method="dialog">
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <div class="input-group mt-10">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text">City</span>
+                            </div>
+                            <select class="form-select">
+                                <option selected>Open this select menu</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group mt-10">
+                            <div class="input-group-prepend">
+                                <span id="" class="input-group-text">Price</span>
+                            </div>
+                            <select class="form-select">
+                                <option selected>Open this select menu</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </body>
+    <%- include('partials/footer'); %>

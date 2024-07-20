@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 
 const Schema = new mongoose.Schema({
-    owner: {
+    ownerAddress: {
         require: true,
         type: String,
+    },
+    houseAddress: {
+        type: String
+    },
+    area: {
+        type: Number
     },
     date: {
         type: String
@@ -11,10 +17,16 @@ const Schema = new mongoose.Schema({
     city: {
         type: String
     },
-    localtion: {
+    type: {
         type: String
     },
     hashed: {
+        type: String
+    },
+    title: {
+        type: String
+    },
+    describe: {
         type: String
     }
 });

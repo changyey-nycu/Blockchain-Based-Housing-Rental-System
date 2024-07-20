@@ -1,10 +1,13 @@
+# mongodb
+docker run --name mongodb -d -p 27017:27017 mongo:4.4.29
+
 # DID chain
-docker run --detach --publish 8545:8545 trufflesuite/ganache-cli:latest --seed 0 --gasPrice 0
+docker run --name DID --detach --publish 8545:8545 trufflesuite/ganache-cli:latest --seed 0 --gasPrice 0
 
 Available Accounts
 ==================
 (0) 0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA (100 ETH)    DID chain
-(1) 0xc0d8F541Ab8B71F20c10261818F2F401e8194049 (100 ETH)    test user
+(1) 0xc0d8F541Ab8B71F20c10261818F2F401e8194049 (100 ETH)    admin
 (2) 0xf1F8Ef6b4D4Ba31079E2263eC85c03fD5a0802bF (100 ETH)    
 (3) 0xc91579bB7972f76D595f8665BffaF92874C8084C (100 ETH)
 (4) 0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba (100 ETH)
@@ -28,10 +31,10 @@ Private Keys
 (9) 0x2d9d98ee99c8f7c664125ff2b3b91f356e880917b2d9fc508ffe1b647bd7a9fd
 
 
-
-# mongodb
-docker run --name mongodb -p 27017:27017 mongo:4.4.29
-
+# may bug
+abi -> output.abi
+.toLowerCase()
+? lower cast acc run contract the result is same
 
 
 人員
@@ -52,6 +55,7 @@ ORG4 司法院(Judicial Yuan)
 
 DID : 控管資料
 
+union {
 estate channel : 紀錄房產資料
 政府 內政部地政司(Ministry of Interior)
 
@@ -62,7 +66,7 @@ lease house channel : 出租資料
 
 entrust channel : 委託房仲資料
 政府 內政部地政司
-
+}
 
 assets channel : 租金負擔能力
 政府 財政部國稅局(Ministry of Finance/National Taxation Bureau) 財力證明?

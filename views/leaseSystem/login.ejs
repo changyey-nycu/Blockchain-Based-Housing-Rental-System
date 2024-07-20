@@ -1,5 +1,4 @@
 <%- include('partials/header'); %>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
     <div class="container mt-3">
         <div class="row">
@@ -56,7 +55,7 @@
             $.getJSON('../../contracts/IdentityManager.json', function (data) {
                 // This code will be executed when the request succeeds
                 let contractInstance = new web3.eth.Contract(
-                    data.abi,
+                    data.output.abi,
                     contract_address
                 );
 
@@ -101,7 +100,7 @@
                         });
                     })
                     .then((res) => {
-                        console.log('success!');
+                        console.log('login success!');
                         if (res.url) {
                             window.location.href = res.url;
                         }

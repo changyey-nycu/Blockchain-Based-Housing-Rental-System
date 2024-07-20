@@ -1,25 +1,23 @@
+// lease register chaincode
 const mongoose = require('mongoose');
 
 const realEstateSchema = new mongoose.Schema({
-    ownerName: {
+    address: {
         require: true,
-        type: String,
+        type: String
     },
-    IDNumber: {
+    hashed: {
         require: true,
-        type: String,
+        type: String
     },
-    houseAddress: {
-        require: true,
-        type: String,
-    },
-    area: {
+    rent:{
         require: true,
         type: Number
     },
-    date: {
+    date:{
+        require: true,
         type: String
-    }
+    },
 });
 
 

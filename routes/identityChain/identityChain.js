@@ -224,17 +224,17 @@ module.exports = function (dbconnection) {
             ]
         };
         let user;
-        let portfolioOrg = config.leaseSystem.address;
+        let portfolioOrg;
         let type = req.user.type;
         if (req.user.type == "org") { // 
             user = await Organization.findOne(option)
         } else if (req.user.type == 'user') {
             user = await User.findOne(option);
-            // portfolioOrg = await Organization.find({ "type": "physiological-data" })
+            portfolioOrg = await Organization.find({ "type": "lease-system" })
         } else {
             type = 'user';
             user = await User.findOne(option);
-            // portfolioOrg = await Organization.find({ "type": "physiological-data" })
+            portfolioOrg = await Organization.find({ "type": "lease-system" })
             if (!user) {
                 type = 'org';
                 user = await Organization.findOne(option)
@@ -410,7 +410,7 @@ module.exports = function (dbconnection) {
         }
 
         let contractInstance = new web3.eth.Contract(identityManger.output.abi, contract_address);
-        console.log(config);
+        // console.log(config);
         let txHash;
         let signedTxObj;
         let tx_builder = contractInstance.methods.bindAccount(hashed, address, userType);

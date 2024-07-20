@@ -1,4 +1,128 @@
 <%- include('partials/header'); %>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- account -->
 
-<%- include('partials/footer'); %>
+    <body>
+        <!-- choose city to show house -->
+        <div class="row md-3 mt-3">
+            <div class="col-md-8 center-block offset-md-2">
+                <div class="card text-center" style="margin:auto">
+                    <div class="card-header">
+                        <h4 style="margin:auto" class="font-weight-bold">Profile </h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="mt-2 table table-striped table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>address</td>
+                                    <td>
+                                        <%= address %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>agent</td>
+                                    <td>
+                                        <%if(user.agent) {%>
+                                            ture
+                                            <%}else {%>
+                                                false
+                                                <%} %>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-body">
+                        <a href="/leaseSystem/certification" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                        width: 450px;
+                        height: 40px;
+                        line-height: 20px;
+                        text-align: center;">certificate</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div>
+                <!-- for test -->
+                <div class="row">
+                    <div class="col center-block" style="float: none; margin: auto">
+                        <div style="margin-top: 10px" class="card text-center">
+                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                                Landlord
+                            </div>
+                            <!-- <div style="margin-top: 20px">
+                        <iconify-icon
+                            icon="logos:metamask-icon"
+                            width="200"
+                            style="margin: auto"
+                        ></iconify-icon>
+                    </div> -->
+                            <div class="card-body">
+                                <p>description</p>
+                                <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                                width: 450px;
+                                height: 40px;
+                                line-height: 20px;
+                                text-align: center;" href="/leaseSystem/landlord">
+                                    click
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col center-block" style="float: none; margin: auto">
+                        <div style="margin-top: 10px" class="card text-center">
+                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                                Agent
+                            </div>
+                            <!-- <div style="margin-top: 20px">
+                        <iconify-icon
+                            icon="logos:metamask-icon"
+                            width="200"
+                            style="margin: auto"
+                        ></iconify-icon>
+                    </div> -->
+                            <div class="card-body">
+                                <p>description</p>
+                                <a id="agent" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                                width: 450px;
+                                height: 40px;
+                                line-height: 20px;
+                                text-align: center;
+                            " href="/leaseSystem/agent">
+                                    click
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col center-block" style="float: none; margin: auto">
+                        <div style="margin-top: 10px" class="card text-center">
+                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                                Lease Manage
+                            </div>
+                            <!-- <div style="margin-top: 20px">
+                        <iconify-icon
+                            icon="logos:metamask-icon"
+                            width="200"
+                            style="margin: auto"
+                        ></iconify-icon>
+                    </div> -->
+                            <div class="card-body">
+                                <p>description</p>
+                                <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                                width: 450px;
+                                height: 40px;
+                                line-height: 20px;
+                                text-align: center;
+                            " href="/leaseSystem/leaseManage">
+                                    click
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- house manage -->
+    <!-- lease contract -->
+    <%- include('partials/footer'); %>

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const agencySchema = new mongoose.Schema({
-    Name: {
+    name: {
         require: true,
         type: String,
     },

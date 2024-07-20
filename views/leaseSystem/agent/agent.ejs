@@ -1,3 +1,101 @@
 <%- include('../partials/header'); %>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<%- include('../partials/footer'); %>
+    <!-- account -->
+
+    <body>
+        <!-- choose city to show house -->
+         
+        <%if(!user.agent) {%>
+            <div class="row md-3 mt-3">
+                <div class="col-md-8 center-block offset-md-2">
+                    <div class="card text-center" style="margin:auto">
+                        <div class="card-header">
+                            <h4 style="margin:auto" class="font-weight-bold">Agent Profile</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group mt-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Address</span>
+                                </div>
+                                <input class="form-control" name="userAddress" id="userAddress" type="text"
+                                    value="<%=address %>" readonly>
+                            </div>
+                            <table class="mt-2 table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>agent</td>
+                                        <td>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <%if(user.agent) {%>
+                                                        ture
+                                                        <%}else {%>
+                                                            false
+                                                            <%} %>
+                                                </div>
+                                        </td>
+                                        <td>
+                                            <div class="col"></div>
+                                            <div class="col"><button id="getCert">getCert</button></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-body">
+                            <a href="/leaseSystem/certification" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                        width: 450px;
+                        height: 40px;
+                        line-height: 20px;
+                        text-align: center;">certificate</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } else{%>
+                <div class="row md-3 mt-3">
+                    <div class="col-md-8 center-block offset-md-2">
+                        <div class="card text-center" style="margin:auto">
+                            <div class="card-header">
+                                <h4 style="margin:auto" class="font-weight-bold">Agent Option</h4>
+                            </div>
+                            <div class="card-body">
+                                <table class="mt-2 table table-bordered">
+                                    later...
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- house manage -->
+                <!-- lease contract -->
+                <% } %>
+    </body>
+
+    <script>
+        async function buildListener() {
+            $('#getCert').on('click', async function (e) {
+                let userAddress = $("#userAddress").val();
+                let data;
+                data = {
+                    "userAddress": userAddress,
+                }
+
+                $.ajax({
+                    url: '/leaseSystem/agent/getCert',
+                    data: data,
+                    type: 'post',
+                    success: function (res) {
+                        alert(res.msg);
+                    },
+                    error: function (err) {
+                        console.log("error");
+                        alert(err);
+                    }
+                });
+            })
+        }
+        buildListener();
+    </script>
+
+    <%- include('../partials/footer'); %>

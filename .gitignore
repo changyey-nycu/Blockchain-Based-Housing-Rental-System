@@ -1,2 +1,5 @@
 node_modules
 .DS_Store
+fablo/fablo-target
+fablo/*/node_modules
+wallet
