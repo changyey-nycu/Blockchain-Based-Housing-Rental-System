@@ -9,3 +9,5 @@ fablo/*/node_modules
 wallet
 
 openssl
+
+config/connection-profile-*.json
