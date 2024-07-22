@@ -48,7 +48,7 @@ class EstateAgent extends Contract {
         "expDate": expDate
       }
       await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentData)));
-      return "Create Successfully."
+      return "Create Successfully.";
     }
   }
 

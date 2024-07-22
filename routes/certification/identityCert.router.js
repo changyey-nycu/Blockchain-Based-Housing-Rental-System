@@ -26,21 +26,16 @@ const { buildCCPOrg1, buildWallet } = require('../../util/AppUtil');
 const require_signature = "LeaseSystem?nonce:778";
 
 var caClient;
-var registerChannel, estateRegisterInstance, estateAgentInstance;
+var registerChannel, entrustChannel, estateRegisterInstance, estateAgentInstance;
 var wallet;
 var gateway;
 var adminUser;
 
 
 
-module.exports = function (dbconnection1, dbconnection3) {
+module.exports = function (dbconnection1) {
     const RealEstate = dbconnection1.model('realEstates', require('../../models/landAdministration/realEstate'));
     const Agency = dbconnection1.model('agencys', require('../../models/landAdministration/agency'));
-
-    // for test
-    const ChainRealEstate = dbconnection3.model('chainrealEstates', require('../../models/test/realEstate'));
-    const ChainAgency = dbconnection3.model('agencies', require('../../models/test/agency'));
-    // const Chainlease = dbconnection3.model('leases', require('../../models/test/lease'));
 
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
@@ -85,7 +80,9 @@ module.exports = function (dbconnection1, dbconnection3) {
 
         registerChannel = await gateway.getNetwork('register-channel');
         estateRegisterInstance = await registerChannel.getContract('EstateRegister');
-        estateAgentInstance = await registerChannel.getContract('EstateAgent');
+
+        entrustChannel = await gateway.getNetwork('entrust-channel');
+        estateAgentInstance = await entrustChannel.getContract('EstateAgent');
     }
 
     init();
@@ -161,31 +158,21 @@ module.exports = function (dbconnection1, dbconnection3) {
 
         // save to blockchain Test
         // check exist
-        // let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
-        // if (obj2) {
-        //     let errors = "The Real Estate data already exists on chain.";
-        //     console.log(errors);
-        //     return res.send({ msg: errors });
-        // }
-
-        // // save to chain
-        // try {
-        //     const ChainRealEstateData = new ChainRealEstate({
-        //         ownerAddress: userAddress,
-        //         houseAddress: houseAddress,
-        //         area: area,
-        //         date: date
-        //     })
-        //     await ChainRealEstateData.save();
-        // } catch (error) {
-        //     console.log(error);
-        //     return res.send({ msg: "save data error." });
-        // }
+        let exist = await estateRegisterInstance.evaluateTransaction('CheckExist', userAddress);
+        let isExist = JSON.parse(exist.toString());
+        // console.log(isExist);
+        if (!isExist) {
+            console.log("user key not exist, create key");
+            await estateRegisterInstance.submitTransaction('NewPersonalEstate', userAddress);
+        }
+        else{
+            console.log("key exist, update data");
+        }
 
         // save to chain
         try {
             let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userAddress, houseAddress, area);
-            console.log(result);
+            console.log(JSON.parse(result.toString()));
             return res.send({ msg: "success?" })
         } catch (error) {
             console.log(error);
@@ -229,29 +216,10 @@ module.exports = function (dbconnection1, dbconnection3) {
             return res.send({ msg: "save data error." });
         }
 
-        // save to blockchain
-        // check exist
-        // let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
-        // if (obj2) {
-        //     let errors = "The agent data already exists on chain.";
-        //     console.log(errors);
-        //     return res.send({ msg: errors });
-        // }
-
-        // save to chain
-        // try {
-        //     const ChainAgencyData = new ChainAgency({
-        //         agentAddress: userAddress
-        //     })
-        //     await ChainAgencyData.save();
-        // } catch (error) {
-        //     console.log(error);
-        //     return res.send({ msg: "save data error." });
-        // }
-
         // save to chain
         try {
-            await estateAgentInstance.submitTransaction('NewAgent', userAddress, date);
+            let result = await estateAgentInstance.submitTransaction('NewAgent', userAddress, date);
+            console.log(result.toString());
         } catch (error) {
             console.log(error);
         }

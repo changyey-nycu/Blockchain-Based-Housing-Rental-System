@@ -3,6 +3,7 @@ const express = require('express');
 const fs = require('fs');
 const router = express.Router();
 const openssl = require('openssl-nodejs');
+const keccak256 = require('keccak256');
 
 // session
 const passport = require('passport');
@@ -27,7 +28,7 @@ const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, bui
 const { buildCCPOrg2, buildWallet } = require('../../util/AppUtil');
 
 var caClient;
-var registerChannel, estateRegisterInstance, estateAgentInstance;
+var registerChannel, entrustChannel, estateRegisterInstance, estateAgentInstance;
 var wallet;
 var gateway;
 var adminUser;
@@ -36,14 +37,9 @@ const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
 
-module.exports = function (dbconnection1, dbconnection2) {
+module.exports = function (dbconnection1) {
     const HouseData = dbconnection1.model('houseDatas', require('../../models/leaseSystem/houseData'));
     const Profile = dbconnection1.model('profiles', require('../../models/leaseSystem/profile'));
-
-    // for test
-    const ChainRealEstate = dbconnection2.model('chainrealEstates', require('../../models/test/realEstate'));
-    const ChainAgency = dbconnection2.model('agencies', require('../../models/test/agency'));
-    const Chainlease = dbconnection2.model('leases', require('../../models/test/lease'));
 
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
@@ -96,7 +92,9 @@ module.exports = function (dbconnection1, dbconnection2) {
 
         registerChannel = await gateway.getNetwork('register-channel');
         estateRegisterInstance = await registerChannel.getContract('EstateRegister');
-        estateAgentInstance = await registerChannel.getContract('EstateAgent');
+
+        entrustChannel = await gateway.getNetwork('entrust-channel');
+        estateAgentInstance = await entrustChannel.getContract('EstateAgent');
     }
     init();
 
@@ -346,8 +344,9 @@ module.exports = function (dbconnection1, dbconnection2) {
         console.log("get chain data");
         let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', userAddress, houseAddress);
         // let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
-        console.log(obj2);
-        if (!obj2) {
+        let data = JSON.parse(obj2.toString());
+        console.log(data);
+        if (!data) {
             let errors = "The Real Estate data does not exists on chain.";
             console.log(errors);
             return res.send({ msg: errors });
@@ -355,7 +354,7 @@ module.exports = function (dbconnection1, dbconnection2) {
 
 
         // check exist in local
-        let obj = await HouseData.findOne({ ownerAddress: obj2.ownerAddress, houseAddress: obj2.houseAddress });
+        let obj = await HouseData.findOne({ ownerAddress: userAddress, houseAddress: data.address });
         if (obj) {
             let errors = "The estate data already exists in system.";
             console.log(errors);
@@ -364,14 +363,14 @@ module.exports = function (dbconnection1, dbconnection2) {
 
         try {
             const houseData = new HouseData({
-                ownerAddress: obj2.ownerAddress,
-                houseAddress: obj2.houseAddress,
-                area: obj2.area,
-                date: obj2.date,
+                ownerAddress: userAddress,
+                houseAddress: data.address,
+                area: data.area,
+                date: 'obj2.date',
                 title: '',
                 describe: ''
             })
-            let en_str = obj2.ownerAddress.toString('hex') + obj2.houseAddress.toString('hex');
+            let en_str = userAddress.toString('hex') + data.address.toString('hex');
             let hashed = keccak256(en_str).toString('hex');
             houseData.hashed = hashed;
             await houseData.save();
@@ -405,6 +404,42 @@ module.exports = function (dbconnection1, dbconnection2) {
     });
 
     // Agent PART
+    router.get('/agent', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        let obj = await Profile.findOne({ address: address });
+        res.render('leaseSystem/agent/agent', { address: address, user: obj });
+    });
+
+    router.post('/agent/getCert', isAuthenticated, async (req, res) => {
+        // check agent have a cert for agent on chain, and save to localDB
+        const { userAddress } = req.body;
+        // console.log(userAddress);
+
+        // get chain data
+        // let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
+        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgent', userAddress);
+        let data = JSON.parse(obj2.toString());
+        // console.log(data);
+        if (!data) {
+            let errors = "The agent data does not exists on chain.";
+            console.log(errors);
+            return res.send({ msg: errors });
+        }
+
+        // save local
+        let obj = await Profile.findOneAndUpdate(
+            { address: userAddress },
+            { agent: true }
+        );
+        // console.log(obj);
+        if (!obj) {
+            errors = "The agent data error in system.";
+            console.log(errors);
+            return res.send({ msg: errors });
+        }
+
+        return res.send({ msg: "success" });
+    });
 
     // Agreement PART
     router.get('/leaseManage', isAuthenticated, async (req, res) => {
@@ -419,7 +454,7 @@ module.exports = function (dbconnection1, dbconnection2) {
     });
 
 
-    
+
 
     return router;
 }

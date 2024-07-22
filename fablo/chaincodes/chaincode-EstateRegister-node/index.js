@@ -3,25 +3,25 @@
 const { Contract } = require('fabric-contract-api');
 
 class EstateRegister extends Contract {
-  // async NewPersonalEstate(ctx, userPubkey) {
-  //   //only admin can add a new User key
-  //   let type = ctx.clientIdentity.getAttributeValue("hf.Type");
-  //   let estate = await ctx.stub.getState(userPubkey);
+  async NewPersonalEstate(ctx, userPubkey) {
+    //only admin can add a new User key
+    let type = ctx.clientIdentity.getAttributeValue("hf.Type");
+    let estate = await ctx.stub.getState(userPubkey);
 
-  //   if (type != "admin") {
-  //     throw new Error(`only admin can execute.`);
-  //   }
-  //   if (estate && estate.length > 0) {
-  //     throw new Error(`User already exists`);
-  //   } else {
-  //     let estateList =
-  //     {
-  //       Address: {}
-  //     };
-  //     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateList)));
-  //     return "Create Successfully."
-  //   }
-  // }
+    if (type != "admin") {
+      throw new Error(`only admin can execute.`);
+    }
+    if (estate && estate.length > 0) {
+      throw new Error(`User already exists`);
+    } else {
+      let estateList =
+      {
+        Address: {}
+      };
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateList)));
+      return "Create Successfully."
+    }
+  }
 
   async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea) {
     //only admin can add a new User data
@@ -33,17 +33,17 @@ class EstateRegister extends Contract {
     }
 
     if (!estate || estate.length === 0) {
-      estateJson =
-      {
-        Address: {}
-      };
-      // throw new Error(`The user acc key:${userPubkey} does not exist`);
+      // estateJson =
+      // {
+      //   Address: {}
+      // };
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
     else {
       estateJson = JSON.parse(estate.toString());
     }
 
-
+    estateJson = JSON.parse(estate.toString());
 
     if (!estateJson.Address[estateAddress]) {
       estateJson.Address[estateAddress] = {};
@@ -76,6 +76,14 @@ class EstateRegister extends Contract {
     const estateData = estateJson.Address[estateAddress];
 
     return JSON.stringify(estateData);
+  }
+
+  async CheckExist(ctx, userPubkey) {
+    let estate = await ctx.stub.getState(userPubkey);
+    if (!estate || estate.length === 0) {
+      return false;
+    }
+    return true;
   }
 
   async CheckEstate(ctx, userPubkey, estateAddress) {

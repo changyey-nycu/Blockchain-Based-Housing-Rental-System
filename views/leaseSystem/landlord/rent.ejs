@@ -80,26 +80,6 @@
                         <!-- </div> -->
                     </form>
                     <button id="upload">test upload</button>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        Launch demo modal
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" >
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Checking</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p>test</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -116,7 +96,23 @@
             $('#upload').on('click', async function (e) {
                 let price = $("#price").val();
                 if (isNumber(price)) {
-                    alert("pass");
+                    let userAddress = $("#userAddress").val();
+                    let houseAddress = $("#houseAddress").val();
+                    let data = {
+                        "userAddress": userAddress,
+                        "houseAddress": houseAddress,
+                        "price": price
+                    };
+
+                    // $.ajax({
+                    //     url: '/leaseSystem/landlord/agent',
+                    //     data: { "addr": houseAddress },
+                    //     type: 'post',
+                    // }).then((res) => {
+                    //     if (res.url) {
+                    //         window.location.href = res.url;
+                    //     }
+                    // })
                 }
                 else {
                     alert("rent price must be a numbers!");

@@ -22,7 +22,7 @@ class LeaseRegister extends Contract {
     //console.log(cert)
     let pubkey = cert.pubkey.toString('hex');
 
-    return pubkey
+    return pubkey;
   }
 
   async NewLease(ctx, userPubkey, estateAddress, rent, dataHash) {

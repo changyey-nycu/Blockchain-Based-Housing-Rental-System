@@ -37,6 +37,9 @@ abi -> output.abi
 ? lower cast acc run contract the result is same
 
 
+# note
+house state : {edit 編輯中,announcement 公告中,entrust 委託,signing 簽約中,lesae 出租}
+
 人員
 
 屋主 - 出租方

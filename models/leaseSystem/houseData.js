@@ -25,6 +25,9 @@ const Schema = new mongoose.Schema({
     },
     title: {
         type: String
+    }, 
+    state: {
+        type: String
     },
     describe: {
         type: String
