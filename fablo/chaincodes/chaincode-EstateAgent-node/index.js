@@ -51,12 +51,12 @@ class EstateAgent extends Contract {
     }
   }
 
-  async AddEstate(ctx, agentPubkey, estateAddress, ownerAddress, type) {
+  async AddEstate(ctx, agentPubkey, ownerAddress, ownerPubkey, estateAddress, type) {
     // only house owner can add a new agreement
     let agent = await ctx.stub.getState(agentPubkey);
 
-    let key = GetIdentity();
-    if (ownerAddress != key) {
+    let key = await this.GetIdentity();
+    if (ownerPubkey != key) {
       throw new Error(`only house owner can execute.`);
     }
 
@@ -87,7 +87,7 @@ class EstateAgent extends Contract {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
 
-    let key = GetIdentity();
+    let key = await this.GetIdentity();
     if (userPubkey != key) {
       throw new Error(`only the agent can execute.`);
     }

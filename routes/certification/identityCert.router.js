@@ -172,15 +172,13 @@ module.exports = function (dbconnection1) {
 
         // save to chain
         try {
-            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area);
-            console.log(JSON.parse(result.toString()));
-            return res.send({ msg: "success?" })
+            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area, date);
+            console.log(result.toString());
+            return res.send({ msg: "success." });
         } catch (error) {
             console.log(error);
+            return res.send({ msg: "error." });
         }
-
-
-        return res.send({ msg: "success." })
     });
 
     router.post('/agentUpload', async (req, res) => {
@@ -221,11 +219,11 @@ module.exports = function (dbconnection1) {
         try {
             let result = await estateAgentInstance.submitTransaction('NewAgent', userPubkey, date);
             console.log(result.toString());
+            return res.send({ msg: "success." })
         } catch (error) {
             console.log(error);
+            return res.send({ msg: "error." })
         }
-
-        return res.send({ msg: "success." })
     });
 
     return router;

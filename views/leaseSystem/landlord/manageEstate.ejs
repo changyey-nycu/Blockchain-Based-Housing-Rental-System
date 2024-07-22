@@ -21,13 +21,13 @@
                     <% for(var i=0;i<HouseData.length;i++){ %>
                         <form action="/leaseSystem/landlord/estatePage" method="post">
                             <tr>
-                                <th scope="row">
+                                <td scope="row">
                                     <% if (!HouseData[i].title) {%>
                                         none
                                         <%} else{%>
                                             <%=HouseData[i].title%>
                                                 <%}%>
-                                </th>
+                                </td>
                                 <td>
                                     <input class="form-control" type="text" id="addr" name="addr"
                                         value="<%=HouseData[i].houseAddress%>" readonly>

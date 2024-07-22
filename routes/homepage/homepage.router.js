@@ -27,11 +27,19 @@ const FabricCAServices = require('fabric-ca-client');
 const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, buildCertUser } = require('../../util/CAUtil');
 const { buildCCPOrg2, buildWallet } = require('../../util/AppUtil');
 
+// hash function
+var cryptoSuite = fabric_common.Utils.newCryptoSuite();
+var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
+
 var caClient;
-var registerChannel, entrustChannel, estateRegisterInstance, estateAgentInstance;
+var registerChannel, estateRegisterInstance;
+var entrustChannel, estateAgentInstance;
 var wallet;
 var gateway;
 var adminUser;
+
+var addEstate = {};
+var acceptEstate = {};
 
 const require_signature = "LeaseSystem?nonce:778";
 
@@ -285,6 +293,186 @@ module.exports = function (dbconnection1) {
         });
     });
 
+    // HLF Transaction signing PART
+
+    async function createTransaction() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 to end is chaincode function parameter
+        var user = await buildCertUser(wallet, fabric_common, arguments[0]);
+        var userContext = gateway.client.newIdentityContext(user);
+        console.log("get createTrancsaction");
+
+        var endorsementStore;
+        console.log('arguments[1] = ' + arguments[1]);
+        switch (arguments[1]) {
+            case 'AddEstate':
+                endorsementStore = addEstate;
+                break;
+            case 'AcceptEstate':
+                endorsementStore = acceptEstate;
+                break;
+        }
+
+        var paras = [];
+        for (var i = 2; i < arguments.length; i++) {
+            paras.push(arguments[i])
+        }
+
+        // Need to add other contract
+        var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+        var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
+        var proposalBytes = endorsement.build(userContext, build_options);
+        const digest = hashFunction(proposalBytes);
+        endorsementStore[arguments[0]] = endorsement;
+
+        return new Promise(function (reslove, reject) {
+            reslove(digest);
+        })
+    };
+
+    async function proposalAndCreateCommit() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 is signature
+
+        var endorsementStore;
+        switch (arguments[1]) {
+            case 'AddEstate':
+                endorsementStore = addEstate;
+                break;
+            case 'AcceptEstate':
+                endorsementStore = acceptEstate;
+                break;
+        }
+        if (typeof (endorsementStore) == "undefined") {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "func dosen't exist."
+                });
+            })
+        }
+
+        // console.log('endorsementStore = ' + JSON.stringify(endorsementStore[arguments[0]]));
+
+        let endorsement = endorsementStore[arguments[0]];
+        endorsement.sign(arguments[2]);
+        let proposalResponses = await endorsement.send({ targets: entrustChannel.channel.getEndorsers() });
+        // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
+        // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
+        // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
+        if (proposalResponses.responses[0].response.status == 200) {
+            let user = await buildCertUser(wallet, fabric_common, arguments[0]);
+            let userContext = gateway.client.newIdentityContext(user)
+
+            let commit = endorsement.newCommit();
+            let commitBytes = commit.build(userContext)
+            let commitDigest = hashFunction(commitBytes)
+            let result = proposalResponses.responses[0].response.payload.toString();
+            endorsementStore[arguments[0]] = commit;
+
+            return new Promise(function (reslove, reject) {
+                reslove({
+                    'commitDigest': commitDigest,
+                    'result': result
+                });
+            })
+        }
+        else {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': proposalResponses.responses[0].response.message
+                });
+            })
+        }
+    };
+
+    async function commitSend() {
+        // parameter 0 is user identity
+        // parameter 1 is chaincode function Name
+        // parameter 2 is signature
+
+        var endorsementStore;
+        switch (arguments[1]) {
+            case 'AddEstate':
+                endorsementStore = addEstate;
+                break;
+            case 'AcceptEstate':
+                endorsementStore = acceptEstate;
+                break;
+        }
+        if (typeof (endorsementStore) == "undefined") {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "func doesn't exist."
+                });
+            })
+        }
+        let commit = endorsementStore[arguments[0]]
+        commit.sign(arguments[2])
+        let commitSendRequest = {};
+        commitSendRequest.requestTimeout = 300000
+        commitSendRequest.targets = entrustChannel.channel.getCommitters();
+        let commitResponse = await commit.send(commitSendRequest);
+
+        if (commitResponse['status'] == "SUCCESS") {
+            return new Promise(function (reslove, reject) {
+                reslove({
+                    'result': true
+                });
+            })
+        }
+        else {
+            return new Promise(function (reslove, reject) {
+                reject({
+                    'error': true,
+                    'result': "commit error"
+                });
+            })
+        }
+    }
+
+    function convertSignature(signature) {
+        signature = signature.split("/");
+        let signature_array = new Uint8Array(signature.length);
+        for (var i = 0; i < signature.length; i++) {
+            signature_array[i] = parseInt(signature[i])
+        }
+        let signature_buffer = Buffer.from(signature_array)
+        return signature_buffer;
+    }
+
+    router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
+        try {
+            let { signature, func } = req.body;
+            let signature_buffer = convertSignature(signature)
+            let response = await proposalAndCreateCommit(req.user.identity, func, signature_buffer)
+            console.log(response);
+            return res.send(response);
+
+        } catch (error) {
+            console.log(error);
+            return res.send(error);
+        }
+    });
+
+    router.post("/commitSend", isAuthenticated, async (req, res) => {
+        try {
+            let { signature, func } = req.body;
+            let signature_buffer = convertSignature(signature);
+            let response = await commitSend(req.user.identity, func, signature_buffer);
+            console.log(response);
+            return res.send(response);
+        } catch (error) {
+            console.log(error);
+            return res.send(error);
+        }
+    })
+
+
     // landlord PART
     router.get('/landlord', isAuthenticated, async (req, res) => {
         const address = req.session.address;
@@ -320,7 +508,7 @@ module.exports = function (dbconnection1) {
 
         let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: addr });
         let obj2 = await Profile.find({ agent: true });
-        res.render('leaseSystem/landlord/landlordAgnet', { address: address, HouseData: obj, agentList: obj2 });
+        res.render('leaseSystem/landlord/landlordAgnet', { address: address, HouseData: obj, agentList: obj2, contract_address: contract_address });
     });
 
     router.post('/landlord/rent', isAuthenticated, async (req, res) => {
@@ -343,13 +531,14 @@ module.exports = function (dbconnection1) {
         const { userAddress, houseAddress } = req.body;
 
         // get user public key
-        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        let dbPubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        let pubkey = dbPubkey.pubkey;
         console.log(pubkey);
 
         // get chain data
         // console.log("get chain data");
         let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', pubkey, houseAddress);
-        let data = JSON.parse(obj2.toString());
+        let data = JSON.parse(obj2);
         // console.log(data);
         if (!data) {
             let errors = "The Real Estate data does not exists on chain.";
@@ -407,6 +596,20 @@ module.exports = function (dbconnection1) {
         return res.render('leaseSystem/landlord/manageEstate', { address: userAddress, HouseData: obj });
     });
 
+    router.post('/landlord/entrustSubmit', isAuthenticated, async (req, res) => {
+        let { address, agentPubkey, estateAddress, ownerAddress, type } = req.body;
+
+        let owner = await Profile.findOne({ address: ownerAddress });
+
+        try {
+            const digest = await createTransaction(address, 'AddEstate', agentPubkey, ownerAddress, owner.pubkey, estateAddress, type);
+            return res.send({ 'digest': digest });
+        } catch (e) {
+            console.log('e = ' + e)
+            return res.send({ 'error': "error", "result": e })
+        }
+    });
+
     // Agent PART
     router.get('/agent', isAuthenticated, async (req, res) => {
         const address = req.session.address;
@@ -419,7 +622,8 @@ module.exports = function (dbconnection1) {
         const { userAddress } = req.body;
 
         // get user public key
-        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        let dbPubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        let pubkey = dbPubkey.pubkey;
         console.log(pubkey);
 
         // get chain data
@@ -450,7 +654,8 @@ module.exports = function (dbconnection1) {
     router.get('/agent/manageEstate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         // get user public key
-        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        let dbPubkey = await Profile.findOne({ address: address }, 'pubkey');
+        let pubkey = dbPubkey.pubkey;
         console.log(pubkey);
 
         // get chain data

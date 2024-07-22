@@ -23,7 +23,7 @@ class EstateRegister extends Contract {
     }
   }
 
-  async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea,date) {
+  async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
     //only admin can add a new User data
     let type = ctx.clientIdentity.getAttributeValue("hf.Type");
     let estate = await ctx.stub.getState(userPubkey);
@@ -50,7 +50,8 @@ class EstateRegister extends Contract {
 
     estateJson.Address[estateAddress] = {
       "address": estateAddress,
-      "area": estateArea
+      "area": estateArea,
+      "date": date
     }
 
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateJson)));
