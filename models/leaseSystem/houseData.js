@@ -11,9 +11,6 @@ const Schema = new mongoose.Schema({
     area: {
         type: Number
     },
-    date: {
-        type: String
-    },
     city: {
         type: String
     },

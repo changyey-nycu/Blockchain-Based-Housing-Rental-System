@@ -118,11 +118,12 @@ module.exports = function (dbconnection1) {
 
     router.get('/', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        res.render('leaseSystem/certification/certification', { address: address });
+        const pubkey = req.session.pubkey;
+        res.render('leaseSystem/certification/certification', { address: address, pubkey: pubkey });
     });
 
     router.post('/estateUpload', async (req, res) => {
-        const { name, userAddress, IDNumber, houseAddress, area, date } = req.body;
+        const { name, userAddress, userPubkey, IDNumber, houseAddress, area, date } = req.body;
         // check id pair did
         let hashed = keccak256(IDNumber).toString('hex');
         let contractInstance = new web3.eth.Contract(identityManger.output.abi, contract_address);
@@ -158,20 +159,20 @@ module.exports = function (dbconnection1) {
 
         // save to blockchain Test
         // check exist
-        let exist = await estateRegisterInstance.evaluateTransaction('CheckExist', userAddress);
+        let exist = await estateRegisterInstance.evaluateTransaction('CheckExist', userPubkey);
         let isExist = JSON.parse(exist.toString());
         // console.log(isExist);
         if (!isExist) {
             console.log("user key not exist, create key");
-            await estateRegisterInstance.submitTransaction('NewPersonalEstate', userAddress);
+            await estateRegisterInstance.submitTransaction('NewPersonalEstate', userPubkey);
         }
-        else{
+        else {
             console.log("key exist, update data");
         }
 
         // save to chain
         try {
-            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userAddress, houseAddress, area);
+            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area);
             console.log(JSON.parse(result.toString()));
             return res.send({ msg: "success?" })
         } catch (error) {
@@ -183,7 +184,7 @@ module.exports = function (dbconnection1) {
     });
 
     router.post('/agentUpload', async (req, res) => {
-        const { name, userAddress, IDNumber, date } = req.body;
+        const { name, userAddress, userPubkey, IDNumber, date } = req.body;
 
         // check id pair did
         let hashed = keccak256(IDNumber).toString('hex');
@@ -218,7 +219,7 @@ module.exports = function (dbconnection1) {
 
         // save to chain
         try {
-            let result = await estateAgentInstance.submitTransaction('NewAgent', userAddress, date);
+            let result = await estateAgentInstance.submitTransaction('NewAgent', userPubkey, date);
             console.log(result.toString());
         } catch (error) {
             console.log(error);

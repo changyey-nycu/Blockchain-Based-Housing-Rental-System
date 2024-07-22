@@ -40,6 +40,9 @@ abi -> output.abi
 # note
 house state : {edit 編輯中,announcement 公告中,entrust 委託,signing 簽約中,lesae 出租}
 
+# TODO!
+Check public key in session is propagating
+
 人員
 
 屋主 - 出租方

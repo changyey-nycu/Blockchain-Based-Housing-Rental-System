@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 
 const MappingSchema = new mongoose.Schema({
     address: {
+        require: true,
+        type: String
+    },
+    name: {
+        type: String
+    },
+    agency: {
         type: String
     },
     agent: {

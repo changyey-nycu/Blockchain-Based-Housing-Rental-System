@@ -1,9 +1,9 @@
 <%- include('../partials/header'); %>
-    <!-- account -->
-
     <body>
-        <!-- choose city to show house -->
-         
+        <div style="margin-top: 10px">
+            <a href="/leaseSystem/">back</a>
+        </div>
+
         <%if(!user.agent) {%>
             <div class="row md-3 mt-3">
                 <div class="col-md-8 center-block offset-md-2">
@@ -52,23 +52,43 @@
                 </div>
             </div>
             <% } else{%>
-                <div class="row md-3 mt-3">
-                    <div class="col-md-8 center-block offset-md-2">
-                        <div class="card text-center" style="margin:auto">
-                            <div class="card-header">
-                                <h4 style="margin:auto" class="font-weight-bold">Agent Option</h4>
-                            </div>
-                            <div class="card-body">
-                                <table class="mt-2 table table-bordered">
-                                    later...
-                                </table>
-                            </div>
-
+                <!-- edit profile -->
+                <div class="container mt-3">
+                    <div class="col-md-5 center-block" style="float: none; margin: auto">
+                        
+                        <div class="card-header">
+                            <h4 style="margin:auto" class="font-weight-bold">Agent Profile</h4>
+                        </div>
+                        <div style="margin-top: 10px" class="card text-center">
+                            <form method="post" action="/leaseSystem/agent/profileUpdate">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Name</span>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                    value="<%=user.name%>">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Address</span>
+                                    <input type="text" class="form-control" id="userAddress" name="userAddress"
+                                    value="<%=address%>" readonly>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Agency</span>
+                                    <input type="text" class="form-control" id="Agency" name="Agency"
+                                    value="<%=user.agency%>" readonly>
+                                </div>
+                                <div class="input-group mb-3; row">
+                                    <div class="col"><button class="btn btn-primary" type="submit" id="save">save</button></div>
+                                    <div class="col"><button class="btn btn-primary" type="reset">reset</button></div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-                <!-- house manage -->
-                <!-- lease contract -->
+
+                <!-- house manage link -->
+                
+                <!-- lease contract link -->
+                 
                 <% } %>
     </body>
 

@@ -3,7 +3,6 @@
 const { Contract } = require('fabric-contract-api');
 const tls = require('tls');
 const net = require('net');
-const { Certificate } = require('crypto');
 
 function uint8arrayToStringMethod(myUint8Arr) {
   return String.fromCharCode.apply(null, myUint8Arr);
@@ -52,7 +51,7 @@ class EstateAgent extends Contract {
     }
   }
 
-  async AddEstate(ctx, agentPubkey, estateAddress, ownerAddress, data) {
+  async AddEstate(ctx, agentPubkey, estateAddress, ownerAddress, type) {
     // only house owner can add a new agreement
     let agent = await ctx.stub.getState(agentPubkey);
 
@@ -72,12 +71,32 @@ class EstateAgent extends Contract {
     }
 
     agentJson.Agreement[estateAddress] = {
-      "owner": ownerAddress,
-      "data": data
+      "ownerAddress": ownerAddress,
+      "estateAddress": estateAddress,
+      "type": type,
+      "state": "propose"
     }
 
     await ctx.stub.putState(agentPubkey, Buffer.from(JSON.stringify(agentJson)));
     return "Update Estate successfully." + agentPubkey;
+  }
+
+  async AcceptEstate(ctx, userPubkey) {
+    let agent = await ctx.stub.getState(userPubkey);
+    if (!agent || agent.length === 0) {
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
+    }
+
+    let key = GetIdentity();
+    if (userPubkey != key) {
+      throw new Error(`only the agent can execute.`);
+    }
+
+    let agentJson = JSON.parse(agent.toString());
+    agentJson.Agreement[estateAddress].state = "accept";
+
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
+    return "accept success";
   }
 
   async GetAgent(ctx, userPubkey) {
@@ -87,6 +106,17 @@ class EstateAgent extends Contract {
     }
     let agentJson = JSON.parse(agent.toString());
     const agentData = agentJson.Certificate;
+
+    return JSON.stringify(agentData);
+  }
+
+  async GetAgentEstate(ctx, userPubkey) {
+    let agent = await ctx.stub.getState(userPubkey);
+    if (!agent || agent.length === 0) {
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
+    }
+    let agentJson = JSON.parse(agent.toString());
+    const agentData = agentJson.Agreement;
 
     return JSON.stringify(agentData);
   }

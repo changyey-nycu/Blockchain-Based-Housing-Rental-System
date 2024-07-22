@@ -266,7 +266,9 @@ module.exports = function (dbconnection1) {
         passport.authenticate('verifySign_LeaseSystem'),
         async function (req, res) {
             const address = req.user.address;
+            const pubkey = req.user.pubkey;
             req.session.address = address;
+            req.session.pubkey = pubkey;
             res.send({ url: "/leaseSystem/profile" });
         });
 
@@ -340,12 +342,15 @@ module.exports = function (dbconnection1) {
         // get chain data, then create a record in system DB
         const { userAddress, houseAddress } = req.body;
 
+        // get user public key
+        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        console.log(pubkey);
+
         // get chain data
-        console.log("get chain data");
-        let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', userAddress, houseAddress);
-        // let obj2 = await ChainRealEstate.findOne({ ownerAddress: userAddress, houseAddress: houseAddress });
+        // console.log("get chain data");
+        let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', pubkey, houseAddress);
         let data = JSON.parse(obj2.toString());
-        console.log(data);
+        // console.log(data);
         if (!data) {
             let errors = "The Real Estate data does not exists on chain.";
             console.log(errors);
@@ -366,7 +371,6 @@ module.exports = function (dbconnection1) {
                 ownerAddress: userAddress,
                 houseAddress: data.address,
                 area: data.area,
-                date: 'obj2.date',
                 title: '',
                 describe: ''
             })
@@ -413,11 +417,13 @@ module.exports = function (dbconnection1) {
     router.post('/agent/getCert', isAuthenticated, async (req, res) => {
         // check agent have a cert for agent on chain, and save to localDB
         const { userAddress } = req.body;
-        // console.log(userAddress);
+
+        // get user public key
+        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        console.log(pubkey);
 
         // get chain data
-        // let obj2 = await ChainAgency.findOne({ agentAddress: userAddress });
-        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgent', userAddress);
+        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgent', pubkey);
         let data = JSON.parse(obj2.toString());
         // console.log(data);
         if (!data) {
@@ -439,6 +445,48 @@ module.exports = function (dbconnection1) {
         }
 
         return res.send({ msg: "success" });
+    });
+
+    router.get('/agent/manageEstate', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        // get user public key
+        let pubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
+        console.log(pubkey);
+
+        // get chain data
+        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey);
+        let data = JSON.parse(obj2.toString());
+        console.log(data);
+        if (!data) {
+            let errors = "The agent data does not exists on chain.";
+            console.log(errors);
+            return res.send({ msg: errors });
+        }
+
+        let obj = await HouseData.find({ ownerAddress: data.ownerAddress });
+        res.render('leaseSystem/agent/manageEstate', { address: address, HouseData: obj, agreement: data });
+    });
+
+    router.post('/agent/estatePage', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
+        res.render('leaseSystem/agent/estatePage', { address: address, HouseData: obj });
+    });
+
+    router.post('/agent/profileUpdate', isAuthenticated, async (req, res) => {
+        //  get local data, then update the record in system DB
+        const { userAddress, name, Agency } = req.body;
+
+        try {
+            await Profile.updateOne(
+                { ownerAddress: userAddress, agent: true },
+                { name: name, agency: Agency }
+            )
+        } catch (error) {
+            console.log(error);
+        }
+        let obj = await HouseData.find({ ownerAddress: userAddress });
+        return res.render('leaseSystem/agent', { address: userAddress, user: obj });
     });
 
     // Agreement PART

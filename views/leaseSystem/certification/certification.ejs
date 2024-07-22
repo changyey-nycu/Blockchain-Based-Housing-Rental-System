@@ -13,6 +13,13 @@
                     <input class="form-control" name="userAddress" id="userAddress" type="text" value="<%=address %>"
                         readonly>
                 </div>
+                <div class="input-group mt-2">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Pubkey</span>
+                    </div>
+                    <input class="form-control" name="userPubkey" id="userPubkey" type="text" value="<%=pubkey %>"
+                        readonly>
+                </div>
                 <div style="margin-top: 10px" class="card text-center">
                     <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
                         cerificate estate
@@ -105,11 +112,13 @@
                 let area = $("#area").val();
                 let registrationDate = $("#registrationDate").val();
                 let userAddress = $("#userAddress").val();
+                let userPubkey = $("#userPubkey").val();
                 let data;
 
                 data = {
                     "name": NameUpload,
                     "userAddress": userAddress,
+                    "userPubkey": userPubkey,
                     "IDNumber": IDNumberUpload,
                     "houseAddress": houseAddress,
                     "area": area,
@@ -134,12 +143,14 @@
                 let NameUpload = $("#nameAgent").val();
                 let IDNumberUpload = $("#IDNumberAgent").val();
                 let userAddress = $("#userAddress").val();
+                let userPubkey = $("#userPubkey").val();
                 let expDate = $("#expDate").val();
                 let data;
 
                 data = {
                     "name": NameUpload,
                     "userAddress": userAddress,
+                    "userPubkey": userPubkey,
                     "IDNumber": IDNumberUpload,
                     "date": expDate
                 }
