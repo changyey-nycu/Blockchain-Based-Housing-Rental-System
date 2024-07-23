@@ -144,14 +144,14 @@ module.exports = function (dbconnection1) {
     router.get('/profile', (req, res) => {
         const identity = req.session.address;
         Profile.findOne({ address: identity }).then((obj) => {
-            if (!obj) {
-                let obj2 = new Profile({
-                    address: identity,
-                    agent: false
-                })
-                obj2.save();
-                obj = obj2;
-            }
+            // if (!obj) {
+            //     let obj2 = new Profile({
+            //         address: identity,
+            //         agent: false
+            //     })
+            //     obj2.save();
+            //     obj = obj2;
+            // }
             res.render('leaseSystem/profile', { address: identity, user: obj });
         });
     });
@@ -195,6 +195,7 @@ module.exports = function (dbconnection1) {
                 req.pubkey = pubkey;
                 next();
             } else {            //first time login
+                console.log("first time login");
                 let PIContractAddress = await identityManagerInstance.methods.getAccessManagerAddress(account).call({ from: account });
                 let personalIdentityInstance = new web3.eth.Contract(personalIdentity.output.abi, PIContractAddress);
 
@@ -205,11 +206,10 @@ module.exports = function (dbconnection1) {
                 let EncryptCSR = JSON.parse(ethers.utils.toUtf8String(EncryptCSRHex));
                 let CSR = decrypt(EncryptCSR, privateKey);
                 let CSRDecode = await opensslDecode(Buffer.from(CSR));
-
                 // // Decode CSR to get CN and pubkey.
                 const regex = /CN=([^\s]+)\s+/;
-                // let CN = CSRDecode.match(regex)[1];
-                let CN = CSRDecode.substr(CSRDecode.indexOf('CN=') + 3, account.length);
+                // let CN = CSRDecode.match(regex);
+                let CN = CSRDecode.substr(CSRDecode.indexOf('CN =') + 5, account.length);
                 let start_index = '-----BEGIN PUBLIC KEY-----'.length
                 let end_index = CSRDecode.indexOf('-----END PUBLIC KEY-----')
                 let pubkey_base64 = CSRDecode.substring(start_index, end_index).replace(/\n/g, '');
@@ -220,9 +220,8 @@ module.exports = function (dbconnection1) {
                     try {
                         // first time login this appChain
                         let attrs = [
-                            { name: 'category', ecert: true }
+                            { name: 'category', value: 'client', ecert: true }
                         ]
-                        //console.log(adminUser);
                         let secret = await caClient.register({
                             enrollmentID: CN,
                             role: 'client',
@@ -245,7 +244,9 @@ module.exports = function (dbconnection1) {
                         await wallet.put(address, x509Identity);
                         console.log('\x1b[33m%s\x1b[0m', "create x509 cert successfully.");
                     } catch (error) {
+                        console.log(error);
                         console.log('\x1b[33m%s\x1b[0m', `${CN} already register in ca`);
+                        return res.send({ 'msg': 'create x509Identity error.' });
                     }
 
                     try {
@@ -301,10 +302,9 @@ module.exports = function (dbconnection1) {
         // parameter 2 to end is chaincode function parameter
         var user = await buildCertUser(wallet, fabric_common, arguments[0]);
         var userContext = gateway.client.newIdentityContext(user);
-        console.log("get createTrancsaction");
 
         var endorsementStore;
-        console.log('arguments[1] = ' + arguments[1]);
+        // console.log('arguments[1] = ' + arguments[1]);
         switch (arguments[1]) {
             case 'AddEstate':
                 endorsementStore = addEstate;
@@ -448,8 +448,9 @@ module.exports = function (dbconnection1) {
     router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
         try {
             let { signature, func } = req.body;
+            
             let signature_buffer = convertSignature(signature)
-            let response = await proposalAndCreateCommit(req.user.identity, func, signature_buffer)
+            let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer)
             console.log(response);
             return res.send(response);
 
@@ -463,7 +464,7 @@ module.exports = function (dbconnection1) {
         try {
             let { signature, func } = req.body;
             let signature_buffer = convertSignature(signature);
-            let response = await commitSend(req.user.identity, func, signature_buffer);
+            let response = await commitSend(req.session.address, func, signature_buffer);
             console.log(response);
             return res.send(response);
         } catch (error) {
@@ -533,7 +534,7 @@ module.exports = function (dbconnection1) {
         // get user public key
         let dbPubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
         let pubkey = dbPubkey.pubkey;
-        console.log(pubkey);
+        // console.log(pubkey);
 
         // get chain data
         // console.log("get chain data");
@@ -598,11 +599,9 @@ module.exports = function (dbconnection1) {
 
     router.post('/landlord/entrustSubmit', isAuthenticated, async (req, res) => {
         let { address, agentPubkey, estateAddress, ownerAddress, type } = req.body;
-
         let owner = await Profile.findOne({ address: ownerAddress });
-
         try {
-            const digest = await createTransaction(address, 'AddEstate', agentPubkey, ownerAddress, owner.pubkey, estateAddress, type);
+            const digest = await createTransaction(address.toLowerCase(), 'AddEstate', agentPubkey, ownerAddress, owner.pubkey, estateAddress, type);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e)
@@ -624,7 +623,7 @@ module.exports = function (dbconnection1) {
         // get user public key
         let dbPubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
         let pubkey = dbPubkey.pubkey;
-        console.log(pubkey);
+        // console.log(pubkey);
 
         // get chain data
         let obj2 = await estateAgentInstance.evaluateTransaction('GetAgent', pubkey);
@@ -656,7 +655,7 @@ module.exports = function (dbconnection1) {
         // get user public key
         let dbPubkey = await Profile.findOne({ address: address }, 'pubkey');
         let pubkey = dbPubkey.pubkey;
-        console.log(pubkey);
+        // console.log(pubkey);
 
         // get chain data
         let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey);
@@ -682,16 +681,18 @@ module.exports = function (dbconnection1) {
         //  get local data, then update the record in system DB
         const { userAddress, name, Agency } = req.body;
 
-        try {
-            await Profile.updateOne(
-                { ownerAddress: userAddress, agent: true },
-                { name: name, agency: Agency }
-            )
-        } catch (error) {
-            console.log(error);
+        let obj = await Profile.findOneAndUpdate(
+            { address: userAddress, agent: true },
+            { name: name, agency: Agency }, { new: true }
+        );
+        console.log(obj);
+        if (!obj) {
+            errors = "The agent data error in system.";
+            console.log(errors);
+            return res.send({ msg: errors });
         }
-        let obj = await HouseData.find({ ownerAddress: userAddress });
-        return res.render('leaseSystem/agent', { address: userAddress, user: obj });
+
+        res.render('leaseSystem/agent/agent', { address: userAddress, user: obj });
     });
 
     // Agreement PART
