@@ -358,6 +358,7 @@ module.exports = function (dbconnection1) {
 
         let endorsement = endorsementStore[arguments[0]];
         endorsement.sign(arguments[2]);
+        // console.log(endorsement);
         let proposalResponses = await endorsement.send({ targets: entrustChannel.channel.getEndorsers() });
         // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
         // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));

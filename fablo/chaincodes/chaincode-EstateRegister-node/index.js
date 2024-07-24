@@ -31,18 +31,26 @@ class EstateRegister extends Contract {
       throw new Error(`only admin can execute.`);
     }
 
-    if (!estate || estate.length === 0) {
-      // estateJson =
-      // {
-      //   Address: {}
-      // };
-      throw new Error(`The user acc key:${userPubkey} does not exist`);
-    }
+    let estateJson =
+    {
+      Address: {}
+    };
+
+    // if (!estate || estate.length === 0) {
+    //   estateJson =
+    //   {
+    //     Address: {}
+    //   };
+    //   // throw new Error(`The user acc key:${userPubkey} does not exist`);
+    // }
     // else {
     //   estateJson = JSON.parse(estate.toString());
     // }
+    if (estate && estate.length > 0) {
+      estateJson = JSON.parse(estate.toString());
+    }
 
-    let estateJson = JSON.parse(estate.toString());
+    // let estateJson = JSON.parse(estate.toString());
 
     if (!estateJson.Address[estateAddress]) {
       estateJson.Address[estateAddress] = {};

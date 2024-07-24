@@ -13,8 +13,8 @@ Available Accounts
 (4) 0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba (100 ETH)    test A
 (5) 0x889735777f51c84272a7FEb0d763280179A529a9 (100 ETH)    test B
 (6) 0x2C46BcB6dA3ae85dA881edeEd4eC2fE92670f90F (100 ETH)    test C
-(7) 0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E (100 ETH)
-(8) 0x3E014E5c311a7D6F652CA4F8bb016f4338A44118 (100 ETH)
+(7) 0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E (100 ETH)    orgA
+(8) 0x3E014E5c311a7D6F652CA4F8bb016f4338A44118 (100 ETH)    orgB
 (9) 0x75c4Fb2e81a6d3420125F5145182F528d1699146 (100 ETH)
 
 Lower Case
@@ -40,7 +40,7 @@ Private Keys
 abi -> output.abi
 .toLowerCase()
 ? lower cast acc run contract the result is same
-Update Estate key may error
+result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
 
 
 # note
@@ -48,7 +48,7 @@ house state : {edit 編輯中,announcement 公告中,entrust 委託,signing 簽�
 註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
 
 # TODO!
-Check public key in session is propagating
+manageEstate.ejs button no effect in index > 0
 
 人員
 

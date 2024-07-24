@@ -55,10 +55,10 @@ class EstateAgent extends Contract {
     // only house owner can add a new agreement
     let agent = await ctx.stub.getState(agentPubkey);
 
-    let key = await this.GetIdentity();
-    if (ownerPubkey != key) {
-      throw new Error(`only house owner can execute.`);
-    }
+    // let key = await this.GetIdentity();
+    // if (ownerPubkey != key) {
+    //   throw new Error(`only house owner can execute.`);
+    // }
 
     if (!agent || agent.length === 0) {
       throw new Error(`The agent key:${agentPubkey} does not exist`);
