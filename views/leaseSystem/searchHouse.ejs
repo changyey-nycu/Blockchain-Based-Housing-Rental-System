@@ -1,7 +1,8 @@
 <%- include('partials/header'); %>
+
     <body>
-        <!-- choose city to show house -->
-        <div>
+        <!-- choose condition to show-->
+        <div class="container mt-3">
             <form style="margin-block: 10px" method="dialog">
                 <div class="row g-3 align-items-center">
                     <div class="col-auto">
@@ -10,12 +11,11 @@
                                 <span id="" class="input-group-text">City</span>
                             </div>
                             <select class="form-select">
-                                <option selected>Open this select menu</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                <option selected>open</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
                             </select>
-
                         </div>
                     </div>
                     <div class="col-auto">
@@ -24,12 +24,11 @@
                                 <span id="" class="input-group-text">Price</span>
                             </div>
                             <select class="form-select">
-                                <option selected>Open this select menu</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                <option selected>rent</option>
+                                <option value="1">6000</option>
+                                <option value="2">10000</option>
+                                <option value="3">20000</option>
                             </select>
-
                         </div>
                     </div>
                     <div class="col-auto">
@@ -37,6 +36,50 @@
                     </div>
                 </div>
             </form>
+        </div>
+        <!-- list all searching house -->
+        <div class="container mt-3">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Picture</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">price</th>
+                        <th scope="col">uploader</th>
+                        <th scope="col">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">example Picture</th>
+                        <td>example Title</td>
+                        <td>example price</td>
+                        <td>example uploader</td>
+                        <td>example Details</td>
+                    </tr>
+                    <% for (let index=0; index < houseList.length; index++) {%>
+                        <tr>
+                            <th scope="row">example Picture</th>
+                            <td>
+                                <%=houseList[index].title%>
+                            </td>
+                            <td>
+                                <%=houseList[index].rent%>
+                            </td>
+                            <% if (houseList[index].agent!="0x" ) {%>
+                                <td>
+                                    <%=houseList[index].agent%>
+                                </td>
+                                <%} else {%>
+                                    <td>
+                                        <%=houseList[index].ownerAddress%>
+                                    </td>
+                                    <%} %>
+                                        <td><button class="btn btn-primary">details</button></td>
+                        </tr>
+                        <%} %>
+                </tbody>
+            </table>
         </div>
     </body>
     <%- include('partials/footer'); %>

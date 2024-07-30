@@ -22,9 +22,16 @@ const Schema = new mongoose.Schema({
     },
     title: {
         type: String
-    }, 
+    },
     state: {
         type: String
+    },
+    agent: {
+        type: String,
+        default: "0x"
+    },
+    rent: {
+        type: Number
     },
     describe: {
         type: String

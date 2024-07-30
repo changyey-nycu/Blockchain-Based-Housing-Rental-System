@@ -82,7 +82,7 @@
       "name": "LeaseRegister",
       "version": "0.0.1",
       "lang": "node",
-      "channel": "register-channel",
+      "channel": "entrust-channel",
       "directory": "./chaincodes/chaincode-LeaseRegister-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },

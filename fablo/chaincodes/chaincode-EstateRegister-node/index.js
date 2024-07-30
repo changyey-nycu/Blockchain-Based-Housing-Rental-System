@@ -3,25 +3,25 @@
 const { Contract } = require('fabric-contract-api');
 
 class EstateRegister extends Contract {
-  async NewPersonalEstate(ctx, userPubkey) {
-    //only admin can add a new User key
-    let type = ctx.clientIdentity.getAttributeValue("hf.Type");
-    let estate = await ctx.stub.getState(userPubkey);
+  // async NewPersonalEstate(ctx, userPubkey) {
+  //   //only admin can add a new User key
+  //   let type = ctx.clientIdentity.getAttributeValue("hf.Type");
+  //   let estate = await ctx.stub.getState(userPubkey);
 
-    if (type != "admin") {
-      throw new Error(`only admin can execute.`);
-    }
-    if (estate && estate.length > 0) {
-      throw new Error(`User already exists`);
-    } else {
-      let estateList =
-      {
-        Address: {}
-      };
-      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateList)));
-      return "Create Successfully."
-    }
-  }
+  //   if (type != "admin") {
+  //     throw new Error(`only admin can execute.`);
+  //   }
+  //   if (estate && estate.length > 0) {
+  //     throw new Error(`User already exists`);
+  //   } else {
+  //     let estateList =
+  //     {
+  //       Address: {}
+  //     };
+  //     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateList)));
+  //     return "Create Successfully."
+  //   }
+  // }
 
   async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
     //only admin can add a new User data

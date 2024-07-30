@@ -27,14 +27,14 @@ class LeaseRegister extends Contract {
 
   async NewLease(ctx, userPubkey, estateAddress, rent, dataHash) {
     let lease = await ctx.stub.getState(userPubkey);
-    let leaseJson = JSON.parse(lease.toString());
-    if (!lease || lease.length === 0) {
-      let leaseData =
-      {
-        Certificate: {},
-        Data: {}
-      };
-      leaseJson = JSON.parse(leaseData.toString());
+
+    let leaseJson =
+    {
+      Data: {}
+    };
+
+    if (lease && lease > 0) {
+      leaseJson = JSON.parse(lease.toString());
     }
 
     if (!leaseJson.Data[estateAddress]) {
@@ -42,7 +42,7 @@ class LeaseRegister extends Contract {
     }
 
     leaseJson.Data[estateAddress] = {
-      "owner": ownerAddress,
+      "owner": userPubkey,
       "address": estateAddress,
       "rent": rent,
       "state": "online",

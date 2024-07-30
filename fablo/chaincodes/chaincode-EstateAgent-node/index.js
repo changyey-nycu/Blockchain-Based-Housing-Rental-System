@@ -35,7 +35,8 @@ class EstateAgent extends Contract {
     }
     if (agent && agent.length > 0) {
       throw new Error(`User already exists`);
-    } else {
+    }
+    else {
       let agentData =
       {
         Certificate: {},
@@ -49,6 +50,36 @@ class EstateAgent extends Contract {
       await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentData)));
       return "Create Successfully.";
     }
+  }
+
+  async AddEstateTest(ctx, agentPubkey, ownerAddress, ownerPubkey, estateAddress, type) {
+    // only house owner can add a new agreement
+    let agent = await ctx.stub.getState(agentPubkey);
+
+    let key = await this.GetIdentity();
+    if (ownerPubkey != key) {
+      throw new Error(`only house owner can execute. ${agentPubkey} != ${key}`);
+    }
+
+    if (!agent || agent.length === 0) {
+      throw new Error(`The agent key:${agentPubkey} does not exist`);
+    }
+
+    let agentJson = JSON.parse(agent.toString());
+
+    if (!agentJson.Agreement[estateAddress]) {
+      agentJson.Agreement[estateAddress] = {};
+    }
+
+    agentJson.Agreement[estateAddress] = {
+      "ownerAddress": ownerAddress,
+      "estateAddress": estateAddress,
+      "type": type,
+      "state": "propose"
+    }
+
+    await ctx.stub.putState(agentPubkey, Buffer.from(JSON.stringify(agentJson)));
+    return "Update Estate successfully." + agentPubkey;
   }
 
   async AddEstate(ctx, agentPubkey, ownerAddress, ownerPubkey, estateAddress, type) {

@@ -63,7 +63,7 @@
                         <!-- <div style="margin-top: 10px" class="card text-center"> -->
                         <div class="input-group mt-2">
                             <span class="input-group-text">Rent price</span>
-                            <input type="number" min="0" class="form-control" id="price" name="price">
+                            <input type="number" min="0" class="form-control" id="price" name="price" value = "100">
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="month" id="month" value="month">
@@ -79,13 +79,61 @@
                         </div>
                         <!-- </div> -->
                     </form>
-                    <button id="upload">test upload</button>
+                    <!-- <button id="upload">test upload</button> -->
+                    <button type="submit" class="btn btn-primary" id="NewLease">upload</button>
                 </div>
             </div>
         </div>
     </body>
 
     <script>
+
+        var identityManagerABI, personalIdentityABI;
+        var account;
+        var contract_address = '<%= contract_address %>';
+
+        const preventMalleability = (sig, ecdsa) => {
+            const halfOrder = ecdsa.n.shrn(1);
+            if (sig.s.cmp(halfOrder) === 1) {
+                const bigNum = ecdsa.n;
+                sig.s = bigNum.sub(sig.s);
+            }
+            return sig;
+        };
+
+        function sign(privateKey, digest) {
+            const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
+            const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
+            var halfOrderSig = preventMalleability(sig, ecdsa);
+            const signature = Buffer.from(halfOrderSig.toDER());
+            var signature_string = '';
+            for (var i = 0; i < signature.length; i++) {
+                signature_string += signature[i].toString();
+                signature_string += '/';
+            }
+            signature_string = signature_string.slice(0, -1);
+            return signature_string;
+        }
+
+        function ajaxAwait(url, data) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    dataType: 'json',
+                    data: data,
+                    success: function (res) {
+                        console.log('success');
+                        resolve(res);
+                    },
+                    fail: function (xhr, ajaxOptions, thrownError) {
+                        console.log('fail');
+                        reject(false);
+                    },
+                });
+            });
+        }
+
         function isNumber(value) {
             if (isNaN(value) | !value) {
                 return false;
@@ -93,33 +141,99 @@
             return true;
         }
         async function buildListener() {
-            $('#upload').on('click', async function (e) {
+            var identityManagerInstance = new web3.eth.Contract(
+                identityManagerABI,
+                contract_address
+            );
+            var personalIdentityAddress = await identityManagerInstance.methods
+                .getAccessManagerAddress(account)
+                .call({ from: account });
+
+            var personalIdentityInstance = new web3.eth.Contract(
+                personalIdentityABI,
+                personalIdentityAddress
+            );
+
+            $('#NewLease').on('click', async function (e) {
                 let price = $("#price").val();
-                if (isNumber(price)) {
-                    let userAddress = $("#userAddress").val();
-                    let houseAddress = $("#houseAddress").val();
-                    let data = {
-                        "userAddress": userAddress,
-                        "houseAddress": houseAddress,
-                        "price": price
-                    };
+                let userAddress = $("#userAddress").val();
+                let houseAddress = $("#houseAddress").val();
 
-                    // $.ajax({
-                    //     url: '/leaseSystem/landlord/agent',
-                    //     data: { "addr": houseAddress },
-                    //     type: 'post',
-                    // }).then((res) => {
-                    //     if (res.url) {
-                    //         window.location.href = res.url;
-                    //     }
-                    // })
-                }
-                else {
-                    alert("rent price must be a numbers!");
+                if (!isNumber(price)) {
+                    return alert("rent price must be a numbers!");
                 }
 
-            })
+                // userPubkey, estateAddress, rent, dataHash
+                let response, result;
+                response = await ajaxAwait(
+                    '/leaseSystem/landlord/NewLease',
+                    {
+                        address: userAddress,
+                        estateAddress: houseAddress,
+                        rent: price,
+                        dataHash: "test"
+                    }
+                );
+                console.log('response = ' + response.result);
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+                let encryptKey = await personalIdentityInstance.methods
+                    .getEncryptMaterial('HLFPrivateKey')
+                    .call({ from: account });
+                let privateKey = await ethereum.request({
+                    method: 'eth_decrypt',
+                    params: [encryptKey, account],
+                });
+                let signature_string;
+                signature_string = sign(privateKey, response.digest);
+                response = await ajaxAwait(
+                    '/leaseSystem/proposalAndCreateCommit',
+                    { signature: signature_string, func: 'NewLease' }
+                );
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+
+                result = response.result;
+                signature_string = sign(privateKey, response.commitDigest);
+                response = await ajaxAwait('/leaseSystem/commitSend', {
+                    signature: signature_string,
+                    func: 'NewLease',
+                    estateAddress: houseAddress
+                });
+                if (response.error) {
+                    return alert(`error: ${response.result}`);
+                }
+
+                if (alert(`${result}`)) {
+                    window.location.reload();
+                }
+                window.location.reload();
+            });
         }
-        buildListener();
+
+        async function main() {
+            let accounts = await web3.eth.getAccounts();
+            account = accounts[0];
+            identityManagerABI = await fetch(
+                '../../contracts/IdentityManager.json'
+            );
+            personalIdentityABI = await fetch(
+                '../../contracts/PersonalIdentity.json'
+            );
+            identityManagerABI = await identityManagerABI.json();
+            identityManagerABI = identityManagerABI.output.abi;
+            personalIdentityABI = await personalIdentityABI.json();
+            personalIdentityABI = personalIdentityABI.output.abi;
+
+            // console.log('identityManagerABI = ' + JSON.stringify(identityManagerABI));
+            // console.log('personalIdentityABI = ' + JSON.stringify(personalIdentityABI));
+
+            buildListener();
+        }
+
+        main();
+
     </script>
     <%- include('../partials/footer'); %>

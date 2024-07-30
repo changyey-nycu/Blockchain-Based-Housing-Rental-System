@@ -33,21 +33,22 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
 var registerChannel, estateRegisterInstance;
-var entrustChannel, estateAgentInstance;
+var entrustChannel, estateAgentInstance, leaseRegisterInstance;
 var wallet;
 var gateway;
 var adminUser;
 
 var addEstate = {};
 var acceptEstate = {};
+var NewLease = {};
 
 const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
 
-module.exports = function (dbconnection1) {
-    const HouseData = dbconnection1.model('houseDatas', require('../../models/leaseSystem/houseData'));
-    const Profile = dbconnection1.model('profiles', require('../../models/leaseSystem/profile'));
+module.exports = function (dbconnection) {
+    const HouseData = dbconnection.model('houseDatas', require('../../models/leaseSystem/houseData'));
+    const Profile = dbconnection.model('profiles', require('../../models/leaseSystem/profile'));
 
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
@@ -63,7 +64,7 @@ module.exports = function (dbconnection1) {
 
     async function init() {
         //console.log('google router init()');
-        await delay(1000);
+        await delay(2000);
 
         // build an in memory object with the network configuration (also known as a connection profile)
         const ccp = buildCCPOrg2();
@@ -101,8 +102,10 @@ module.exports = function (dbconnection1) {
         registerChannel = await gateway.getNetwork('register-channel');
         estateRegisterInstance = await registerChannel.getContract('EstateRegister');
 
+
         entrustChannel = await gateway.getNetwork('entrust-channel');
         estateAgentInstance = await entrustChannel.getContract('EstateAgent');
+        leaseRegisterInstance = await entrustChannel.getContract('LeaseRegister');
     }
     init();
 
@@ -141,7 +144,7 @@ module.exports = function (dbconnection1) {
         res.render('leaseSystem/homepage', { address: identity });
     });
 
-    router.get('/profile', (req, res) => {
+    router.get('/profile', isAuthenticated, (req, res) => {
         const identity = req.session.address;
         Profile.findOne({ address: identity }).then((obj) => {
             // if (!obj) {
@@ -195,7 +198,7 @@ module.exports = function (dbconnection1) {
                 req.pubkey = pubkey;
                 next();
             } else {            //first time login
-                console.log("first time login");
+                // console.log("first time login");
                 let PIContractAddress = await identityManagerInstance.methods.getAccessManagerAddress(account).call({ from: account });
                 let personalIdentityInstance = new web3.eth.Contract(personalIdentity.output.abi, PIContractAddress);
 
@@ -294,7 +297,7 @@ module.exports = function (dbconnection1) {
         });
     });
 
-    // HLF Transaction signing PART
+    // HLF Transaction offline signing PART
 
     async function createTransaction() {
         // parameter 0 is user identity
@@ -308,9 +311,15 @@ module.exports = function (dbconnection1) {
         switch (arguments[1]) {
             case 'AddEstate':
                 endorsementStore = addEstate;
+                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
                 break;
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
+                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+                break;
+            case 'NewLease':
+                endorsementStore = NewLease;
+                var endorsement = entrustChannel.channel.newEndorsement('LeaseRegister');
                 break;
         }
 
@@ -320,7 +329,7 @@ module.exports = function (dbconnection1) {
         }
 
         // Need to add other contract
-        var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+        // var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
         var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
         var proposalBytes = endorsement.build(userContext, build_options);
         const digest = hashFunction(proposalBytes);
@@ -344,6 +353,9 @@ module.exports = function (dbconnection1) {
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
                 break;
+            case 'NewLease':
+                endorsementStore = NewLease;
+                break;
         }
         if (typeof (endorsementStore) == "undefined") {
             return new Promise(function (reslove, reject) {
@@ -358,11 +370,15 @@ module.exports = function (dbconnection1) {
 
         let endorsement = endorsementStore[arguments[0]];
         endorsement.sign(arguments[2]);
-        // console.log(endorsement);
+        console.log(endorsement);
         let proposalResponses = await endorsement.send({ targets: entrustChannel.channel.getEndorsers() });
+        console.log(proposalResponses);
         // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
         // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
         // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
+        if (proposalResponses.error) {
+            console.log(proposalResponses.error);
+        }
         if (proposalResponses.responses[0].response.status == 200) {
             let user = await buildCertUser(wallet, fabric_common, arguments[0]);
             let userContext = gateway.client.newIdentityContext(user)
@@ -402,6 +418,9 @@ module.exports = function (dbconnection1) {
                 break;
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
+                break;
+            case 'NewLease':
+                endorsementStore = NewLease;
                 break;
         }
         if (typeof (endorsementStore) == "undefined") {
@@ -449,7 +468,7 @@ module.exports = function (dbconnection1) {
     router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
         try {
             let { signature, func } = req.body;
-            
+
             let signature_buffer = convertSignature(signature)
             let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer)
             console.log(response);
@@ -463,10 +482,26 @@ module.exports = function (dbconnection1) {
 
     router.post("/commitSend", isAuthenticated, async (req, res) => {
         try {
-            let { signature, func } = req.body;
+            let { signature, func, estateAddress } = req.body;
             let signature_buffer = convertSignature(signature);
             let response = await commitSend(req.session.address, func, signature_buffer);
             console.log(response);
+
+            // change local database
+            try {
+                if (!response.error && func == "NewLease") {
+                    console.log("change DB state");
+                    console.log(req.session.address);
+                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "announcement" });
+                    if (obj) {
+                        console.log(obj);
+                        console.log("update local data");
+                    }
+                }
+            } catch (error) {
+                console.log("local db update error");
+            }
+
             return res.send(response);
         } catch (error) {
             console.log(error);
@@ -524,7 +559,7 @@ module.exports = function (dbconnection1) {
         const address = req.session.address;
         const addr = req.query.addr;
         let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: addr });
-        res.render('leaseSystem/landlord/rent', { address: address, HouseData: obj });
+        res.render('leaseSystem/landlord/rent', { address: address, HouseData: obj, contract_address: contract_address });
     });
 
 
@@ -540,11 +575,11 @@ module.exports = function (dbconnection1) {
         // get chain data
         // console.log("get chain data");
         let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', pubkey, houseAddress);
-        let data = JSON.parse(obj2);
-        // console.log(data);
-        if (!data) {
-            let errors = "The Real Estate data does not exists on chain.";
-            console.log(errors);
+        let data;
+        try {
+            data = JSON.parse(obj2);
+        } catch (error) {
+            let errors = "The Real Estate data does not exists on blockchain.";
             return res.send({ msg: errors });
         }
 
@@ -562,6 +597,7 @@ module.exports = function (dbconnection1) {
                 ownerAddress: userAddress,
                 houseAddress: data.address,
                 area: data.area,
+                state: "new",
                 title: '',
                 describe: ''
             })
@@ -603,6 +639,18 @@ module.exports = function (dbconnection1) {
         let owner = await Profile.findOne({ address: ownerAddress });
         try {
             const digest = await createTransaction(address.toLowerCase(), 'AddEstate', agentPubkey, ownerAddress, owner.pubkey, estateAddress, type);
+            return res.send({ 'digest': digest });
+        } catch (e) {
+            console.log('e = ' + e)
+            return res.send({ 'error': "error", "result": e })
+        }
+    });
+
+    router.post('/landlord/NewLease', isAuthenticated, async (req, res) => {
+        let { address, estateAddress, rent, dataHash } = req.body;
+        let owner = await Profile.findOne({ address: address });
+        try {
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', owner.pubkey, estateAddress, rent, dataHash);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e)
@@ -660,14 +708,10 @@ module.exports = function (dbconnection1) {
 
         // get chain data
         let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey);
-        let data = JSON.parse(obj2.toString());
-        console.log(data);
-        if (!data) {
-            let errors = "The agent data does not exists on chain.";
-            console.log(errors);
-            return res.send({ msg: errors });
-        }
-
+        let data = {};
+        try {
+            data = JSON.parse(obj2.toString());
+        } catch (error) { }
         let obj = await HouseData.find({ ownerAddress: data.ownerAddress });
         res.render('leaseSystem/agent/manageEstate', { address: address, HouseData: obj, agreement: data });
     });
@@ -705,7 +749,8 @@ module.exports = function (dbconnection1) {
     // Other PART
     router.get('/searchHouse', async (req, res) => {
         const address = req.session.address;
-        res.render('leaseSystem/searchHouse', { address: address });
+        let obj = await HouseData.find({ state: "announcement" });
+        res.render('leaseSystem/searchHouse', { address: address, houseList: obj });
     });
 
 
