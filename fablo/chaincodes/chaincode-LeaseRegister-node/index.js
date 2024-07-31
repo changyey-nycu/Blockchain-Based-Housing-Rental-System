@@ -37,18 +37,18 @@ class LeaseRegister extends Contract {
       leaseJson = JSON.parse(lease.toString());
     }
 
-    if (!leaseJson.Data[estateAddress]) {
-      leaseJson.Data[estateAddress] = {};
-    }
+    // if (!leaseJson.Data[estateAddress]) {
+    //   leaseJson.Data[estateAddress] = {};
+    // }
 
     leaseJson.Data[estateAddress] = {
-      "owner": userPubkey,
-      "address": estateAddress,
+      "uploader": userPubkey,
+      "estateAddress": estateAddress,
       "rent": rent,
       "state": "online",
       "dataHash": dataHash
     }
-
+    console.log(leaseJson);
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
     return "Add Lease successfully." + userPubkey;
   }
@@ -79,6 +79,30 @@ class LeaseRegister extends Contract {
     const leaseData = leaseJson.Address[estateAddress];
 
     return JSON.stringify(leaseData);
+  }
+
+  async GetAllOnlineLease(ctx) {
+    const allResults = [];
+    // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
+    const iterator = await ctx.stub.getStateByRange('', '');
+    let result = await iterator.next();
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
+      console.log(strValue);
+      let record;
+      try {
+        record = JSON.parse(strValue);
+      } catch (err) {
+        console.log(err);
+        record = strValue;
+      }
+      console.log(record);
+      for (let index = 0; index < record.length; index++) {
+        allResults.push(record[index]);
+      }
+      result = await iterator.next();
+    }
+    return JSON.stringify(allResults);
   }
 }
 

@@ -44,7 +44,7 @@ result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getI
 
 
 # note
-house state : {new, announcement 公告中, entrust 委託, signing 簽約中, lesae 出租}
+house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}
 註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
 
 # TODO!

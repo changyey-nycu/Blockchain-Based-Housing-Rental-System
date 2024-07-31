@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const MappingSchema = new mongoose.Schema({
+const ProfileSchema = new mongoose.Schema({
     address: {
         require: true,
         type: String
@@ -19,4 +19,4 @@ const MappingSchema = new mongoose.Schema({
     }
 });
 
-module.exports = MappingSchema;
+module.exports = ProfileSchema;

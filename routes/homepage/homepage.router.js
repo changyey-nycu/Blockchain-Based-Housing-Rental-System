@@ -49,6 +49,7 @@ const mongoose = require('mongoose');
 module.exports = function (dbconnection) {
     const HouseData = dbconnection.model('houseDatas', require('../../models/leaseSystem/houseData'));
     const Profile = dbconnection.model('profiles', require('../../models/leaseSystem/profile'));
+    const Interest = dbconnection.model('interests', require('../../models/leaseSystem/interest'));
 
     let delay = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms))
@@ -370,9 +371,9 @@ module.exports = function (dbconnection) {
 
         let endorsement = endorsementStore[arguments[0]];
         endorsement.sign(arguments[2]);
-        console.log(endorsement);
+        // console.log(endorsement);
         let proposalResponses = await endorsement.send({ targets: entrustChannel.channel.getEndorsers() });
-        console.log(proposalResponses);
+        // console.log(proposalResponses);
         // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
         // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
         // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
@@ -471,7 +472,7 @@ module.exports = function (dbconnection) {
 
             let signature_buffer = convertSignature(signature)
             let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer)
-            console.log(response);
+            // console.log(response);
             return res.send(response);
 
         } catch (error) {
@@ -485,17 +486,17 @@ module.exports = function (dbconnection) {
             let { signature, func, estateAddress } = req.body;
             let signature_buffer = convertSignature(signature);
             let response = await commitSend(req.session.address, func, signature_buffer);
-            console.log(response);
+            // console.log(response);
 
             // change local database
             try {
                 if (!response.error && func == "NewLease") {
-                    console.log("change DB state");
-                    console.log(req.session.address);
-                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "announcement" });
+                    // console.log("change DB state");
+                    // console.log(req.session.address);
+                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "online" });
                     if (obj) {
-                        console.log(obj);
-                        console.log("update local data");
+                        // console.log(obj);
+                        // console.log("update local data");
                     }
                 }
             } catch (error) {
@@ -529,7 +530,14 @@ module.exports = function (dbconnection) {
 
     router.post('/landlord/estatePage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
+        const { addr } = req.body;
+        res.send({ url: 'estatePage?addr=' + addr });
+    });
+
+    router.get('/landlord/estatePage', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const addr = req.query.addr;
+        let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: addr });
         res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: obj });
     });
 
@@ -570,10 +578,8 @@ module.exports = function (dbconnection) {
         // get user public key
         let dbPubkey = await Profile.findOne({ address: userAddress }, 'pubkey');
         let pubkey = dbPubkey.pubkey;
-        // console.log(pubkey);
 
         // get chain data
-        // console.log("get chain data");
         let obj2 = await estateRegisterInstance.evaluateTransaction('GetEstate', pubkey, houseAddress);
         let data;
         try {
@@ -582,7 +588,6 @@ module.exports = function (dbconnection) {
             let errors = "The Real Estate data does not exists on blockchain.";
             return res.send({ msg: errors });
         }
-
 
         // check exist in local
         let obj = await HouseData.findOne({ ownerAddress: userAddress, houseAddress: data.address });
@@ -740,21 +745,71 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/agent/agent', { address: userAddress, user: obj });
     });
 
+    // Search lease PART
+    router.get('/searchHouse', async (req, res) => {
+        const address = req.session.address;
+        let obj2 = await leaseRegisterInstance.evaluateTransaction('GetAllOnlineLease');
+        let data = {};
+        try {
+            data = JSON.parse(obj2.toString());
+        } catch (error) {
+            console.log(error);
+            data = obj2;
+        }
+        console.log(obj2.toString());
+        // let obj = await HouseData.find({ state: "online" });
+        let houseList = [];
+        for (let index = 0; index < data.length; index++) {
+            console.log(data[index].Data);
+            Object.values(data[index].Data).forEach(value => {
+                if (value.state == "online") {
+                    console.log(value);
+                    houseList.push(value);
+                }
+            });
+        }
+        res.render('leaseSystem/searchHouse', { address: address, houseList: houseList });
+    });
+
+    router.post('/searchHouse/leasePage', async (req, res) => {
+        const address = req.session.address;
+        const { addr, uploader } = req.body;
+        res.send({ url: 'leasePage?addr=' + addr + '&uploader=' + uploader });
+    });
+
+
+    router.get('/leasePage', async (req, res) => {
+        const address = req.session.address;
+        const addr = req.query.addr;
+        const uploader = req.query.uploader;
+        let obj2 = await Profile.findOne({ pubkey: uploader });
+        let obj = await HouseData.findOne({ ownerAddress: obj2.address, houseAddress: addr });
+        res.render('leaseSystem/leasePage', { address: address, HouseData: obj });
+    });
+
+    router.post('/searchHouse/leasePage/add', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { houseAddress, uploaderAddress } = req.body;
+        try {
+            let obj = new Interest({
+                address: address,
+                ownerAddress: uploaderAddress,
+                houseAddress: houseAddress
+            })
+            await obj.save();
+            return res.send({ msg: "add favorite success" });
+        } catch (error) {
+            return res.send({ msg: "add favorite error" });
+        }
+    });
+
     // Agreement PART
     router.get('/leaseManage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        res.render('leaseSystem/leaseManage', { address: address });
+        let obj = await Interest.find({ address: address });
+        let obj2 = await Interest.find({ ownerAddress: address });
+        res.render('leaseSystem/leaseManage', { address: address, favorite: obj, befollowed: obj2 });
     });
-
-    // Other PART
-    router.get('/searchHouse', async (req, res) => {
-        const address = req.session.address;
-        let obj = await HouseData.find({ state: "announcement" });
-        res.render('leaseSystem/searchHouse', { address: address, houseList: obj });
-    });
-
-
-
 
     return router;
 }

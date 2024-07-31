@@ -1,0 +1,83 @@
+<%- include('./partials/header'); %>
+
+    <body>
+        <div class="container mt-3">
+            <div style="margin-top: 10px">
+                <a href="/leaseSystem">back</a>
+            </div>
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px" class="card text-center">
+                    <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                        favorite
+                    </div>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">owner address</th>
+                                <th scope="col">house address</th>
+                                <th scope="col">btn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">example</th>
+                                <td>example</td>
+                                <td>example</td>
+                            </tr>
+                            <% for (let index=0; index < favorite.length; index++) {%>
+                                <tr>
+                                    <td>
+                                        <%=favorite[index].ownerAddress%>
+                                    </td>
+                                    <td>
+                                        <input type="text" id="houseAddress-<%= index %>"
+                                            name="houseAddress-<%= index %>" value="<%=favorite[index].houseAddress%>"
+                                            readonly>
+                                    </td>
+                                    <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
+                                </tr>
+                                <%} %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px" class="card text-center">
+                    <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                        favorite2
+                    </div>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">owner address</th>
+                                <th scope="col">house address</th>
+                                <th scope="col">btn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">example</th>
+                                <td>example</td>
+                                <td>example</td>
+                            </tr>
+                            <% for (let index=0; index < befollowed.length; index++) {%>
+                                <tr>
+                                    <td>
+                                        <%=befollowed[index].address%>
+                                    </td>
+                                    <td>
+                                        <input type="text" id="houseAddress-<%= index %>"
+                                            name="houseAddress-<%= index %>" value="<%=befollowed[index].houseAddress%>"
+                                            readonly>
+                                    </td>
+                                    <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
+                                </tr>
+                                <%} %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    <%- include('./partials/footer'); %>

@@ -19,58 +19,80 @@
                 </thead>
                 <tbody>
                     <% for(var i=0;i<HouseData.length;i++){ %>
-                        <form action="/leaseSystem/landlord/estatePage" method="post">
-                            <tr>
-                                <td scope="row">
-                                    <% if (!HouseData[i].title) {%>
-                                        none
-                                        <%} else{%>
-                                            <%=HouseData[i].title%>
-                                                <%}%>
-                                </td>
-                                <td>
-                                    <input class="form-control" type="text" id="addr" name="addr"
-                                        value="<%=HouseData[i].houseAddress%>" readonly>
-                                </td>
-                                <td scope="col"><%=HouseData[i].state%></td>
-                                <td><button type="submit" class="btn btn-primary">edit</button></td>
-                                <td><button type="button" class="btn btn-primary" id="rent">rent</button></td>
-                                <td><button type="button" class="btn btn-primary" id="agent">agent</button></td>
-                            </tr>
-                        </form>
+                        <!-- <form action="" method="dialog"> -->
+                        <tr>
+                            <td scope="row">
+                                <% if (!HouseData[i].title) {%>
+                                    none
+                                    <%} else{%>
+                                        <%=HouseData[i].title%>
+                                            <%}%>
+                            </td>
+                            <td>
+                                <input type="text" id="addr-<%= i %>" name="addr-<%= i %>"
+                                    value="<%=HouseData[i].houseAddress%>" readonly>
+                            </td>
+                            <td scope="col">
+                                <%=HouseData[i].state%>
+                            </td>
+                            <td><button type="button" class="btn btn-primary" id="edit-<%= i %>">edit</button></td>
+                            <td><button type="button" class="btn btn-primary" id="rent-<%= i %>">rent</button></td>
+                            <td><button type="button" class="btn btn-primary" id="agent-<%= i %>">agent</button></td>
+                        </tr>
+                        <!-- </form> -->
                         <% } %>
                 </tbody>
             </table>
         </div>
     </body>
     <script>
+
+        var HouseData = JSON.parse('<%- JSON.stringify(HouseData) %>');
         async function buildListener() {
-            $('#rent').on('click', async function (e) {
-                let houseAddress = $("#addr").val();
+            for (let i = 0; i < HouseData.length; i++) {
 
-                $.ajax({
-                    url: '/leaseSystem/landlord/rent',
-                    data: { "addr": houseAddress },
-                    type: 'post'
-                }).then((res) => {
-                    if (res.url) {
-                        window.location.href = res.url;
-                    }
+                $(`#edit-${i}`).on('click', async function (e) {
+                    let houseAddress = $(`#addr-${i}`).val();
+                    $.ajax({
+                        url: '/leaseSystem/landlord/estatePage',
+                        data: { "addr": houseAddress },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
                 })
-            })
-            $('#agent').on('click', async function (e) {
-                let houseAddress = $("#addr").val();
 
-                $.ajax({
-                    url: '/leaseSystem/landlord/agent',
-                    data: { "addr": houseAddress },
-                    type: 'post',
-                }).then((res) => {
-                    if (res.url) {
-                        window.location.href = res.url;
-                    }
+                $(`#rent-${i}`).on('click', async function (e) {
+                    let houseAddress = $(`#addr-${i}`).val();
+
+                    $.ajax({
+                        url: '/leaseSystem/landlord/rent',
+                        data: { "addr": houseAddress },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
                 })
-            })
+
+                $(`#agent-${i}`).on('click', async function (e) {
+                    let houseAddress = $(`#addr-${i}`).val();
+
+                    $.ajax({
+                        url: '/leaseSystem/landlord/agent',
+                        data: { "addr": houseAddress },
+                        type: 'post',
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
+                })
+            }
+
         }
         buildListener();
     </script>
