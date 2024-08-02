@@ -4,7 +4,7 @@
         <div class="container mt-3">
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <div style="margin-top: 10px">
-                    <a href="/leaseSystem/">back</a>
+                    <a href="/leaseSystem/searchHouse">back</a>
                 </div>
                 <div style="margin-top: 10px" class="card text-center">
                     <div class="card-header">
@@ -16,41 +16,48 @@
                         <input type="text" class="form-control" id="title" name="title" value="<%=HouseData.title%>"
                             readonly>
                     </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Picture</label>
+                        <picture></picture>
+                    </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Owner Address</span>
                         <input type="text" class="form-control" id="uploader" name="uploader"
                             value="<%=HouseData.ownerAddress%>" readonly>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">House Address</span>
-                        <input type="text" class="form-control" id="houseAddress" name="houseAddress"
-                            value="<%=HouseData.houseAddress%>" readonly>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">House Area</span>
-                        <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Room Type</span>
-                        <select class="form-select" id="roomType" name="roomType" readonly>
-                            <option selected value="<%=HouseData.type%>">
-                                <%=HouseData.type%>
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Describe</label>
-                        <input type="text" class="form-control" id="describe" name="describe"
-                            value="<%=HouseData.describe%>" readonly>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Picture</label>
-                        <input type="file" class="form-control" id="picture" name="picture" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <button class="btn btn-primary" id="add">add favorite</button>
-                    </div>
-                    <!-- </form> -->
+                    <% if (HouseData.agent !="0x" ) { %>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Agent Address</span>
+                            <input type="text" class="form-control" id="uploader" name="uploader"
+                                value="<%=HouseData.agent%>" readonly>
+                        </div>
+                        <%} %>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">House Address</span>
+                                <input type="text" class="form-control" id="houseAddress" name="houseAddress"
+                                    value="<%=HouseData.houseAddress%>" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">House Area</span>
+                                <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Room Type</span>
+                                <select class="form-select" id="roomType" name="roomType" readonly>
+                                    <option selected value="<%=HouseData.type%>">
+                                        <%=HouseData.type%>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Describe</label>
+                                <input type="text" class="form-control" id="describe" name="describe"
+                                    value="<%=HouseData.describe%>" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-primary" id="add">add favorite</button>
+                            </div>
+                            <!-- </form> -->
                 </div>
             </div>
         </div>

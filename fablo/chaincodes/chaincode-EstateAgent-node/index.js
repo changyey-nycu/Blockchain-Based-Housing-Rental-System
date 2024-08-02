@@ -112,16 +112,16 @@ class EstateAgent extends Contract {
     return "Update Estate successfully." + agentPubkey;
   }
 
-  async AcceptEstate(ctx, userPubkey) {
+  async AcceptEstate(ctx, userPubkey, estateAddress) {
     let agent = await ctx.stub.getState(userPubkey);
     if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
 
-    let key = await this.GetIdentity();
-    if (userPubkey != key) {
-      throw new Error(`only the agent can execute.`);
-    }
+    // let key = await this.GetIdentity();
+    // if (userPubkey != key) {
+    //   throw new Error(`only the agent can execute.`);
+    // }
 
     let agentJson = JSON.parse(agent.toString());
     agentJson.Agreement[estateAddress].state = "accept";
@@ -130,16 +130,16 @@ class EstateAgent extends Contract {
     return "accept success";
   }
 
-  async RejectEstate(ctx, userPubkey) {
+  async RejectEstate(ctx, userPubkey, estateAddress) {
     let agent = await ctx.stub.getState(userPubkey);
     if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
 
-    let key = await this.GetIdentity();
-    if (userPubkey != key) {
-      throw new Error(`only the agent can execute.`);
-    }
+    // let key = await this.GetIdentity();
+    // if (userPubkey != key) {
+    //   throw new Error(`only the agent can execute.`);
+    // }
 
     let agentJson = JSON.parse(agent.toString());
     agentJson.Agreement[estateAddress].state = "reject";

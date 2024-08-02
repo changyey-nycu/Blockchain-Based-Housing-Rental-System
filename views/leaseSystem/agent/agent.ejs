@@ -1,12 +1,13 @@
 <%- include('../partials/header'); %>
 
     <body>
-        <div style="margin-top: 10px">
-            <a href="/leaseSystem/">back</a>
-        </div>
+
 
         <%if(!user.agent) {%>
             <div class="row md-3 mt-3">
+                <div style="margin-top: 10px">
+                    <a href="/leaseSystem/">back</a>
+                </div>
                 <div class="col-md-8 center-block offset-md-2">
                     <div class="card text-center" style="margin:auto">
                         <div class="card-header">
@@ -55,6 +56,9 @@
             <% } else{%>
                 <!-- edit profile -->
                 <div class="container mt-3">
+                    <div style="margin-top: 10px">
+                        <a href="/leaseSystem/">back</a>
+                    </div>
                     <div class="col-md-5 center-block" style="float: none; margin: auto">
 
                         <div class="card-header">
@@ -90,8 +94,25 @@
                 <!-- house manage link -->
                 <div class="container mt-3">
                     <div class="col-md-5 center-block" style="float: none; margin: auto">
-                        <div class="mb-3">
-                            <a href="/leaseSystem/agent/manageEstate">manageEstate</a>
+                        <div class="card-body">
+                            <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                                width: 450px;
+                                height: 40px;
+                                line-height: 20px;
+                                text-align: center;
+                            " href="/leaseSystem/agent/manageAgreement">
+                                Manage Agreement
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                                width: 450px;
+                                height: 40px;
+                                line-height: 20px;
+                                text-align: center;
+                            " href="/leaseSystem/agent/manageEstate">
+                                Manage Estate
+                            </a>
                         </div>
                     </div>
                 </div>

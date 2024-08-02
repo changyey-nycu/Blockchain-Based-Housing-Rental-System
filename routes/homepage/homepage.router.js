@@ -40,6 +40,7 @@ var adminUser;
 
 var addEstate = {};
 var acceptEstate = {};
+var rejectEstate = {};
 var NewLease = {};
 
 const require_signature = "LeaseSystem?nonce:778";
@@ -318,6 +319,10 @@ module.exports = function (dbconnection) {
                 endorsementStore = acceptEstate;
                 var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
                 break;
+            case 'RejectEstate':
+                endorsementStore = rejectEstate;
+                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+                break;
             case 'NewLease':
                 endorsementStore = NewLease;
                 var endorsement = entrustChannel.channel.newEndorsement('LeaseRegister');
@@ -353,6 +358,9 @@ module.exports = function (dbconnection) {
                 break;
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
+                break;
+            case 'RejectEstate':
+                endorsementStore = rejectEstate;
                 break;
             case 'NewLease':
                 endorsementStore = NewLease;
@@ -419,6 +427,9 @@ module.exports = function (dbconnection) {
                 break;
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
+                break;
+            case 'RejectEstate':
+                endorsementStore = rejectEstate;
                 break;
             case 'NewLease':
                 endorsementStore = NewLease;
@@ -704,6 +715,39 @@ module.exports = function (dbconnection) {
         return res.send({ msg: "success" });
     });
 
+    router.get('/agent/manageAgreement', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        // get user public key
+        let dbPubkey = await Profile.findOne({ address: address }, 'pubkey');
+        let pubkey = dbPubkey.pubkey;
+
+        // get chain data
+        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey);
+        let data = {};
+        try {
+            data = JSON.parse(obj2.toString());
+        } catch (error) { }
+
+        let agreement = [];
+        Object.keys(data).forEach(function (key) {
+            agreement.push(data[key]);
+        })
+
+        res.render('leaseSystem/agent/manageAgreement', { address: address, agreement: agreement, 'contract_address': contract_address });
+    });
+
+    router.post('/landlord/manageEstate/acceptEstate', isAuthenticated, async (req, res) => {
+        let { address, estateAddress } = req.body;
+        let owner = await Profile.findOne({ address: address });
+        try {
+            const digest = await createTransaction(address.toLowerCase(), 'AcceptEstate', owner.pubkey, estateAddress);
+            return res.send({ 'digest': digest });
+        } catch (e) {
+            console.log('e = ' + e)
+            return res.send({ 'error': "error", "result": e })
+        }
+    });
+
     router.get('/agent/manageEstate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         // get user public key
@@ -717,8 +761,17 @@ module.exports = function (dbconnection) {
         try {
             data = JSON.parse(obj2.toString());
         } catch (error) { }
-        let obj = await HouseData.find({ ownerAddress: data.ownerAddress });
-        res.render('leaseSystem/agent/manageEstate', { address: address, HouseData: obj, agreement: data });
+        console.log(data);
+
+        let agreement = [];
+        Object.keys(data).forEach(function (key) {
+            // console.log(data[key]);
+            agreement.push(data[key]);
+        })
+
+        let obj = await HouseData.find({ agent: address });
+        console.log(obj);
+        res.render('leaseSystem/agent/manageEstate', { address: address, HouseData: obj, agreement: agreement });
     });
 
     router.post('/agent/estatePage', isAuthenticated, async (req, res) => {
@@ -756,14 +809,14 @@ module.exports = function (dbconnection) {
             console.log(error);
             data = obj2;
         }
-        console.log(obj2.toString());
+        // console.log(obj2.toString());
         // let obj = await HouseData.find({ state: "online" });
         let houseList = [];
         for (let index = 0; index < data.length; index++) {
-            console.log(data[index].Data);
+            // console.log(data[index].Data);
             Object.values(data[index].Data).forEach(value => {
                 if (value.state == "online") {
-                    console.log(value);
+                    // console.log(value);
                     houseList.push(value);
                 }
             });
