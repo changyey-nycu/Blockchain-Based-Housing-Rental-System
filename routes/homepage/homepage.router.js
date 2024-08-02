@@ -777,6 +777,20 @@ module.exports = function (dbconnection) {
         res.send({ url: 'leasePage?addr=' + addr + '&uploader=' + uploader });
     });
 
+    // router.post('/searchHouse/test', async (req, res) => {
+    //     const { owner, addr } = req.body;
+    //     console.log(req.body);
+    //     let obj2 = await leaseRegisterInstance.evaluateTransaction('GetLease', owner, addr);
+    //     try {
+    //         let data = JSON.parse(obj2.toString());
+    //         console.log(data);
+    //     } catch (error) {
+    //         console.log(error);
+    //         console.log(obj2);
+    //     }
+    //     return res.send({msg:"end"});
+    // });
+
 
     router.get('/leasePage', async (req, res) => {
         const address = req.session.address;

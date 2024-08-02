@@ -26,31 +26,21 @@ class EstateRegister extends Contract {
   async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
     //only admin can add a new User data
     let type = ctx.clientIdentity.getAttributeValue("hf.Type");
-    let estate = await ctx.stub.getState(userPubkey);
     if (type != "admin") {
       throw new Error(`only admin can execute.`);
     }
 
+    let estate = await ctx.stub.getState(userPubkey);
     let estateJson =
     {
       Address: {}
     };
 
-    // if (!estate || estate.length === 0) {
-    //   estateJson =
-    //   {
-    //     Address: {}
-    //   };
-    //   // throw new Error(`The user acc key:${userPubkey} does not exist`);
-    // }
-    // else {
-    //   estateJson = JSON.parse(estate.toString());
-    // }
     if (estate && estate.length > 0) {
       estateJson = JSON.parse(estate.toString());
     }
 
-    // let estateJson = JSON.parse(estate.toString());
+    // console.log(estateJson);
 
     if (!estateJson.Address[estateAddress]) {
       estateJson.Address[estateAddress] = {};
@@ -86,13 +76,13 @@ class EstateRegister extends Contract {
     return JSON.stringify(estateData);
   }
 
-  async CheckExist(ctx, userPubkey) {
-    let estate = await ctx.stub.getState(userPubkey);
-    if (!estate || estate.length === 0) {
-      return false;
-    }
-    return true;
-  }
+  // async CheckExist(ctx, userPubkey) {
+  //   let estate = await ctx.stub.getState(userPubkey);
+  //   if (!estate || estate.length === 0) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   async CheckEstate(ctx, userPubkey, estateAddress) {
     let estate = await ctx.stub.getState(userPubkey);

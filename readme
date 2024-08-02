@@ -38,8 +38,6 @@ Private Keys
 
 # may bug
 abi -> output.abi
-.toLowerCase()
-? lower cast acc run contract the result is same
 result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
 
 
@@ -47,8 +45,6 @@ result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getI
 house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}
 註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
 
-# TODO!
-manageEstate.ejs button no effect in index > 0
 
 人員
 

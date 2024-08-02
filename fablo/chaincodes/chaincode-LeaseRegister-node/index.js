@@ -27,19 +27,26 @@ class LeaseRegister extends Contract {
 
   async NewLease(ctx, userPubkey, estateAddress, rent, dataHash) {
     let lease = await ctx.stub.getState(userPubkey);
-
-    let leaseJson =
-    {
-      Data: {}
-    };
-
-    if (lease && lease > 0) {
+    let leaseJson;
+    try {
+      if (!lease || lease.length === 0) {
+        throw `The user key:${userPubkey} does not exist`;
+      }
       leaseJson = JSON.parse(lease.toString());
     }
+    catch (error) {
+      console.log(error);
+      leaseJson =
+      {
+        Data: {}
+      };
+    }
 
-    // if (!leaseJson.Data[estateAddress]) {
-    //   leaseJson.Data[estateAddress] = {};
-    // }
+    // console.log(leaseJson);
+
+    if (!leaseJson.Data[estateAddress]) {
+      leaseJson.Data[estateAddress] = {};
+    }
 
     leaseJson.Data[estateAddress] = {
       "uploader": userPubkey,
@@ -48,7 +55,7 @@ class LeaseRegister extends Contract {
       "state": "online",
       "dataHash": dataHash
     }
-    console.log(leaseJson);
+
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
     return "Add Lease successfully." + userPubkey;
   }
@@ -60,9 +67,9 @@ class LeaseRegister extends Contract {
       return "Lease not exist." + estateAddress;
     }
 
-    if (!leaseJson.Data[estateAddress]) {
-      leaseJson.Data[estateAddress] = {};
-    }
+    // if (!leaseJson.Data[estateAddress]) {
+    //   leaseJson.Data[estateAddress] = {};
+    // }
 
     leaseJson.Data[estateAddress].state = "delete";
 
@@ -76,7 +83,7 @@ class LeaseRegister extends Contract {
       throw new Error(`The user key:${userPubkey} does not exist`);
     }
     let leaseJson = JSON.parse(lease.toString());
-    const leaseData = leaseJson.Address[estateAddress];
+    const leaseData = leaseJson.Data[estateAddress];
 
     return JSON.stringify(leaseData);
   }
@@ -87,8 +94,9 @@ class LeaseRegister extends Contract {
     const iterator = await ctx.stub.getStateByRange('', '');
     let result = await iterator.next();
     while (!result.done) {
+      // console.log(Buffer.from(result.value.toString()).toString('utf8'));
       const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
-      console.log(strValue);
+
       let record;
       try {
         record = JSON.parse(strValue);
@@ -97,9 +105,10 @@ class LeaseRegister extends Contract {
         record = strValue;
       }
       console.log(record);
-      for (let index = 0; index < record.length; index++) {
-        allResults.push(record[index]);
-      }
+      allResults.push(record);
+      // for (let index = 0; index < record.length; index++) {
+      //   allResults.push(record[index]);
+      // }
       result = await iterator.next();
     }
     return JSON.stringify(allResults);
