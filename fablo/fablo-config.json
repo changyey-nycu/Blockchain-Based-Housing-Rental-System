@@ -39,6 +39,16 @@
         "instances": 1,
         "db": "CouchDb"
       }
+    },
+    {
+      "organization": {
+        "name": "Org4",
+        "domain": "org4.example.com"
+      },
+      "peer": {
+        "instances": 1,
+        "db": "CouchDb"
+      }
     }
   ],
   "channels": [
@@ -64,6 +74,15 @@
         },
         {
           "name": "Org2",
+          "peers": ["peer0"]
+        }
+      ]
+    },
+    {
+      "name": "agreement-channel",
+      "orgs" :[
+        {
+          "name": "Org4",
           "peers": ["peer0"]
         }
       ]
@@ -93,6 +112,14 @@
       "channel": "entrust-channel",
       "directory": "./chaincodes/chaincode-EstateAgent-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
+    },
+    {
+      "name": "RentalAgreement",
+      "version": "0.0.1",
+      "lang": "node",
+      "channel": "agreement-channel",
+      "directory": "./chaincodes/chaincode-RentalAgreement-node",
+      "endorsement": "AND('Org4MSP.member')"
     }
   ]
 }

@@ -1,0 +1,62 @@
+<%- include('../partials/header'); %>
+
+    <body>
+        <div class="container mt-3">
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px">
+                    <a href="/leaseSystem/agent/manageEstate">back</a>
+                </div>
+                <div class="card-header">
+                    <h4 style="margin:auto" class="font-weight-bold">Manage House Data</h4>
+                </div>
+                <div style="margin-top: 10px" class="card text-center">
+                    <form method="post" action="/leaseSystem/agent/estateUpdate">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Title</span>
+                            <input type="text" class="form-control" id="title" name="title"
+                            value="<%=HouseData.title%>">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Owner Address</span>
+                            <input type="text" class="form-control" id="userAddress" name="userAddress"
+                            value="<%=address%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">House Address</span>
+                            <input type="text" class="form-control" id="houseAddress" name="houseAddress"
+                            value="<%=HouseData.houseAddress%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">House Area</span>
+                            <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Room Type</span>
+                            <select class="form-select" id="roomType" name="roomType">
+                                <option selected value="<%=HouseData.type%>">
+                                    <%=HouseData.type%>
+                                </option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Describe(less than 300 chars)</label> 
+                            <input type="text" class="form-control" id="describe" name="describe"
+                            value="<%=HouseData.describe%>">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Picture</label>
+                            <input type="file" class="form-control" id="picture" name="picture">
+                        </div>
+                        <div class="input-group mb-3; row">
+                            <div class="col"><button class="btn btn-primary" type="submit" id="save">save</button></div>
+                            <div class="col"><button class="btn btn-primary" type="reset">reset</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    <%- include('../partials/footer'); %>
