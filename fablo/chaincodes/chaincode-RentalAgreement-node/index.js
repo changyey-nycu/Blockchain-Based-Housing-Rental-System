@@ -58,42 +58,52 @@ class RentalAgreement extends Contract {
     return "Create Successfully.";
   }
 
-  async PartyASign(ctx, PartyAkey, PartyBkey, agreementHashed, signature) {
-    let agreement = await ctx.stub.getState(PartyAkey);
-    let agreementData = {
-      Agreement: {}
-    };
+  // async PartyASign(ctx, PartyAkey, PartyBkey, agreementHashed, signature) {
+  //   let agreement = await ctx.stub.getState(PartyAkey);
+  //   let agreementData = {
+  //     Agreement: {}
+  //   };
 
+  //   try {
+  //     agreementData = JSON.parse(agreement.toString());
+  //   } catch (error) {
+  //     throw new Error(`The agreement key:${PartyAkey} does not exist`);
+  //   }
+
+  //   agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
+
+  //   await ctx.stub.putState(PartyAkey, Buffer.from(JSON.stringify(agreementData)));
+  //   return "Sign for Party A Successfully.";
+  // }
+
+  // async CertificatePartyASign(ctx, PartyAkey, PartyBkey) {
+  //   let agreement = await ctx.stub.getState(PartyAkey);
+  //   let agreementData = {
+  //     Agreement: {}
+  //   };
+
+  //   try {
+  //     agreementData = JSON.parse(agreement.toString());
+  //   } catch (error) {
+  //     throw new Error(`The agreement key:${PartyAkey} does not exist`);
+  //   }
+
+  //   let signature = agreementData.Agreement[agreementHashed].sign["PartyA"];
+
+  //   return "Certificate Successfully.";
+  // }
+
+  async GetAgreement(ctx, PartyAkey, agreementHashed) {
+    let agreement = await ctx.stub.getState(PartyAkey);
+
+    let agreementData;
     try {
       agreementData = JSON.parse(agreement.toString());
     } catch (error) {
       throw new Error(`The agreement key:${PartyAkey} does not exist`);
     }
-
-    agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
-
-    await ctx.stub.putState(PartyAkey, Buffer.from(JSON.stringify(agreementData)));
-    return "Sign for Party A Successfully.";
+    return JSON.stringify(agreementData.Agreement[agreementHashed]);
   }
-
-  async CertificatePartyASign(ctx, PartyAkey, PartyBkey) {
-    let agreement = await ctx.stub.getState(PartyAkey);
-    let agreementData = {
-      Agreement: {}
-    };
-
-    try {
-      agreementData = JSON.parse(agreement.toString());
-    } catch (error) {
-      throw new Error(`The agreement key:${PartyAkey} does not exist`);
-    }
-
-    let signature = agreementData.Agreement[agreementHashed].sign["PartyA"];
-
-    return "Certificate Successfully.";
-  }
-
-  
 }
 
 exports.contracts = [RentalAgreement];

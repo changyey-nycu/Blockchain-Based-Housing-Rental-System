@@ -77,6 +77,17 @@ class LeaseRegister extends Contract {
     return "Update Estate successfully." + userPubkey;
   }
 
+  async GetPersonLease(ctx, userPubkey) {
+    let lease = await ctx.stub.getState(userPubkey);
+    if (!lease || lease.length === 0) {
+      throw new Error(`The user key:${userPubkey} does not exist`);
+    }
+    let leaseJson = JSON.parse(lease.toString());
+    const leaseData = leaseJson.Data;
+
+    return JSON.stringify(leaseData);
+  }
+
   async GetLease(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {

@@ -16,6 +16,7 @@
                                 <th scope="col">owner address</th>
                                 <th scope="col">house address</th>
                                 <th scope="col">btn</th>
+                                <th scope="col">sign</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -23,11 +24,13 @@
                                 <th scope="row">example</th>
                                 <td>example</td>
                                 <td>example</td>
+                                <td>example</td>
                             </tr>
                             <% for (let index=0; index < favorite.length; index++) {%>
                                 <tr>
                                     <td>
-                                        <%=favorite[index].ownerAddress%>
+                                        <input type="text" id="uploader-<%= index %>" name="uploader-<%= index %>"
+                                            value="<%=favorite[index].ownerAddress%>" readonly>
                                     </td>
                                     <td>
                                         <input type="text" id="houseAddress-<%= index %>"
@@ -35,6 +38,7 @@
                                             readonly>
                                     </td>
                                     <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
+                                    <td><button class="btn btn-primary" id="signing-<%= index %>">signing</button></td>
                                 </tr>
                                 <%} %>
                         </tbody>
@@ -45,7 +49,7 @@
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <div style="margin-top: 10px" class="card text-center">
                     <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                        favorite2
+                        Your on leasing house
                     </div>
                     <table class="table table-bordered table-hover">
                         <thead>
@@ -53,11 +57,13 @@
                                 <th scope="col">owner address</th>
                                 <th scope="col">house address</th>
                                 <th scope="col">btn</th>
+                                <th scope="col">sign</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <th scope="row">example</th>
+                                <td>example</td>
                                 <td>example</td>
                                 <td>example</td>
                             </tr>
@@ -72,6 +78,7 @@
                                             readonly>
                                     </td>
                                     <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
+                                    <td><button class="btn btn-primary" id="signing-<%= index %>">signing</button></td>
                                 </tr>
                                 <%} %>
                         </tbody>
@@ -80,4 +87,32 @@
             </div>
         </div>
     </body>
+    <script>
+        var favorite = JSON.parse('<%- JSON.stringify(favorite) %>'); 
+        var befollowed = JSON.parse('<%- JSON.stringify(befollowed) %>');
+        async function buildListener() {
+            for (let i = 0; i < favorite.length; i++) {
+
+                $(`#details-${i}`).on('click', async function (e) {
+                    let houseAddress = $(`#houseAddress-${i}`).val();
+                    let uploaderAddress = $(`#uploader-${i}`).val();
+                    $.ajax({
+                        url: '/leaseSystem/searchHouse/leasePage',
+                        data: {
+                            "addr": houseAddress,
+                            "uploader": uploaderAddress
+                        },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
+                })
+
+            }
+
+        }
+        buildListener();
+    </script>
     <%- include('./partials/footer'); %>

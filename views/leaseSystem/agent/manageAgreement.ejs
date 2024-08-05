@@ -69,7 +69,7 @@
                             <% if (agreement[i].state=="accept" ) {%>
                                 <tr>
                                     <td>
-                                        <input type="text" id="accept-owner-<%= i %>" name="accept-owner-<%= i %>"
+                                        <input type="text" id="acceptOwner-<%= i %>" name="acceptOwner-<%= i %>"
                                             value="<%=agreement[i].ownerAddress%>" readonly>
                                     </td>
                                     <td>
@@ -156,18 +156,140 @@
             );
 
             for (let i = 0; i < agreement.length; i++) {
+                $(`#edit-${i}`).on('click', async function (e) {
+                    // let ownerAddress = $(`#acceptOwner-${i}`).val();
+                    let estateAddress = $(`#accept-addr-${i}`).val();
+                    
+                    $.ajax({
+                        url: '/leaseSystem/agent/estatePage',
+                        data: {"addr": estateAddress },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
+                })
+
+                $(`#rent-${i}`).on('click', async function (e) {
+                    // let ownerAddress = $(`#acceptOwner-${i}`).val();
+                    let estateAddress = $(`#accept-addr-${i}`).val();
+
+                    $.ajax({
+                        url: '/leaseSystem/agent/rent',
+                        data: { "addr": estateAddress },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
+                })
+
                 $(`#accept-${i}`).on('click', async function (e) {
                     let ownerAddress = $(`#ownerAddress-${i}`).val();
                     let estateAddress = $(`#estateAddress-${i}`).val();
+
+                    let response, result;
+                    response = await ajaxAwait(
+                        '/leaseSystem/agent/AcceptEstate',
+                        {
+                            address: ownerAddress,
+                            estateAddress: estateAddress,
+                        }
+                    );
+                    console.log('response = ' + response.result);
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+                    let encryptKey = await personalIdentityInstance.methods
+                        .getEncryptMaterial('HLFPrivateKey')
+                        .call({ from: account });
+                    let privateKey = await ethereum.request({
+                        method: 'eth_decrypt',
+                        params: [encryptKey, account],
+                    });
+                    let signature_string;
+                    signature_string = sign(privateKey, response.digest);
+                    response = await ajaxAwait(
+                        '/leaseSystem/proposalAndCreateCommit',
+                        { signature: signature_string, func: 'AcceptEstate' }
+                    );
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+
+                    result = response.result;
+                    signature_string = sign(privateKey, response.commitDigest);
+                    response = await ajaxAwait('/leaseSystem/commitSend', {
+                        signature: signature_string,
+                        func: 'AcceptEstate',
+                        estateAddress: estateAddress,
+                        ownerAddress: ownerAddress
+                    });
+                    if (response.error) {
+                        return alert(`error: ${response.result}`);
+                    }
+
+                    if (alert(`${result}`)) {
+                        window.location.reload();
+                    }
+                    window.location.reload();
+
                 })
 
                 $(`#reject-${i}`).on('click', async function (e) {
                     let ownerAddress = $(`#ownerAddress-${i}`).val();
                     let estateAddress = $(`#estateAddress-${i}`).val();
+
+                    let response, result;
+                    response = await ajaxAwait(
+                        '/leaseSystem/agent/RejectEstate',
+                        {
+                            address: ownerAddress,
+                            estateAddress: estateAddress,
+                        }
+                    );
+                    console.log('response = ' + response.result);
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+                    let encryptKey = await personalIdentityInstance.methods
+                        .getEncryptMaterial('HLFPrivateKey')
+                        .call({ from: account });
+                    let privateKey = await ethereum.request({
+                        method: 'eth_decrypt',
+                        params: [encryptKey, account],
+                    });
+                    let signature_string;
+                    signature_string = sign(privateKey, response.digest);
+                    response = await ajaxAwait(
+                        '/leaseSystem/proposalAndCreateCommit',
+                        { signature: signature_string, func: 'RejectEstate' }
+                    );
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+
+                    result = response.result;
+                    signature_string = sign(privateKey, response.commitDigest);
+                    response = await ajaxAwait('/leaseSystem/commitSend', {
+                        signature: signature_string,
+                        func: 'RejectEstate'
+                    });
+                    if (response.error) {
+                        return alert(`error: ${response.result}`);
+                    }
+
+                    if (alert(`${result}`)) {
+                        window.location.reload();
+                    }
+                    window.location.reload();
+
                 })
             }
         }
-        
+
         async function main() {
             let accounts = await web3.eth.getAccounts();
             account = accounts[0];

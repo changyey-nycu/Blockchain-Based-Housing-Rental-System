@@ -27,7 +27,7 @@ db2Connection.once('open', () => console.log('\x1b[35m%s\x1b[0m', `${db2Connecti
 router.use('/certification', CertificationPage(db1Connection))
 router.use('/', LeaseSystemPage(db2Connection));
 // router.use('/', (db3Connection));
-// router.use('/', AgreementPage(db4Connection));
+// router.use('/agreement', AgreementPage(db4Connection));
 
 
 module.exports = router;

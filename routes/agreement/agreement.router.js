@@ -101,8 +101,6 @@ module.exports = function (dbconnection) {
     }
     init();
 
-    // Login PART
-
     var isAuthenticated = function (req, res, next) {
         // console.log('isAuthenticated : ' + req.isAuthenticated());
         if (req.isAuthenticated()) {
@@ -286,7 +284,7 @@ module.exports = function (dbconnection) {
 
     router.post("/commitSend", isAuthenticated, async (req, res) => {
         try {
-            let { signature, func, estateAddress } = req.body;
+            let { signature, func } = req.body;
             let signature_buffer = convertSignature(signature);
             let response = await commitSend(req.session.address, func, signature_buffer);
             // console.log(response);
@@ -296,6 +294,21 @@ module.exports = function (dbconnection) {
             return res.send(error);
         }
     })
+
+    router.post("/createAgreement",isAuthenticated, async (req, res) => {
+        try {
+            let { PartyAkey, PartyBkey, rentData, agreementHashed } = req.body;
+
+            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, agreementHashed);
+            console.log(result.toString());
+            return res.send({ msg: "create success." });
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "create fail." });
+        }
+    })
+
+
 
     return router;
 }

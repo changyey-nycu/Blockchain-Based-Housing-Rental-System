@@ -1,0 +1,106 @@
+<%- include('./partials/header'); %>
+
+    <body>
+        <div class="container mt-3">
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px">
+                    <a href="/leaseSystem/leaseManage">back</a>
+                </div>
+                <div style="margin-top: 10px" class="card text-center">
+                    <div class="card-header">
+                        <h4 style="margin:auto" class="font-weight-bold">House Data</h4>
+                    </div>
+                    <!-- <form method="post" action=""> -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Title</span>
+                        <input type="text" class="form-control" id="title" name="title" value="<%=HouseData.title%>"
+                            readonly>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Picture</label>
+                        <picture></picture>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Owner Address</span>
+                        <input type="text" class="form-control" id="uploader" name="uploader"
+                            value="<%=HouseData.ownerAddress%>" readonly>
+                    </div>
+                    <% if (HouseData.agent !="0x" ) { %>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Agent Address</span>
+                            <input type="text" class="form-control" id="uploader" name="uploader"
+                                value="<%=HouseData.agent%>" readonly>
+                        </div>
+                        <%} %>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">House Address</span>
+                                <input type="text" class="form-control" id="houseAddress" name="houseAddress"
+                                    value="<%=HouseData.houseAddress%>" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">House Area</span>
+                                <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Room Type</span>
+                                <input type="text" class="form-control" id="roomType" name="roomType"
+                                    value="<%=HouseData.type%>" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Rent</span>
+                                <input type="text" class="form-control" id="rent" name="rent" value="<%=RentData.rent%>"
+                                    readonly>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Describe</label>
+                                <input type="text" class="form-control" id="describe" name="describe"
+                                    value="<%=HouseData.describe%>" readonly>
+                            </div>
+                            <!-- </form> -->
+                </div>
+            </div>
+        </div>
+        <% if (address==HouseData.ownerAddress) {%>
+            <div class="container mt-3">
+                <div class="col-md-5 center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div class="card-header">
+                            <h4 style="margin:auto" class="font-weight-bold">Owner Data</h4>
+                        </div>
+
+                    </div>
+                </div>
+                <% } else {%>
+                    <div class="container mt-3">
+                        <div class="col-md-5 center-block" style="float: none; margin: auto">
+                            <div style="margin-top: 10px" class="card text-center">
+                                <div class="card-header">
+                                    <h4 style="margin:auto" class="font-weight-bold">Owner Data</h4>
+                                </div>
+
+                            </div>
+                        </div>
+                        <% } %>
+
+    </body>
+    <script>
+        async function buildListener() {
+            // $(`#add`).on('click', async function (e) {
+            //     let houseAddress = $(`#houseAddress`).val();
+            //     let uploaderAddress = $(`#uploader`).val();
+            //     $.ajax({
+            //         url: '/leaseSystem/searchHouse/leasePage/add',
+            //         data: {
+            //             "houseAddress": houseAddress,
+            //             "uploaderAddress": uploaderAddress
+            //         },
+            //         type: 'post'
+            //     }).then((res) => {
+            //         alert(res.msg);
+            //     })
+            // })
+
+        }
+        buildListener();
+    </script>
+    <%- include('./partials/footer'); %>

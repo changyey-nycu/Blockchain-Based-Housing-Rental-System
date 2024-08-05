@@ -28,6 +28,20 @@
                                                 <%} %>
                                     </td>
                                 </tr>
+                                <form action="/leaseSystem/profile/profileUpdate" method="post">
+                                    <tr>
+                                        <td>name</td>
+                                        <td>
+                                            <input type="text" class="form-control" id="name" name="name"
+                                                value="<%= user.name%>">
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td><button type="submit">save</button></td>
+                                    </tr>
+                                </form>
                             </tbody>
                         </table>
                     </div>
@@ -36,7 +50,7 @@
                         width: 450px;
                         height: 40px;
                         line-height: 20px;
-                        text-align: center;">certificate</a>
+                        text-align: center;">certificate estate and agent</a>
                     </div>
                 </div>
             </div>
