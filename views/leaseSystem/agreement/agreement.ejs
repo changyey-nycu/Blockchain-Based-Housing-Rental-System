@@ -1,4 +1,4 @@
-<%- include('./partials/header'); %>
+<%- include('../partials/header'); %>
 
     <body>
         <div class="container mt-3">
@@ -13,7 +13,7 @@
                     <!-- <form method="post" action=""> -->
                     <div class="input-group mb-3">
                         <span class="input-group-text">Title</span>
-                        <input type="text" class="form-control" id="title" name="title" value="<%=HouseData.title%>"
+                        <input type="text" class="form-control" id="title" name="title" value="<%=houseData.title%>"
                             readonly>
                     </div>
                     <div class="col-12 mb-3">
@@ -23,84 +23,278 @@
                     <div class="input-group mb-3">
                         <span class="input-group-text">Owner Address</span>
                         <input type="text" class="form-control" id="uploader" name="uploader"
-                            value="<%=HouseData.ownerAddress%>" readonly>
+                            value="<%=houseData.ownerAddress%>" readonly>
                     </div>
-                    <% if (HouseData.agent !="0x" ) { %>
+                    <% if (houseData.agent !="0x" ) { %>
                         <div class="input-group mb-3">
                             <span class="input-group-text">Agent Address</span>
                             <input type="text" class="form-control" id="uploader" name="uploader"
-                                value="<%=HouseData.agent%>" readonly>
+                                value="<%=houseData.agent%>" readonly>
                         </div>
                         <%} %>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">House Address</span>
                                 <input type="text" class="form-control" id="houseAddress" name="houseAddress"
-                                    value="<%=HouseData.houseAddress%>" readonly>
+                                    value="<%=houseData.houseAddress%>" readonly>
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">House Area</span>
-                                <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
+                                <input type="text" class="form-control" value="<%=houseData.area%>" readonly>
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Room Type</span>
                                 <input type="text" class="form-control" id="roomType" name="roomType"
-                                    value="<%=HouseData.type%>" readonly>
+                                    value="<%=houseData.type%>" readonly>
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Rent</span>
-                                <input type="text" class="form-control" id="rent" name="rent" value="<%=RentData.rent%>"
+                                <input type="text" class="form-control" id="rent" name="rent" value="<%=rentData.rent%>"
                                     readonly>
                             </div>
                             <div class="col-12 mb-3">
                                 <label class="form-label">Describe</label>
                                 <input type="text" class="form-control" id="describe" name="describe"
-                                    value="<%=HouseData.describe%>" readonly>
+                                    value="<%=houseData.describe%>" readonly>
                             </div>
                             <!-- </form> -->
                 </div>
             </div>
         </div>
-        <% if (address==HouseData.ownerAddress) {%>
+        <% if (address==houseData.ownerAddress) {%>
             <div class="container mt-3">
                 <div class="col-md-5 center-block" style="float: none; margin: auto">
                     <div style="margin-top: 10px" class="card text-center">
                         <div class="card-header">
                             <h4 style="margin:auto" class="font-weight-bold">Owner Data</h4>
                         </div>
-
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Owner Address</span>
+                            <input type="text" class="form-control" id="ownerAddress" name="ownerAddress"
+                                value="<%=ownerData.address%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Owner Pubkey</span>
+                            <input type="text" class="form-control" id="ownerPubkey" name="ownerPubkey"
+                                value="<%=ownerData.pubkey%>" readonly>
+                        </div>
                     </div>
                 </div>
-                <% } else {%>
+            </div>
+            <% } else {%>
+                <div class="container mt-3">
+                    <div class="col-md-5 center-block" style="float: none; margin: auto">
+                        <div style="margin-top: 10px" class="card text-center">
+                            <div class="card-header">
+                                <h4 style="margin:auto" class="font-weight-bold">Agent Data</h4>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Agent Address</span>
+                                <input type="text" class="form-control" id="agentAddress" name="agenuAddress" value=""
+                                    readonly>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
                     <div class="container mt-3">
                         <div class="col-md-5 center-block" style="float: none; margin: auto">
                             <div style="margin-top: 10px" class="card text-center">
                                 <div class="card-header">
-                                    <h4 style="margin:auto" class="font-weight-bold">Owner Data</h4>
+                                    <h4 style="margin:auto" class="font-weight-bold">Tenant Data</h4>
                                 </div>
-
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Tenant Address</span>
+                                    <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
+                                        value="<%=tenantData.address%>" readonly>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Tenant Pubkey</span>
+                                    <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
+                                        value="<%=tenantData.pubkey%>" readonly>
+                                </div>
                             </div>
                         </div>
-                        <% } %>
+                    </div>
+
+                    <div class="container mt-3">
+                        <div class="col-md-5 center-block" style="float: none; margin: auto">
+                            <div style="margin-top: 10px" class="card text-center">
+                                <div class="card-header">
+                                    <h4 style="margin:auto" class="font-weight-bold">Agreement</h4>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Agreement Content</span>
+                                    <input type="text" class="form-control" id="content" name="content" value="">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Create Agreement</span>
+                                    <input class="btn btn-primary" id="CreateAgreement" value="Create">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Sign Agreement</span>
+                                    <input class="btn btn-primary" id="SignAgreement" value="Sign" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
     </body>
     <script>
-        async function buildListener() {
-            // $(`#add`).on('click', async function (e) {
-            //     let houseAddress = $(`#houseAddress`).val();
-            //     let uploaderAddress = $(`#uploader`).val();
-            //     $.ajax({
-            //         url: '/leaseSystem/searchHouse/leasePage/add',
-            //         data: {
-            //             "houseAddress": houseAddress,
-            //             "uploaderAddress": uploaderAddress
-            //         },
-            //         type: 'post'
-            //     }).then((res) => {
-            //         alert(res.msg);
-            //     })
-            // })
+        var identityManagerABI, personalIdentityABI;
+        var account;
+        var contract_address = '<%= contract_address %>';
 
+        var houseData = JSON.parse('<%- JSON.stringify(houseData) %>');
+        var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
+        var ownerData = JSON.parse('<%- JSON.stringify(ownerData) %>');
+        var tenantData = JSON.parse('<%- JSON.stringify(tenantData) %>');
+
+        const preventMalleability = (sig, ecdsa) => {
+            const halfOrder = ecdsa.n.shrn(1);
+            if (sig.s.cmp(halfOrder) === 1) {
+                const bigNum = ecdsa.n;
+                sig.s = bigNum.sub(sig.s);
+            }
+            return sig;
+        };
+
+        function sign(privateKey, digest) {
+            const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
+            const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
+            var halfOrderSig = preventMalleability(sig, ecdsa);
+            const signature = Buffer.from(halfOrderSig.toDER());
+            var signature_string = '';
+            for (var i = 0; i < signature.length; i++) {
+                signature_string += signature[i].toString();
+                signature_string += '/';
+            }
+            signature_string = signature_string.slice(0, -1);
+            return signature_string;
         }
-        buildListener();
+
+        function ajaxAwait(url, data) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    dataType: 'json',
+                    data: data,
+                    success: function (res) {
+                        console.log('success');
+                        resolve(res);
+                    },
+                    fail: function (xhr, ajaxOptions, thrownError) {
+                        console.log('fail');
+                        reject(false);
+                    },
+                });
+            });
+        }
+
+        async function buildListener() {
+            var identityManagerInstance = new web3.eth.Contract(
+                identityManagerABI,
+                contract_address
+            );
+            var personalIdentityAddress = await identityManagerInstance.methods
+                .getAccessManagerAddress(account)
+                .call({ from: account });
+
+            var personalIdentityInstance = new web3.eth.Contract(
+                personalIdentityABI,
+                personalIdentityAddress
+            );
+            $('#CreateAgreement').on('click', async function (e) {
+                // console.log(houseData);
+                // console.log(rentData);
+                // console.log(ownerData);
+                // console.log(tenantData);
+                response = await ajaxAwait(
+                    '/leaseSystem/agreement/createAgreement',
+                    {
+                        houseData: houseData,
+                        rentData: rentData,
+                        ownerData: ownerData,
+                        tenantData: tenantData
+                    }
+                );
+                window.location.reload();
+            })
+
+            $('#SignAgreement').on('click', async function (e) {
+                // userPubkey, estateAddress, rent, dataHash
+                let response, result;
+                response = await ajaxAwait(
+                    '/leaseSystem/landlord/NewLease',
+                    {
+                        address: userAddress,
+                        estateAddress: houseAddress,
+                        rent: price,
+                        dataHash: "test"
+                    }
+                );
+                console.log('response = ' + response.result);
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+                let encryptKey = await personalIdentityInstance.methods
+                    .getEncryptMaterial('HLFPrivateKey')
+                    .call({ from: account });
+                let privateKey = await ethereum.request({
+                    method: 'eth_decrypt',
+                    params: [encryptKey, account],
+                });
+                let signature_string;
+                signature_string = sign(privateKey, response.digest);
+                response = await ajaxAwait(
+                    '/leaseSystem/proposalAndCreateCommit',
+                    { signature: signature_string, func: 'NewLease' }
+                );
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+
+                result = response.result;
+                signature_string = sign(privateKey, response.commitDigest);
+                response = await ajaxAwait('/leaseSystem/commitSend', {
+                    signature: signature_string,
+                    func: 'NewLease',
+                    estateAddress: houseAddress
+                });
+                if (response.error) {
+                    return alert(`error: ${response.result}`);
+                }
+
+                if (alert(`${result}`)) {
+                    window.location.reload();
+                }
+                window.location.reload();
+            });
+        }
+
+        async function main() {
+            let accounts = await web3.eth.getAccounts();
+            account = accounts[0];
+            identityManagerABI = await fetch(
+                '../../contracts/IdentityManager.json'
+            );
+            personalIdentityABI = await fetch(
+                '../../contracts/PersonalIdentity.json'
+            );
+            identityManagerABI = await identityManagerABI.json();
+            identityManagerABI = identityManagerABI.output.abi;
+            personalIdentityABI = await personalIdentityABI.json();
+            personalIdentityABI = personalIdentityABI.output.abi;
+
+            // console.log('identityManagerABI = ' + JSON.stringify(identityManagerABI));
+            // console.log('personalIdentityABI = ' + JSON.stringify(personalIdentityABI));
+
+            buildListener();
+        }
+
+        main();
+
     </script>
-    <%- include('./partials/footer'); %>
+    <%- include('../partials/footer'); %>

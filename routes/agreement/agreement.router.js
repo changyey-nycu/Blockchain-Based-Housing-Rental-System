@@ -24,7 +24,7 @@ const fabric_common = require("fabric-common");
 const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, buildCertUser } = require('../../util/CAUtil');
-const { buildCCPOrg4, buildWallet } = require('../../util/AppUtil');
+const { buildCCPOrg3, buildWallet } = require('../../util/AppUtil');
 
 // hash function
 var cryptoSuite = fabric_common.Utils.newCryptoSuite();
@@ -51,37 +51,29 @@ module.exports = function (dbconnection) {
         return new Promise(resolve => setTimeout(resolve, ms))
     }
 
-    async function opensslDecode(buffer_input) {
-        return new Promise(function (reslove, reject) {
-            openssl(['req', '-text', '-in', { name: 'key.csr', buffer: buffer_input }, '-pubkey'], function (err, result) {
-                reslove(result.toString())
-            })
-        })
-    }
-
     async function init() {
         //console.log('google router init()');
-        await delay(4000);
+        await delay(3000);
 
         // build an in memory object with the network configuration (also known as a connection profile)
-        const ccp = buildCCPOrg4();
+        const ccp = buildCCPOrg3();
 
         // build an instance of the fabric ca services client based on
         // the information in the network configuration
-        caClient = buildCAClient(FabricCAServices, ccp, 'ca.org4.example.com');
+        caClient = buildCAClient(FabricCAServices, ccp, 'ca.org3.example.com');
 
         const walletPath = path.join(__dirname, '../../wallet/agreement');
         wallet = await buildWallet(Wallets, walletPath);
 
-        mspOrg4 = 'Org4MSP';
-        await enrollAdmin(caClient, wallet, mspOrg4);//remember to change ca url http to https
+        mspOrg3 = 'Org3MSP';
+        await enrollAdmin(caClient, wallet, mspOrg3);//remember to change ca url http to https
 
         //get ca admin to register and enroll user
         adminUser = await getAdminIdentity(caClient, wallet)
 
         // in a real application this would be done only when a new user was required to be added
         // and would be part of an administrative flow
-        await registerAndEnrollUser(caClient, wallet, mspOrg4, 'agreement' /*, 'org2.department1'*/);
+        await registerAndEnrollUser(caClient, wallet, mspOrg3, 'agreement' /*, 'org2.department1'*/);
 
 
         // Create a new gateway instance for interacting with the fabric network.
@@ -97,7 +89,7 @@ module.exports = function (dbconnection) {
         });
 
         agreementChannel = await gateway.getNetwork('agreement-channel');
-        rentalAgreementInstance = await registerChannel.getContract('RentalAgreement');
+        rentalAgreementInstance = await agreementChannel.getContract('RentalAgreement');
     }
     init();
 
@@ -295,16 +287,57 @@ module.exports = function (dbconnection) {
         }
     })
 
-    router.post("/createAgreement",isAuthenticated, async (req, res) => {
-        try {
-            let { PartyAkey, PartyBkey, rentData, agreementHashed } = req.body;
+    router.post("/createAgreement", isAuthenticated, async (req, res) => {
+        let { houseData, rentData, ownerData, tenantData } = req.body;
+        console.log(houseData);
+        console.log(rentData);
+        console.log(ownerData);
+        console.log(tenantData);
 
-            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, agreementHashed);
-            console.log(result.toString());
+        try {
+            const agreementData = new AgreementData({
+                ownerAddress: ownerData.address,
+                houseAddress: houseData.houseAddress,
+                area: houseData.area,
+                time: "agreement time",
+                hashed: "",
+                state: "",
+                rent: rentData.rent,
+                content: "agreement content"
+            })
+            await agreementData.save();
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "save data error." });
+        }
+
+        try {
+            // let { PartyAkey, PartyBkey, rentData, agreementHashed } = req.body;
+            /*
+            let PartyAkey = ownerData.pubkey;
+            let PartyBkey = tenantData.pubkey;
+            let rentData = rentData.hashed;
+            let agreementHashed;
+            */
+            // let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, agreementHashed);
+            // console.log(result.toString());
             return res.send({ msg: "create success." });
         } catch (error) {
             console.log(error);
             return res.send({ msg: "create fail." });
+        }
+    })
+
+    router.post("/signAgreement", isAuthenticated, async (req, res) => {
+        // get chain data
+        
+        try {
+            // offline sign function
+            // const digest = await createTransaction(address.toLowerCase(), Function name , args);
+            return res.send({ msg: "sign success." });
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "sign fail." });
         }
     })
 

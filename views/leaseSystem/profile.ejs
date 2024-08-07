@@ -20,13 +20,15 @@
                                 </tr>
                                 <tr>
                                     <td>agent</td>
-                                    <td>
-                                        <%if(user.agent) {%>
-                                            ture
-                                            <%}else {%>
-                                                false
-                                                <%} %>
-                                    </td>
+                                    <%if(user.agent) {%>
+                                        <td>ture</td>
+                                        <%}else {%>
+                                            <td class="row">
+                                                <div class="col">false</div>
+                                                <div class="col"><button id="getCert">getCert</button></div>
+                                            </td>
+                                            <%} %>
+
                                 </tr>
                                 <form action="/leaseSystem/profile/profileUpdate" method="post">
                                     <tr>
@@ -163,4 +165,30 @@
     </body>
     <!-- house manage -->
     <!-- lease contract -->
+    <script>
+        async function buildListener() {
+            $('#getCert').on('click', async function (e) {
+                let userAddress = $("#userAddress").val();
+                let data;
+                data = {
+                    "userAddress": userAddress,
+                }
+
+                $.ajax({
+                    url: '/leaseSystem/agent/getCert',
+                    data: data,
+                    type: 'post',
+                    success: function (res) {
+                        alert(res.msg);
+                        window.location.reload();
+                    },
+                    error: function (err) {
+                        console.log("error");
+                        alert(err);
+                    }
+                });
+            })
+        }
+        buildListener();
+    </script>
     <%- include('partials/footer'); %>

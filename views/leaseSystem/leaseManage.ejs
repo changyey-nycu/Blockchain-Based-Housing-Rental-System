@@ -20,12 +20,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">example</th>
+                            <!-- <tr>
                                 <td>example</td>
                                 <td>example</td>
                                 <td>example</td>
-                            </tr>
+                                <td>example</td>
+                            </tr> -->
                             <% for (let index=0; index < favorite.length; index++) {%>
                                 <tr>
                                     <td>
@@ -54,31 +54,37 @@
                     <table class="table table-bordered table-hover">
                         <thead>
                             <tr>
-                                <th scope="col">owner address</th>
                                 <th scope="col">house address</th>
+                                <th scope="col">follow person</th>
                                 <th scope="col">btn</th>
-                                <th scope="col">sign</th>
+                                <th scope="col">Create Agreement</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">example</th>
+                            <!-- <tr>
                                 <td>example</td>
                                 <td>example</td>
                                 <td>example</td>
-                            </tr>
-                            <% for (let index=0; index < befollowed.length; index++) {%>
+                                <td>example</td>
+                            </tr> -->
+                            <% for (let index=0; index < rentData.length; index++) {%>
                                 <tr>
                                     <td>
-                                        <%=befollowed[index].address%>
-                                    </td>
-                                    <td>
-                                        <input type="text" id="houseAddress-<%= index %>"
-                                            name="houseAddress-<%= index %>" value="<%=befollowed[index].houseAddress%>"
+                                        <input type="text" id="estateAddress-<%= index %>"
+                                            name="estateAddress-<%= index %>" value="<%=rentData[index].estateAddress%>"
                                             readonly>
                                     </td>
-                                    <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
-                                    <td><button class="btn btn-primary" id="signing-<%= index %>">signing</button></td>
+                                    <td>
+                                        <select name="follower-<%= index %>" id="follower-<%= index %>">
+                                            <option value="" selected>---select a person to sign---</option>
+                                            <% for (let i=0; i < befollowed.length; i++) { if
+                                                (befollowed[i].houseAddress==rentData[index].estateAddress) {%>
+                                                <option value="<%= befollowed[i].address %>"><%= befollowed[i].address %></option>
+                                                <% }} %>
+                                        </select>
+                                    </td>
+                                    <td><button class="btn btn-primary" id="ownerDetails-<%= index %>">details</button></td>
+                                    <td><button class="btn btn-primary" id="createAgreement-<%= index %>">Create Agreement</button></td>
                                 </tr>
                                 <%} %>
                         </tbody>
@@ -88,8 +94,9 @@
         </div>
     </body>
     <script>
-        var favorite = JSON.parse('<%- JSON.stringify(favorite) %>'); 
+        var favorite = JSON.parse('<%- JSON.stringify(favorite) %>');
         var befollowed = JSON.parse('<%- JSON.stringify(befollowed) %>');
+        var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
         async function buildListener() {
             for (let i = 0; i < favorite.length; i++) {
 
@@ -110,6 +117,30 @@
                     })
                 })
 
+            }
+
+            for (let index = 0; index < rentData.length; index++) {
+                $(`#createAgreement-${index}`).on('click', async function (e) {
+                    let estateAddress = $(`#estateAddress-${index}`).val();
+                    let follower = $(`#follower-${index}`).val();
+                    if (follower == '') {
+                        alert("please select a person");
+                        return;
+                    }
+                    
+                    $.ajax({
+                        url: '/leaseSystem/leaseManage/agreement',
+                        data: {
+                            "follower": follower,
+                            "estateAddress": estateAddress
+                        },
+                        type: 'post'
+                    }).then((res) => {
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    })
+                })
             }
 
         }

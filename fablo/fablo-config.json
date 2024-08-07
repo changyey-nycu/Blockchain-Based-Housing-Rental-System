@@ -42,8 +42,8 @@
     },
     {
       "organization": {
-        "name": "Org4",
-        "domain": "org4.example.com"
+        "name": "Org3",
+        "domain": "org3.example.com"
       },
       "peer": {
         "instances": 1,
@@ -82,7 +82,11 @@
       "name": "agreement-channel",
       "orgs" :[
         {
-          "name": "Org4",
+          "name": "Org1",
+          "peers": ["peer0"]
+        },
+        {
+          "name": "Org3",
           "peers": ["peer0"]
         }
       ]
@@ -119,7 +123,7 @@
       "lang": "node",
       "channel": "agreement-channel",
       "directory": "./chaincodes/chaincode-RentalAgreement-node",
-      "endorsement": "AND('Org4MSP.member')"
+      "endorsement": "OR('Org1MSP.member', 'Org3MSP.member')"
     }
   ]
 }
