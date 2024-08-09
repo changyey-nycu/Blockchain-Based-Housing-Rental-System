@@ -288,23 +288,25 @@ module.exports = function (dbconnection) {
     })
 
     router.post("/createAgreement", isAuthenticated, async (req, res) => {
-        let { houseData, rentData, ownerData, tenantData } = req.body;
-        console.log(houseData);
-        console.log(rentData);
-        console.log(ownerData);
-        console.log(tenantData);
+        let { ownerAddress, tenantAddress, houseAddress, area, time, rent, content } = req.body;
+
+        let encryptString = ownerAddress.toString() + tenantAddress.toString() + houseAddress.toString();
+        let hashed = keccak256(encryptString).toString('hex');
 
         try {
             const agreementData = new AgreementData({
-                ownerAddress: ownerData.address,
-                houseAddress: houseData.houseAddress,
-                area: houseData.area,
-                time: "agreement time",
-                hashed: "",
-                state: "",
-                rent: rentData.rent,
-                content: "agreement content"
+                ownerAddress: ownerAddress,
+                tenantAddress: tenantAddress,
+                houseAddress: houseAddress,
+                area: area,
+                time: time,
+                hashed: hashed,
+                state: "unsigned",
+                rent: rent,
+                content: content
             })
+            // console.log(agreementData);
+
             await agreementData.save();
         } catch (error) {
             console.log(error);
@@ -313,14 +315,13 @@ module.exports = function (dbconnection) {
 
         try {
             // let { PartyAkey, PartyBkey, rentData, agreementHashed } = req.body;
-            /*
-            let PartyAkey = ownerData.pubkey;
-            let PartyBkey = tenantData.pubkey;
-            let rentData = rentData.hashed;
-            let agreementHashed;
-            */
-            // let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, agreementHashed);
-            // console.log(result.toString());
+            let { ownerPubkey, tenantPubkey } = req.body;
+            let PartyAkey = ownerPubkey;
+            let PartyBkey = tenantPubkey;
+            let rentData = hashed;
+
+            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, hashed);
+            console.log(result.toString());
             return res.send({ msg: "create success." });
         } catch (error) {
             console.log(error);
@@ -330,7 +331,7 @@ module.exports = function (dbconnection) {
 
     router.post("/signAgreement", isAuthenticated, async (req, res) => {
         // get chain data
-        
+
         try {
             // offline sign function
             // const digest = await createTransaction(address.toLowerCase(), Function name , args);

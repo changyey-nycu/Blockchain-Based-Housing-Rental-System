@@ -125,6 +125,10 @@
                                     <h4 style="margin:auto" class="font-weight-bold">Agreement</h4>
                                 </div>
                                 <div class="input-group mb-3">
+                                    <span class="input-group-text">Duration</span>
+                                    <input type="text" class="form-control" id="duration" name="duration" value="">
+                                </div>
+                                <div class="input-group mb-3">
                                     <span class="input-group-text">Agreement Content</span>
                                     <input type="text" class="form-control" id="content" name="content" value="">
                                 </div>
@@ -207,19 +211,47 @@
                 personalIdentityAddress
             );
             $('#CreateAgreement').on('click', async function (e) {
-                // console.log(houseData);
-                // console.log(rentData);
-                // console.log(ownerData);
-                // console.log(tenantData);
+                console.log(houseData);
+                console.log(rentData);
+                console.log(ownerData);
+                console.log(tenantData);
+                let content = $("#content").val();
+                let duration = $("#duration").val();
+                let leaseData = {
+                    "content": content,
+                    "duration": duration
+                }
+
+                let Data = {
+                    ownerAddress: ownerData.address,
+                    tenantAddress: tenantData.address,
+                    houseAddress: houseData.houseAddress,
+                    area: houseData.area,
+                    time: leaseData.duration,
+                    rent: rentData.rent,
+                    content: leaseData.content,
+                    ownerPubkey: ownerData.pubkey,
+                    tenantPubkey: tenantData.pubkey,
+                }
+                console.log(Data);
+
                 response = await ajaxAwait(
                     '/leaseSystem/agreement/createAgreement',
                     {
-                        houseData: houseData,
-                        rentData: rentData,
-                        ownerData: ownerData,
-                        tenantData: tenantData
+                        ownerAddress: ownerData.address,
+                        tenantAddress: tenantData.address,
+                        houseAddress: houseData.houseAddress,
+                        area: houseData.area,
+                        time: leaseData.duration,
+                        rent: rentData.rent,
+                        content: leaseData.content,
+                        ownerPubkey: ownerData.pubkey,
+                        tenantPubkey: tenantData.pubkey
                     }
                 );
+                // console.log(response.toString());
+                
+                alert(response.msg);
                 window.location.reload();
             })
 

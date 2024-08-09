@@ -947,11 +947,12 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         const addr = req.query.addr;
         const uploader = req.query.uploader;
-        let obj2 = await Profile.findOne({ address: uploader });
 
-        let obj = await HouseData.findOne({ ownerAddress: uploader, houseAddress: addr });
+        let obj2 = await Profile.findOne({ pubkey: uploader });
 
-        let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', obj2.pubkey, addr);
+        let obj = await HouseData.findOne({ ownerAddress: obj2.address, houseAddress: addr });
+
+        let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', uploader, addr);
         let data = {};
         try {
             data = JSON.parse(obj3.toString());
@@ -959,7 +960,7 @@ module.exports = function (dbconnection) {
             console.log(error);
             data = obj3;
         }
-        res.render('leaseSystem/leasePage', { address: address, HouseData: obj, rentData: data });
+        res.render('leaseSystem/leasePage', { address: address, HouseData: obj, rentData: data, added: false });
     });
 
     router.post('/searchHouse/leasePage/add', isAuthenticated, async (req, res) => {
@@ -999,6 +1000,32 @@ module.exports = function (dbconnection) {
 
 
         res.render('leaseSystem/leaseManage', { address: address, favorite: obj, befollowed: obj2, rentData: rentData });
+    });
+
+    router.post('/leaseManage/leasePage', async (req, res) => {
+        const address = req.session.address;
+        const { addr, uploader } = req.body;
+        res.send({ url: 'leaseManage/LeasePage?addr=' + addr + '&uploader=' + uploader });
+    });
+
+
+    router.get('/leaseManage/LeasePage', async (req, res) => {
+        const address = req.session.address;
+        const addr = req.query.addr;
+        const uploader = req.query.uploader;
+        let obj2 = await Profile.findOne({ address: uploader });
+
+        let obj = await HouseData.findOne({ ownerAddress: uploader, houseAddress: addr });
+
+        let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', obj2.pubkey, addr);
+        let data = {};
+        try {
+            data = JSON.parse(obj3.toString());
+        } catch (error) {
+            console.log(error);
+            data = obj3;
+        }
+        res.render('leaseSystem/leasePage', { address: address, HouseData: obj, rentData: data, added: true });
     });
 
     router.post('/leaseManage/agreement', isAuthenticated, async (req, res) => {

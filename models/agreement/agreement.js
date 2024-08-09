@@ -5,6 +5,10 @@ const agreementSchema = new mongoose.Schema({
         require: true,
         type: String,
     },
+    tenantAddress:{
+        require: true,
+        type: String,
+    },
     houseAddress: {
         type: String
     },
