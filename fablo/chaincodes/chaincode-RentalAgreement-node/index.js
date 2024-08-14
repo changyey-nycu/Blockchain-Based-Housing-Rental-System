@@ -4,6 +4,12 @@ const { Contract } = require('fabric-contract-api');
 const tls = require('tls');
 const net = require('net');
 
+// const elliptic = require('elliptic')
+// const EC = elliptic.ec;
+// const ecdsaCurve = elliptic.curves['p256'];
+// const ecdsa = new EC(ecdsaCurve);
+
+
 function uint8arrayToStringMethod(myUint8Arr) {
   return String.fromCharCode.apply(null, myUint8Arr);
 }
@@ -58,40 +64,42 @@ class RentalAgreement extends Contract {
     return "Create Successfully.";
   }
 
-  // async PartyASign(ctx, PartyAkey, PartyBkey, agreementHashed, signature) {
-  //   let agreement = await ctx.stub.getState(PartyAkey);
-  //   let agreementData = {
-  //     Agreement: {}
-  //   };
+  async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type) {
+    let agreement = await ctx.stub.getState(PartyAkey);
+    let agreementData;
 
-  //   try {
-  //     agreementData = JSON.parse(agreement.toString());
-  //   } catch (error) {
-  //     throw new Error(`The agreement key:${PartyAkey} does not exist`);
-  //   }
+    try {
+      agreementData = JSON.parse(agreement.toString());
+    } catch (error) {
+      throw new Error(`The agreement key:${PartyAkey} does not exist`);
+    }
 
-  //   agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
+    if (type == "PartyA") {
+      // let verify = await this.VerifySign(ctx, PartyAkey, signature, agreementHashed);
+      agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
+    }
+    else if (type == "PartyB") {
+      // let verify = await this.VerifySign(ctx, PartyBkey, signature, agreementHashed);
+      agreementData.Agreement[agreementHashed].sign["PartyB"] = signature;
+    }
+    else {
+      throw new Error(`The Party type ${type} error`);
+    }
 
-  //   await ctx.stub.putState(PartyAkey, Buffer.from(JSON.stringify(agreementData)));
-  //   return "Sign for Party A Successfully.";
-  // }
+    await ctx.stub.putState(PartyAkey, Buffer.from(JSON.stringify(agreementData)));
+    return `Sign for ${type} Successfully.`;
+  }
 
-  // async CertificatePartyASign(ctx, PartyAkey, PartyBkey) {
-  //   let agreement = await ctx.stub.getState(PartyAkey);
-  //   let agreementData = {
-  //     Agreement: {}
-  //   };
+  async VerifySign(ctx, pubkey, signature, plaintext) {
+    let decryptSignature = plaintext;
+    // var publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
+    // console.log(publickeyObject.verify(Buffer.from(plaintext), signature));
 
-  //   try {
-  //     agreementData = JSON.parse(agreement.toString());
-  //   } catch (error) {
-  //     throw new Error(`The agreement key:${PartyAkey} does not exist`);
-  //   }
-
-  //   let signature = agreementData.Agreement[agreementHashed].sign["PartyA"];
-
-  //   return "Certificate Successfully.";
-  // }
+    if (decryptSignature == plaintext) {
+      return true;
+    }
+    return false;
+  }
 
   async GetAgreement(ctx, PartyAkey, agreementHashed) {
     let agreement = await ctx.stub.getState(PartyAkey);

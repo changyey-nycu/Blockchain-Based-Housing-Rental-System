@@ -5,8 +5,14 @@ const agreementSchema = new mongoose.Schema({
         require: true,
         type: String,
     },
+    ownerPubkey: {
+        type: String,
+    },
     tenantAddress:{
         require: true,
+        type: String,
+    },
+    tenantPubkey: {
         type: String,
     },
     houseAddress: {
@@ -15,10 +21,14 @@ const agreementSchema = new mongoose.Schema({
     area: {
         type: Number
     },
-    time: {
+    startDate: {
+        type: String
+    },
+    duration: {
         type: String
     },
     hashed: {
+        require: true,
         type: String
     },
     state: {
@@ -28,6 +38,12 @@ const agreementSchema = new mongoose.Schema({
         type: Number
     },
     content: {
+        type: String
+    },
+    partyASign:{
+        type: String
+    },
+    partyBSign:{
         type: String
     }
 });

@@ -19,6 +19,11 @@ const web3 = new Web3(new Web3.providers.HttpProvider(config.web3_provider));
 const { ethers } = require('ethers');
 const { decrypt, encrypt } = require("eth-sig-util");
 
+const elliptic = require('elliptic')
+const EC = elliptic.ec;
+const ecdsaCurve = elliptic.curves['p256'];
+const ecdsa = new EC(ecdsaCurve);
+
 // HLF
 const fabric_common = require("fabric-common");
 const { Gateway, Wallets } = require('fabric-network');
@@ -37,8 +42,7 @@ var wallet;
 var gateway;
 var adminUser;
 
-var partyASign = {};
-var partyBSign = {};
+var signAgreement = {};
 
 const require_signature = "LeaseSystem?nonce:778";
 
@@ -115,11 +119,8 @@ module.exports = function (dbconnection) {
         var endorsementStore;
         // console.log('arguments[1] = ' + arguments[1]);
         switch (arguments[1]) {
-            case 'PartyASign':
-                endorsementStore = partyASign;
-                break;
-            case 'PartyASign':
-                endorsementStore = partyBSign;
+            case 'SignAgreement':
+                endorsementStore = signAgreement;
                 break;
         }
 
@@ -147,11 +148,8 @@ module.exports = function (dbconnection) {
 
         var endorsementStore;
         switch (arguments[1]) {
-            case 'PartyASign':
-                endorsementStore = partyASign;
-                break;
-            case 'PartyBSign':
-                endorsementStore = partyBSign;
+            case 'SignAgreement':
+                endorsementStore = signAgreement;
                 break;
         }
         if (typeof (endorsementStore) == "undefined") {
@@ -210,11 +208,8 @@ module.exports = function (dbconnection) {
 
         var endorsementStore;
         switch (arguments[1]) {
-            case 'PartyASign':
-                endorsementStore = partyASign;
-                break;
-            case 'PartyBSign':
-                endorsementStore = partyBSign;
+            case 'SignAgreement':
+                endorsementStore = signAgreement;
                 break;
         }
         if (typeof (endorsementStore) == "undefined") {
@@ -259,6 +254,11 @@ module.exports = function (dbconnection) {
         return signature_buffer;
     }
 
+    function verifiedSignature(signature, pubkey, data) {
+        var publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
+        return publickeyObject.verify(data, Buffer.from(signature));
+    }
+
     router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
         try {
             let { signature, func } = req.body;
@@ -288,18 +288,21 @@ module.exports = function (dbconnection) {
     })
 
     router.post("/createAgreement", isAuthenticated, async (req, res) => {
-        let { ownerAddress, tenantAddress, houseAddress, area, time, rent, content } = req.body;
+        let { ownerAddress, ownerPubkey, tenantAddress, tenantPubkey, houseAddress, area, startDate, duration, rent, content } = req.body;
 
-        let encryptString = ownerAddress.toString() + tenantAddress.toString() + houseAddress.toString();
+        let encryptString = ownerAddress.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
         let hashed = keccak256(encryptString).toString('hex');
 
         try {
             const agreementData = new AgreementData({
                 ownerAddress: ownerAddress,
+                ownerPubkey: ownerPubkey,
                 tenantAddress: tenantAddress,
+                tenantPubkey: tenantPubkey,
                 houseAddress: houseAddress,
                 area: area,
-                time: time,
+                startDate: startDate,
+                duration: duration,
                 hashed: hashed,
                 state: "unsigned",
                 rent: rent,
@@ -314,8 +317,6 @@ module.exports = function (dbconnection) {
         }
 
         try {
-            // let { PartyAkey, PartyBkey, rentData, agreementHashed } = req.body;
-            let { ownerPubkey, tenantPubkey } = req.body;
             let PartyAkey = ownerPubkey;
             let PartyBkey = tenantPubkey;
             let rentData = hashed;
@@ -329,17 +330,83 @@ module.exports = function (dbconnection) {
         }
     })
 
-    router.post("/signAgreement", isAuthenticated, async (req, res) => {
-        // get chain data
+    router.post('/agreementPage', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { ownerAddress, tenantAddress, houseAddress } = req.body;
+        res.send({ url: `/leaseSystem/agreement/agreementPage?owner=${ownerAddress}&tenant=${tenantAddress}&house=${houseAddress}` });
+    });
 
+    router.get("/agreementPage", async (req, res) => {
+        const address = req.session.address;
+        const owner = req.query.owner;
+        const tenant = req.query.tenant;
+        const house = req.query.house;
+
+        let agreement = await AgreementData.findOne({ ownerAddress: owner, tenantAddress: tenant, houseAddress: house });
+        res.render('leaseSystem/agreement/agreementPage', { address: address, agreement: agreement });
+    })
+
+    router.post("/signAgreement", isAuthenticated, async (req, res) => {
+        // PartyAkey, PartyBkey, agreementHashed, signature, type
+        let { address, ownerAddress, tenantAddress, houseAddress } = req.body;
+        let signature = req.body['signature[]'];
+
+        let type;
         try {
-            // offline sign function
-            // const digest = await createTransaction(address.toLowerCase(), Function name , args);
-            return res.send({ msg: "sign success." });
+            let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+            if (!agreement) {
+                let error = "error: agreement not exist.";
+                throw error;
+            }
+            if (address == ownerAddress) {
+                type = "PartyA";
+                if (verifiedSignature(signature, agreement.ownerPubkey, agreement.hashed)) {
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                    console.log(result.toString());
+                    await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+                        { partyASign: "done" });
+                    return res.send({ msg: "sign success." });
+                }
+            }
+            else if (address == tenantAddress) {
+                type = "PartyB";
+                if (verifiedSignature(signature, agreement.tenantPubkey, agreement.hashed)) {
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                    console.log(result.toString());
+                    await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+                        { partyBSign: "done" });
+                    return res.send({ msg: "sign success." });
+                }
+            }
+            else {
+                let error = `error: address ${address} error.`;
+                throw error;
+            }
         } catch (error) {
             console.log(error);
-            return res.send({ msg: "sign fail." });
+            return res.send({ msg: `sign fail:${error}` });
         }
+        return res.send({ msg: "sign fail." });
+    })
+
+    router.post("/test", async (req, res) => {
+        let { address, PartyAkey, agreementHashed } = req.body;
+        let obj = await rentalAgreementInstance.evaluateTransaction('GetAgreement', PartyAkey, agreementHashed);
+        let signature;
+        try {
+            let objson = JSON.parse(obj);
+            signature = objson.sign.PartyA.split(",");
+        } catch (error) {
+            console.log(error);
+            console.log(obj);
+            return res.send({ msg: "error." });
+        }
+
+
+        console.log(verifiedSignature(signature, PartyAkey, agreementHashed));
+
+
+        return res.send({ msg: "done." });
     })
 
 

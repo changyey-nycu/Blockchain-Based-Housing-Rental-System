@@ -41,7 +41,7 @@ var adminUser;
 var addEstate = {};
 var acceptEstate = {};
 var rejectEstate = {};
-var NewLease = {};
+var newLease = {};
 
 const require_signature = "LeaseSystem?nonce:778";
 
@@ -342,7 +342,7 @@ module.exports = function (dbconnection) {
                 var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
                 break;
             case 'NewLease':
-                endorsementStore = NewLease;
+                endorsementStore = newLease;
                 var endorsement = entrustChannel.channel.newEndorsement('LeaseRegister');
                 break;
         }
@@ -381,7 +381,7 @@ module.exports = function (dbconnection) {
                 endorsementStore = rejectEstate;
                 break;
             case 'NewLease':
-                endorsementStore = NewLease;
+                endorsementStore = newLease;
                 break;
         }
         if (typeof (endorsementStore) == "undefined") {
@@ -450,7 +450,7 @@ module.exports = function (dbconnection) {
                 endorsementStore = rejectEstate;
                 break;
             case 'NewLease':
-                endorsementStore = NewLease;
+                endorsementStore = newLease;
                 break;
         }
         if (typeof (endorsementStore) == "undefined") {
@@ -1057,8 +1057,6 @@ module.exports = function (dbconnection) {
             contract_address: contract_address
         });
     });
-
-
 
     return router;
 }

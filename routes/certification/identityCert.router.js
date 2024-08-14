@@ -135,41 +135,28 @@ module.exports = function (dbconnection1) {
         }
 
         // SKIP for test
-        // // check exist
-        // let obj = await RealEstate.findOne({ IDNumber: IDNumber, houseAddress: houseAddress });
-        // if (obj) {
-        //     let errors = "The estate data already exists.";
-        //     console.log(errors);
-        //     return res.send({ msg: errors });
-        // }
-
-        // // save to gov DB
-        // try {
-        //     const realEstateData = new RealEstate({
-        //         name: name,
-        //         IDNumber: IDNumber,
-        //         houseAddress: houseAddress,
-        //         area: area,
-        //         date: date
-        //     })
-        //     await realEstateData.save();
-        // } catch (error) {
-        //     console.log(error);
-        //     return res.send({ msg: "save data error." });
-        // }
-
-        // save to blockchain Test
         // check exist
-        // let exist = await estateRegisterInstance.evaluateTransaction('CheckExist', userPubkey);
-        // let isExist = JSON.parse(exist.toString());
-        // // console.log(isExist);
-        // if (!isExist) {
-        //     console.log("user key not exist, create key");
-        //     await estateRegisterInstance.submitTransaction('NewPersonalEstate', userPubkey);
-        // }
-        // else {
-        //     console.log("key exist, update data");
-        // }
+        let obj = await RealEstate.findOne({ IDNumber: IDNumber, houseAddress: houseAddress });
+        if (obj) {
+            let errors = "The estate data already exists.";
+            console.log(errors);
+            return res.send({ msg: errors });
+        }
+
+        // save to gov DB
+        try {
+            const realEstateData = new RealEstate({
+                name: name,
+                IDNumber: IDNumber,
+                houseAddress: houseAddress,
+                area: area,
+                date: date
+            })
+            await realEstateData.save();
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "save data error." });
+        }
 
         // save to chain
         try {
@@ -196,26 +183,26 @@ module.exports = function (dbconnection1) {
         }
 
         // SKIP for test
-        // // check exist
-        // let obj = await Agency.findOne({ name: name, IDNumber: IDNumber, date: date });
-        // if (obj) {
-        //     let errors = "The agent data already exists.";
-        //     console.log(errors);
-        //     return res.send({ msg: errors });
-        // }
+        // check exist
+        let obj = await Agency.findOne({ name: name, IDNumber: IDNumber, date: date });
+        if (obj) {
+            let errors = "The agent data already exists.";
+            console.log(errors);
+            return res.send({ msg: errors });
+        }
 
-        // // save to gov DB
-        // try {
-        //     const AgencyData = new Agency({
-        //         name: name,
-        //         IDNumber: IDNumber,
-        //         date: date
-        //     })
-        //     await AgencyData.save();
-        // } catch (error) {
-        //     console.log(error);
-        //     return res.send({ msg: "save data error." });
-        // }
+        // save to gov DB
+        try {
+            const AgencyData = new Agency({
+                name: name,
+                IDNumber: IDNumber,
+                date: date
+            })
+            await AgencyData.save();
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "save data error." });
+        }
 
         // save to chain
         try {

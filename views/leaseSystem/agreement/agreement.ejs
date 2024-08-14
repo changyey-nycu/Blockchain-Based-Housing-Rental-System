@@ -10,7 +10,6 @@
                     <div class="card-header">
                         <h4 style="margin:auto" class="font-weight-bold">House Data</h4>
                     </div>
-                    <!-- <form method="post" action=""> -->
                     <div class="input-group mb-3">
                         <span class="input-group-text">Title</span>
                         <input type="text" class="form-control" id="title" name="title" value="<%=houseData.title%>"
@@ -56,7 +55,6 @@
                                 <input type="text" class="form-control" id="describe" name="describe"
                                     value="<%=houseData.describe%>" readonly>
                             </div>
-                            <!-- </form> -->
                 </div>
             </div>
         </div>
@@ -125,6 +123,10 @@
                                     <h4 style="margin:auto" class="font-weight-bold">Agreement</h4>
                                 </div>
                                 <div class="input-group mb-3">
+                                    <span class="input-group-text">Starting Date</span>
+                                    <input type="text" class="form-control" id="startDate" name="startDate" value="">
+                                </div>
+                                <div class="input-group mb-3">
                                     <span class="input-group-text">Duration</span>
                                     <input type="text" class="form-control" id="duration" name="duration" value="">
                                 </div>
@@ -137,8 +139,8 @@
                                     <input class="btn btn-primary" id="CreateAgreement" value="Create">
                                 </div>
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Sign Agreement</span>
-                                    <input class="btn btn-primary" id="SignAgreement" value="Sign" disabled>
+                                    <span class="input-group-text">View and Sign Agreement</span>
+                                    <input class="btn btn-primary" id="ViewAgreement" value="View and Sign">
                                 </div>
                             </div>
                         </div>
@@ -146,37 +148,11 @@
 
     </body>
     <script>
-        var identityManagerABI, personalIdentityABI;
-        var account;
-        var contract_address = '<%= contract_address %>';
-
         var houseData = JSON.parse('<%- JSON.stringify(houseData) %>');
         var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
         var ownerData = JSON.parse('<%- JSON.stringify(ownerData) %>');
         var tenantData = JSON.parse('<%- JSON.stringify(tenantData) %>');
 
-        const preventMalleability = (sig, ecdsa) => {
-            const halfOrder = ecdsa.n.shrn(1);
-            if (sig.s.cmp(halfOrder) === 1) {
-                const bigNum = ecdsa.n;
-                sig.s = bigNum.sub(sig.s);
-            }
-            return sig;
-        };
-
-        function sign(privateKey, digest) {
-            const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
-            const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
-            var halfOrderSig = preventMalleability(sig, ecdsa);
-            const signature = Buffer.from(halfOrderSig.toDER());
-            var signature_string = '';
-            for (var i = 0; i < signature.length; i++) {
-                signature_string += signature[i].toString();
-                signature_string += '/';
-            }
-            signature_string = signature_string.slice(0, -1);
-            return signature_string;
-        }
 
         function ajaxAwait(url, data) {
             return new Promise((resolve, reject) => {
@@ -198,18 +174,7 @@
         }
 
         async function buildListener() {
-            var identityManagerInstance = new web3.eth.Contract(
-                identityManagerABI,
-                contract_address
-            );
-            var personalIdentityAddress = await identityManagerInstance.methods
-                .getAccessManagerAddress(account)
-                .call({ from: account });
 
-            var personalIdentityInstance = new web3.eth.Contract(
-                personalIdentityABI,
-                personalIdentityAddress
-            );
             $('#CreateAgreement').on('click', async function (e) {
                 console.log(houseData);
                 console.log(rentData);
@@ -217,9 +182,11 @@
                 console.log(tenantData);
                 let content = $("#content").val();
                 let duration = $("#duration").val();
+                let startDate = $("#startDate").val();
                 let leaseData = {
                     "content": content,
-                    "duration": duration
+                    "duration": duration,
+                    "startDate": startDate
                 }
 
                 let Data = {
@@ -227,7 +194,8 @@
                     tenantAddress: tenantData.address,
                     houseAddress: houseData.houseAddress,
                     area: houseData.area,
-                    time: leaseData.duration,
+                    duration: leaseData.duration,
+                    startDate: leaseData.startDate,
                     rent: rentData.rent,
                     content: leaseData.content,
                     ownerPubkey: ownerData.pubkey,
@@ -243,6 +211,7 @@
                         houseAddress: houseData.houseAddress,
                         area: houseData.area,
                         time: leaseData.duration,
+                        startDate: leaseData.startDate,
                         rent: rentData.rent,
                         content: leaseData.content,
                         ownerPubkey: ownerData.pubkey,
@@ -250,78 +219,56 @@
                     }
                 );
                 // console.log(response.toString());
-                
+
                 alert(response.msg);
                 window.location.reload();
             })
 
-            $('#SignAgreement').on('click', async function (e) {
-                // userPubkey, estateAddress, rent, dataHash
-                let response, result;
-                response = await ajaxAwait(
-                    '/leaseSystem/landlord/NewLease',
-                    {
-                        address: userAddress,
-                        estateAddress: houseAddress,
-                        rent: price,
-                        dataHash: "test"
-                    }
-                );
-                console.log('response = ' + response.result);
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
-                let encryptKey = await personalIdentityInstance.methods
-                    .getEncryptMaterial('HLFPrivateKey')
-                    .call({ from: account });
-                let privateKey = await ethereum.request({
-                    method: 'eth_decrypt',
-                    params: [encryptKey, account],
-                });
-                let signature_string;
-                signature_string = sign(privateKey, response.digest);
-                response = await ajaxAwait(
-                    '/leaseSystem/proposalAndCreateCommit',
-                    { signature: signature_string, func: 'NewLease' }
-                );
-                if (response.error) {
-                    return alert(`error :${response.result}`);
+            $('#ViewAgreement').on('click', async function (e) {
+                console.log(houseData);
+                console.log(rentData);
+                console.log(ownerData);
+                console.log(tenantData);
+                let content = $("#content").val();
+                let duration = $("#duration").val();
+                let leaseData = {
+                    "content": content,
+                    "duration": duration
                 }
 
-                result = response.result;
-                signature_string = sign(privateKey, response.commitDigest);
-                response = await ajaxAwait('/leaseSystem/commitSend', {
-                    signature: signature_string,
-                    func: 'NewLease',
-                    estateAddress: houseAddress
+                let Data = {
+                    ownerAddress: ownerData.address,
+                    tenantAddress: tenantData.address,
+                    houseAddress: houseData.houseAddress,
+                }
+                console.log(Data);
+                $.ajax({
+                    type: 'POST',
+                    url: '/leaseSystem/agreement/agreementPage',
+                    dataType: 'json',
+                    data: {
+                        ownerAddress: ownerData.address,
+                        tenantAddress: tenantData.address,
+                        houseAddress: houseData.houseAddress,
+                    },
+                    success: function (res) {
+                        console.log('success');
+                        if (res.url) {
+                            window.location.href = res.url;
+                        }
+                    },
+                    fail: function (xhr, ajaxOptions, thrownError) {
+                        console.log('fail');
+                        reject(false);
+                    },
                 });
-                if (response.error) {
-                    return alert(`error: ${response.result}`);
-                }
 
-                if (alert(`${result}`)) {
-                    window.location.reload();
-                }
-                window.location.reload();
-            });
+                // console.log(response.toString());
+
+            })
         }
 
         async function main() {
-            let accounts = await web3.eth.getAccounts();
-            account = accounts[0];
-            identityManagerABI = await fetch(
-                '../../contracts/IdentityManager.json'
-            );
-            personalIdentityABI = await fetch(
-                '../../contracts/PersonalIdentity.json'
-            );
-            identityManagerABI = await identityManagerABI.json();
-            identityManagerABI = identityManagerABI.output.abi;
-            personalIdentityABI = await personalIdentityABI.json();
-            personalIdentityABI = personalIdentityABI.output.abi;
-
-            // console.log('identityManagerABI = ' + JSON.stringify(identityManagerABI));
-            // console.log('personalIdentityABI = ' + JSON.stringify(personalIdentityABI));
 
             buildListener();
         }
