@@ -313,7 +313,7 @@ module.exports = function (dbconnection) {
             await agreementData.save();
         } catch (error) {
             console.log(error);
-            return res.send({ msg: "save data error." });
+            return res.send({ msg: "save data error.", error: error });
         }
 
         try {
@@ -323,10 +323,10 @@ module.exports = function (dbconnection) {
 
             let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, hashed);
             console.log(result.toString());
-            return res.send({ msg: "create success." });
+            return res.send({ msg: "create success.", hashed: hashed });
         } catch (error) {
             console.log(error);
-            return res.send({ msg: "create fail." });
+            return res.send({ msg: "create fail.", error: error });
         }
     })
 
@@ -343,7 +343,7 @@ module.exports = function (dbconnection) {
         const house = req.query.house;
 
         let agreement = await AgreementData.findOne({ ownerAddress: owner, tenantAddress: tenant, houseAddress: house });
-        res.render('leaseSystem/agreement/agreementPage', { address: address, agreement: agreement });
+        res.render('leaseSystem/agreement/agreementPage', { address: address, agreement: agreement, contract_address: contract_address });
     })
 
     router.post("/signAgreement", isAuthenticated, async (req, res) => {
@@ -364,7 +364,7 @@ module.exports = function (dbconnection) {
                     let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
                     await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
-                        { partyASign: "done" });
+                        { partyASign: signature.toString() });
                     return res.send({ msg: "sign success." });
                 }
             }
@@ -374,7 +374,7 @@ module.exports = function (dbconnection) {
                     let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
                     await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
-                        { partyBSign: "done" });
+                        { partyBSign: signature.toString() });
                     return res.send({ msg: "sign success." });
                 }
             }
@@ -389,25 +389,25 @@ module.exports = function (dbconnection) {
         return res.send({ msg: "sign fail." });
     })
 
-    router.post("/test", async (req, res) => {
-        let { address, PartyAkey, agreementHashed } = req.body;
-        let obj = await rentalAgreementInstance.evaluateTransaction('GetAgreement', PartyAkey, agreementHashed);
-        let signature;
-        try {
-            let objson = JSON.parse(obj);
-            signature = objson.sign.PartyA.split(",");
-        } catch (error) {
-            console.log(error);
-            console.log(obj);
-            return res.send({ msg: "error." });
-        }
+    // router.post("/test", async (req, res) => {
+    //     let { address, PartyAkey, agreementHashed } = req.body;
+    //     let obj = await rentalAgreementInstance.evaluateTransaction('GetAgreement', PartyAkey, agreementHashed);
+    //     let signature;
+    //     try {
+    //         let objson = JSON.parse(obj);
+    //         signature = objson.sign.PartyA.split(",");
+    //     } catch (error) {
+    //         console.log(error);
+    //         console.log(obj);
+    //         return res.send({ msg: "error." });
+    //     }
 
 
-        console.log(verifiedSignature(signature, PartyAkey, agreementHashed));
+    //     console.log(verifiedSignature(signature, PartyAkey, agreementHashed));
 
 
-        return res.send({ msg: "done." });
-    })
+    //     return res.send({ msg: "done." });
+    // })
 
 
 

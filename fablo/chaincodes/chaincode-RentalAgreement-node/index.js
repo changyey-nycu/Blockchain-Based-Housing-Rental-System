@@ -4,10 +4,10 @@ const { Contract } = require('fabric-contract-api');
 const tls = require('tls');
 const net = require('net');
 
-// const elliptic = require('elliptic')
-// const EC = elliptic.ec;
-// const ecdsaCurve = elliptic.curves['p256'];
-// const ecdsa = new EC(ecdsaCurve);
+const elliptic = require('elliptic')
+const EC = elliptic.ec;
+const ecdsaCurve = elliptic.curves['p256'];
+const ecdsa = new EC(ecdsaCurve);
 
 
 function uint8arrayToStringMethod(myUint8Arr) {
@@ -75,11 +75,11 @@ class RentalAgreement extends Contract {
     }
 
     if (type == "PartyA") {
-      // let verify = await this.VerifySign(ctx, PartyAkey, signature, agreementHashed);
+      //  && await this.VerifySign(ctx, PartyAkey, signature, agreementHashed)
       agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
     }
     else if (type == "PartyB") {
-      // let verify = await this.VerifySign(ctx, PartyBkey, signature, agreementHashed);
+      //  && await this.VerifySign(ctx, PartyBkey, signature, agreementHashed)
       agreementData.Agreement[agreementHashed].sign["PartyB"] = signature;
     }
     else {
@@ -90,15 +90,61 @@ class RentalAgreement extends Contract {
     return `Sign for ${type} Successfully.`;
   }
 
-  async VerifySign(ctx, pubkey, signature, plaintext) {
-    let decryptSignature = plaintext;
-    // var publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
-    // console.log(publickeyObject.verify(Buffer.from(plaintext), signature));
+  // test for on chain verify(can compare speed in 1)
+  async SignAgreement2(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type) {
+    let agreement = await ctx.stub.getState(PartyAkey);
+    let agreementData;
 
-    if (decryptSignature == plaintext) {
-      return true;
+    try {
+      agreementData = JSON.parse(agreement.toString());
+    } catch (error) {
+      throw new Error(`The agreement key:${PartyAkey} does not exist`);
     }
-    return false;
+
+    if (type == "PartyA" && await this.VerifySign(ctx, PartyAkey, signature, agreementHashed)) {
+      agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
+    }
+    else if (type == "PartyB" && await this.VerifySign(ctx, PartyBkey, signature, agreementHashed)) {
+      agreementData.Agreement[agreementHashed].sign["PartyB"] = signature;
+    }
+    else {
+      throw new Error(`The Party type ${type} error`);
+    }
+
+    await ctx.stub.putState(PartyAkey, Buffer.from(JSON.stringify(agreementData)));
+    return `Sign for ${type} Successfully.`;
+  }
+
+  async VerifySign(ctx, pubkey, plaintext, signature) {
+    const publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
+    return publickeyObject.verify(plaintext, Buffer.from(signature.split(",")));
+  }
+
+  async VerifyAgreementSign(ctx, pubkey, agreementHashed) {
+    let agreement = await ctx.stub.getState(pubkey);
+    let agreementData;
+
+    try {
+      agreementData = JSON.parse(agreement.toString());
+    } catch (error) {
+      throw new Error(`The agreement key:${PartyAkey} does not exist`);
+    }
+    try {
+      let A = false, B = false;
+      if (agreementData.Agreement[agreementHashed].sign.PartyA) {
+        var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
+        // console.log(agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
+        A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
+      }
+      if (agreementData.Agreement[agreementHashed].sign.PartyB) {
+        var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
+        B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
+      }
+      return A && B;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 
   async GetAgreement(ctx, PartyAkey, agreementHashed) {

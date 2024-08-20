@@ -33,6 +33,9 @@ const Schema = new mongoose.Schema({
     rent: {
         type: Number
     },
+    rentHashed: {
+        type: String
+    },
     describe: {
         type: String
     }

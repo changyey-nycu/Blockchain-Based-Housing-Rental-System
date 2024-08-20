@@ -60,7 +60,7 @@
                         <span class="input-group-text">Owner Sign</span>
                         <input type="text" class="form-control" id="partyA" name="partyA"
                             value="<%=agreement.partyASign%>" readonly>
-                        <% if (address==agreement.ownerAddress) {%>
+                        <% if (address==agreement.ownerAddress && !agreement.partyASign) {%>
                             <input type="button" value="sign" id="SignAgreement">
                             <% } %>
                     </div>
@@ -68,16 +68,22 @@
                         <span class="input-group-text">Tenant Sign</span>
                         <input type="text" class="form-control" id="partyB" name="partyB"
                             value="<%=agreement.partyBSign%>" readonly>
-                        <% if (address==agreement.tenantAddress) {%>
+                        <% if (address==agreement.tenantAddress && !agreement.partyBSign) {%>
                             <input type="button" value="sign" id="SignAgreement">
                             <% } %>
                     </div>
                 </div>
             </div>
         </div>
+
+
+
     </body>
     <script>
+        var identityManagerABI, personalIdentityABI;
         var account;
+        var contract_address = '<%= contract_address %>';
+
         var agreement = JSON.parse('<%- JSON.stringify(agreement) %>');
 
         function ajaxAwait(url, data) {
@@ -100,6 +106,18 @@
         }
 
         async function buildListener() {
+            var identityManagerInstance = new web3.eth.Contract(
+                identityManagerABI,
+                contract_address
+            );
+            var personalIdentityAddress = await identityManagerInstance.methods
+                .getAccessManagerAddress(account)
+                .call({ from: account });
+
+            var personalIdentityInstance = new web3.eth.Contract(
+                personalIdentityABI,
+                personalIdentityAddress
+            );
 
             $('#SignAgreement').on('click', async function (e) {
                 // async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type)
@@ -143,6 +161,16 @@
         async function main() {
             let accounts = await web3.eth.getAccounts();
             account = accounts[0];
+            identityManagerABI = await fetch(
+                '../../contracts/IdentityManager.json'
+            );
+            personalIdentityABI = await fetch(
+                '../../contracts/PersonalIdentity.json'
+            );
+            identityManagerABI = await identityManagerABI.json();
+            identityManagerABI = identityManagerABI.output.abi;
+            personalIdentityABI = await personalIdentityABI.json();
+            personalIdentityABI = personalIdentityABI.output.abi;
 
             // console.log('identityManagerABI = ' + JSON.stringify(identityManagerABI));
             // console.log('personalIdentityABI = ' + JSON.stringify(personalIdentityABI));

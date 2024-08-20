@@ -10,6 +10,12 @@ const interestSchema = new mongoose.Schema({
     },
     houseAddress: {
         type: String
+    },
+    willingness: {
+        type: Boolean
+    },
+    agreement: {
+        type: Boolean
     }
 });
 

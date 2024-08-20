@@ -112,6 +112,14 @@
                                     <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
                                         value="<%=tenantData.pubkey%>" readonly>
                                 </div>
+                                <% if (address==houseData.ownerAddress) {%>
+                                    <div class="input-group-append"><button type="button" id="request"
+                                            class="btn btn-secondary">request personal data</button></div>
+                                    <%} %>
+                                    <% if (address==tenantData.address) {%>
+                                        <div class="input-group-append"><button type="button" id="upload"
+                                                class="btn btn-secondary">upload personal data</button></div>
+                                        <%} %>
                             </div>
                         </div>
                     </div>
@@ -176,10 +184,6 @@
         async function buildListener() {
 
             $('#CreateAgreement').on('click', async function (e) {
-                console.log(houseData);
-                console.log(rentData);
-                console.log(ownerData);
-                console.log(tenantData);
                 let content = $("#content").val();
                 let duration = $("#duration").val();
                 let startDate = $("#startDate").val();
@@ -189,19 +193,6 @@
                     "startDate": startDate
                 }
 
-                let Data = {
-                    ownerAddress: ownerData.address,
-                    tenantAddress: tenantData.address,
-                    houseAddress: houseData.houseAddress,
-                    area: houseData.area,
-                    duration: leaseData.duration,
-                    startDate: leaseData.startDate,
-                    rent: rentData.rent,
-                    content: leaseData.content,
-                    ownerPubkey: ownerData.pubkey,
-                    tenantPubkey: tenantData.pubkey,
-                }
-                console.log(Data);
 
                 response = await ajaxAwait(
                     '/leaseSystem/agreement/createAgreement',
@@ -211,6 +202,7 @@
                         houseAddress: houseData.houseAddress,
                         area: houseData.area,
                         time: leaseData.duration,
+                        duration: leaseData.duration,
                         startDate: leaseData.startDate,
                         rent: rentData.rent,
                         content: leaseData.content,
@@ -219,8 +211,27 @@
                     }
                 );
                 // console.log(response.toString());
+                try {
+                    if (response.hashed) {
+                        alert(response.msg);
+                        alert(response.hashed);
 
-                alert(response.msg);
+                        let result = await ajaxAwait(
+                            '/leaseSystem/leaseManage/agreementCreate',
+                            {
+                                ownerAddress: ownerData.address,
+                                houseAddress: houseData.houseAddress,
+                                hashed: response.hashed
+                            }
+                        );
+                        alert(result.msg);
+                    }
+                    else {
+                        alert(`create error ${response.error}`);
+                    }
+                } catch (error) {
+                    alert(`try error ${error}`)
+                }
                 window.location.reload();
             })
 

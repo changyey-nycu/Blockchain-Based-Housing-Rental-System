@@ -40,6 +40,9 @@ Private Keys
 result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
 
 
+# Q
+agreement sign verify in server part or blockchain part
+
 # note
 abi -> output.abi
 house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}

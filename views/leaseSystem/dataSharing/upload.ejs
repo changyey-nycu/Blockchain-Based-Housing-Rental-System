@@ -1,86 +1,86 @@
 <%- include('../partials/header'); %>
 
     <body>
-        <!-- show house data and rent data -->
         <div class="container mt-3">
-            <div style="margin-top: 10px">
-                <a href="/leaseSystem/landlord/manageEstate">back</a>
-            </div>
             <div class="col-md-5 center-block" style="float: none; margin: auto">
-                <div>
-                    <h1 style="margin:auto" class="font-weight-bold">Rent</h2>
+                <div style="margin-top: 10px">
+                    <a href="/leaseSystem/leaseManage">back</a>
                 </div>
-                <div class="card">
-                    <h4 style="margin:auto" class="font-weight-bold card-title mt-2">House Data</h4>
-
-                    <div style="margin-top: 10px" class="card text-center">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Title</span>
-                            <input type="text" class="form-control" id="title" name="title" value="<%=HouseData.title%>"
-                                readonly>
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Owner Address</span>
-                            <input type="text" class="form-control" id="userAddress" name="userAddress"
-                                value="<%=address%>" readonly>
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">House Address</span>
-                            <input type="text" class="form-control" id="houseAddress" name="houseAddress"
-                                value="<%=HouseData.houseAddress%>" readonly>
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">House Area</span>
-                            <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Room Type</span>
-                            <input type="text" class="form-control" id="roomType" name="roomType"
-                                value="<%=HouseData.type%>" readonly>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Describe</label>
-                            <input type="text" class="form-control" id="describe" name="describe"
-                                value="<%=HouseData.describe%>" readonly>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Picture</label>
-                            <input type="file" class="form-control" id="picture" name="picture" readonly>
-                        </div>
+                <div style="margin-top: 10px" class="card text-center">
+                    <div class="card-header">
+                        <h4 style="margin:auto" class="font-weight-bold">Requester Data</h4>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Owner Address</span>
+                        <input type="text" class="form-control" id="uploader" name="uploader"
+                            value="<%=houseData.ownerAddress%>" readonly>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">House Address</span>
+                        <input type="text" class="form-control" id="houseAddress" name="houseAddress"
+                            value="<%=houseData.houseAddress%>" readonly>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- lease option -->
+
+
         <div class="container mt-3">
             <div class="col-md-5 center-block" style="float: none; margin: auto">
-                <div class="card">
-                    <h4 style="margin:auto" class="font-weight-bold card-title mt-2">Rent Data</h4>
-                    <form name="rentForm" action="">
-                        <!-- <div style="margin-top: 10px" class="card text-center"> -->
-                        <div class="input-group mt-2">
-                            <span class="input-group-text">Rent price</span>
-                            <input type="number" min="0" class="form-control" id="price" name="price" value="100">
-                            <span class="input-group-text">per month</span>
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">time</span>
-                            <input type="text" class="form-control" id="time" name="time">
-                        </div>
-                        <!-- </div> -->
-                    </form>
-                    <!-- <button id="upload">test upload</button> -->
-                    <button type="submit" class="btn btn-primary" id="NewLease">upload</button>
+                <div style="margin-top: 10px" class="card text-center">
+                    <div class="card-header">
+                        <h4 style="margin:auto" class="font-weight-bold">Your Data</h4>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Tenant Address</span>
+                        <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
+                            value="<%=tenantData.address%>" readonly>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Tenant Pubkey</span>
+                        <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
+                            value="<%=tenantData.pubkey%>" readonly>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="container mt-3">
+            <div class="col-md-5 center-block" style="float: none; margin: auto">
+                <div style="margin-top: 10px" class="card text-center">
+                    <div class="card-header">
+                        <h4 style="margin:auto" class="font-weight-bold">Request</h4>
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Duration</span>
+                        <input type="text" class="form-control" id="duration" name="duration" value="">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Agreement Content</span>
+                        <input type="text" class="form-control" id="content" name="content" value="">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Create Agreement</span>
+                        <input class="btn btn-primary" id="CreateAgreement" value="Create">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Sign Agreement</span>
+                        <input class="btn btn-primary" id="SignAgreement" value="Sign" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
-
     <script>
-
         var identityManagerABI, personalIdentityABI;
         var account;
         var contract_address = '<%= contract_address %>';
+
+        var houseData = JSON.parse('<%- JSON.stringify(houseData) %>');
+        var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
+        var ownerData = JSON.parse('<%- JSON.stringify(ownerData) %>');
+        var tenantData = JSON.parse('<%- JSON.stringify(tenantData) %>');
 
         const preventMalleability = (sig, ecdsa) => {
             const halfOrder = ecdsa.n.shrn(1);
@@ -124,12 +124,6 @@
             });
         }
 
-        function isNumber(value) {
-            if (isNaN(value) | !value) {
-                return false;
-            }
-            return true;
-        }
         async function buildListener() {
             var identityManagerInstance = new web3.eth.Contract(
                 identityManagerABI,
@@ -143,16 +137,52 @@
                 personalIdentityABI,
                 personalIdentityAddress
             );
-
-            $('#NewLease').on('click', async function (e) {
-                let price = $("#price").val();
-                let userAddress = $("#userAddress").val();
-                let houseAddress = $("#houseAddress").val();
-
-                if (!isNumber(price)) {
-                    return alert("rent price must be a numbers!");
+            $('#CreateAgreement').on('click', async function (e) {
+                console.log(houseData);
+                console.log(rentData);
+                console.log(ownerData);
+                console.log(tenantData);
+                let content = $("#content").val();
+                let duration = $("#duration").val();
+                let leaseData = {
+                    "content": content,
+                    "duration": duration
                 }
 
+                let Data = {
+                    ownerAddress: ownerData.address,
+                    tenantAddress: tenantData.address,
+                    houseAddress: houseData.houseAddress,
+                    area: houseData.area,
+                    time: leaseData.duration,
+                    rent: rentData.rent,
+                    content: leaseData.content,
+                    ownerPubkey: ownerData.pubkey,
+                    tenantPubkey: tenantData.pubkey,
+                }
+                console.log(Data);
+
+                response = await ajaxAwait(
+                    '/leaseSystem/agreement/createAgreement',
+                    {
+                        ownerAddress: ownerData.address,
+                        tenantAddress: tenantData.address,
+                        houseAddress: houseData.houseAddress,
+                        area: houseData.area,
+                        time: leaseData.duration,
+                        rent: rentData.rent,
+                        content: leaseData.content,
+                        ownerPubkey: ownerData.pubkey,
+                        tenantPubkey: tenantData.pubkey
+                    }
+                );
+                // console.log(response.toString());
+
+                alert(response.msg);
+                window.location.reload();
+            })
+
+            $('#SignAgreement').on('click', async function (e) {
                 // userPubkey, estateAddress, rent, dataHash
                 let response, result;
                 response = await ajaxAwait(

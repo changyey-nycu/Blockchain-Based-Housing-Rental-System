@@ -77,9 +77,9 @@
                                     <td>
                                         <select name="follower-<%= index %>" id="follower-<%= index %>">
                                             <option value="" selected>---select a person to sign---</option>
-                                            <% for (let i=0; i < befollowed.length; i++) { if
-                                                (befollowed[i].houseAddress==rentData[index].estateAddress) {%>
-                                                <option value="<%= befollowed[i].address %>"><%= befollowed[i].address %></option>
+                                            <% for (let i=0; i < signerList.length; i++) { if
+                                                (signerList[i].houseAddress==rentData[index].estateAddress) {%>
+                                                <option value="<%= signerList[i].address %>"><%= signerList[i].address %></option>
                                                 <% }} %>
                                         </select>
                                     </td>
@@ -95,7 +95,7 @@
     </body>
     <script>
         var favorite = JSON.parse('<%- JSON.stringify(favorite) %>');
-        var befollowed = JSON.parse('<%- JSON.stringify(befollowed) %>');
+        var signerList = JSON.parse('<%- JSON.stringify(signerList) %>');
         var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
         async function buildListener() {
             for (let i = 0; i < favorite.length; i++) {

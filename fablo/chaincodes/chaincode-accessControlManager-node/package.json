@@ -16,7 +16,6 @@
   },
   "author": "SoftwareMill",
   "dependencies": {
-    "elliptic": "^6.5.7",
     "fabric-contract-api": "^2.4.2",
     "fabric-shim": "^2.4.2"
   },

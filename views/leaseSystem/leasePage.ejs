@@ -17,7 +17,6 @@
                                 <div class="card-header">
                                     <h4 style="margin:auto" class="font-weight-bold">House Data</h4>
                                 </div>
-                                <!-- <form method="post" action=""> -->
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Title</span>
                                     <input type="text" class="form-control" id="title" name="title"
@@ -63,8 +62,14 @@
                                             <div class="mb-3">
                                                 <button class="btn btn-primary" id="add">add favorite</button>
                                             </div>
-                                            <%}%>
-                                                <!-- </form> -->
+                                            <%} else {%>
+                                                <div class="mb-3">
+                                                    <button class="btn btn-primary" id="remove">remove favorite</button>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <button class="btn btn-primary" id="newSigner">want to sign</button>
+                                                </div>
+                                                <% } %>
                             </div>
             </div>
         </div>
@@ -83,6 +88,39 @@
                     type: 'post'
                 }).then((res) => {
                     alert(res.msg);
+                    window.location.reload();
+                })
+            })
+
+            $(`#remove`).on('click', async function (e) {
+                let houseAddress = $(`#houseAddress`).val();
+                let uploaderAddress = $(`#uploader`).val();
+                $.ajax({
+                    url: '/leaseSystem/searchHouse/leasePage/remove',
+                    data: {
+                        "houseAddress": houseAddress,
+                        "uploaderAddress": uploaderAddress
+                    },
+                    type: 'post'
+                }).then((res) => {
+                    alert(res.msg);
+                    window.location.reload();
+                })
+            })
+
+            $(`#newSigner`).on('click', async function (e) {
+                let houseAddress = $(`#houseAddress`).val();
+                let uploaderAddress = $(`#uploader`).val();
+                $.ajax({
+                    url: '/leaseSystem/searchHouse/leasePage/newSigner',
+                    data: {
+                        "houseAddress": houseAddress,
+                        "uploaderAddress": uploaderAddress
+                    },
+                    type: 'post'
+                }).then((res) => {
+                    alert(res.msg);
+                    window.location.reload();
                 })
             })
 
