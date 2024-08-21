@@ -12,13 +12,13 @@
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Owner Address</span>
-                        <input type="text" class="form-control" id="uploader" name="uploader"
-                            value="<%=houseData.ownerAddress%>" readonly>
+                        <input type="text" class="form-control" id="uploader" name="uploader" value="<%=owner%>"
+                            readonly>
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">House Address</span>
-                        <input type="text" class="form-control" id="houseAddress" name="houseAddress"
-                            value="<%=houseData.houseAddress%>" readonly>
+                        <input type="text" class="form-control" id="houseAddress" name="houseAddress" value="<%=house%>"
+                            readonly>
                     </div>
                 </div>
             </div>
@@ -31,42 +31,91 @@
                     <div class="card-header">
                         <h4 style="margin:auto" class="font-weight-bold">Your Data</h4>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Tenant Address</span>
-                        <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
-                            value="<%=tenantData.address%>" readonly>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Tenant Pubkey</span>
-                        <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
-                            value="<%=tenantData.pubkey%>" readonly>
-                    </div>
+                    <form action="/leaseSystem/dataSharing/saveData" method="post">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tenant Address</span>
+                            <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
+                                value="<%=tenantData.address%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tenant Pubkey</span>
+                            <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
+                                value="<%=tenantData.pubkey%>" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">name</span>
+                            <input type="text" class="form-control" id="nameInput" name="nameInput" value="">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">email</span>
+                            <input type="text" class="form-control" id="emailInput" name="emailInput" value="">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">phone</span>
+                            <input type="text" class="form-control" id="phoneInput" name="phoneInput" value="">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">job</span>
+                            <input type="text" class="form-control" id="jobInput" name="jobInput" value="">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">salary</span>
+                            <input type="number" class="form-control" id="salaryInput" name="salaryInput" value="">
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">deposit</span>
+                            <input type="number" class="form-control" id="depositInput" name="depositInput" value="">
+                        </div>
+                        <div class="mb-3">
+                            <input type="button" class="btn btn-primary" value="save data" id="save">
+                        </div>
+                    </form>
+
                 </div>
             </div>
         </div>
 
         <div class="container mt-3">
             <div class="col-md-5 center-block" style="float: none; margin: auto">
-                <div style="margin-top: 10px" class="card text-center">
-                    <div class="card-header">
-                        <h4 style="margin:auto" class="font-weight-bold">Request</h4>
+                <div style="margin-top: 10px" class="card ">
+                    <div class="card-header text-center">
+                        <h4 style="margin:auto" class="font-weight-bold">Access Control</h4>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Duration</span>
-                        <input type="text" class="form-control" id="duration" name="duration" value="">
+                    <!-- <form action="" method="post"> -->
+                    <div class="form-check mt-3 ms-2">
+                        <input class="form-check-input" type="checkbox" value="" id="name">
+                        <label class="form-check-label" for="name">
+                            name
+                        </label>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Agreement Content</span>
-                        <input type="text" class="form-control" id="content" name="content" value="">
+                    <div class="form-check mt-3 ms-2">
+                        <input class="form-check-input" type="checkbox" value="" id="email">
+                        <label class="form-check-label" for="email">
+                            email
+                        </label>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Create Agreement</span>
-                        <input class="btn btn-primary" id="CreateAgreement" value="Create">
+                    <div class="form-check mt-3 ms-2">
+                        <input class="form-check-input" type="checkbox" value="" id="job">
+                        <label class="form-check-label" for="job">
+                            job
+                        </label>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Sign Agreement</span>
-                        <input class="btn btn-primary" id="SignAgreement" value="Sign" disabled>
+                    <div class=" form-check mt-3 ms-2">
+                        <input class="form-check-input" type="checkbox" value="" id="salary">
+                        <label class="form-check-label" for="salary">
+                            salary
+                        </label>
                     </div>
+                    <div class=" form-check mt-3 ms-2">
+                        <input class="form-check-input" type="checkbox" value="" id="deposit">
+                        <label class="form-check-label" for="deposit">
+                            deposit
+                        </label>
+                    </div>
+                    <div class="text-center mt-3">
+                        <input type="button" class="btn btn-primary" value="send access result" id="send">
+                    </div>
+                    <!-- </form> -->
                 </div>
             </div>
         </div>
@@ -76,11 +125,10 @@
         var identityManagerABI, personalIdentityABI;
         var account;
         var contract_address = '<%= contract_address %>';
-
-        var houseData = JSON.parse('<%- JSON.stringify(houseData) %>');
-        var rentData = JSON.parse('<%- JSON.stringify(rentData) %>');
-        var ownerData = JSON.parse('<%- JSON.stringify(ownerData) %>');
-        var tenantData = JSON.parse('<%- JSON.stringify(tenantData) %>');
+        var address = '<%= address %>';
+        var pubkey = '<%= pubkey %>';
+        var house = '<%= house %>';
+        var owner = '<%= owner %>';
 
         const preventMalleability = (sig, ecdsa) => {
             const halfOrder = ecdsa.n.shrn(1);
@@ -137,100 +185,11 @@
                 personalIdentityABI,
                 personalIdentityAddress
             );
-            $('#CreateAgreement').on('click', async function (e) {
-                console.log(houseData);
-                console.log(rentData);
-                console.log(ownerData);
-                console.log(tenantData);
-                let content = $("#content").val();
-                let duration = $("#duration").val();
-                let leaseData = {
-                    "content": content,
-                    "duration": duration
-                }
+            $('#send').on('click', async function (e) {
 
-                let Data = {
-                    ownerAddress: ownerData.address,
-                    tenantAddress: tenantData.address,
-                    houseAddress: houseData.houseAddress,
-                    area: houseData.area,
-                    time: leaseData.duration,
-                    rent: rentData.rent,
-                    content: leaseData.content,
-                    ownerPubkey: ownerData.pubkey,
-                    tenantPubkey: tenantData.pubkey,
-                }
-                console.log(Data);
-
-                response = await ajaxAwait(
-                    '/leaseSystem/agreement/createAgreement',
-                    {
-                        ownerAddress: ownerData.address,
-                        tenantAddress: tenantData.address,
-                        houseAddress: houseData.houseAddress,
-                        area: houseData.area,
-                        time: leaseData.duration,
-                        rent: rentData.rent,
-                        content: leaseData.content,
-                        ownerPubkey: ownerData.pubkey,
-                        tenantPubkey: tenantData.pubkey
-                    }
-                );
-                // console.log(response.toString());
-
-                alert(response.msg);
                 window.location.reload();
             })
 
-            $('#SignAgreement').on('click', async function (e) {
-                // userPubkey, estateAddress, rent, dataHash
-                let response, result;
-                response = await ajaxAwait(
-                    '/leaseSystem/landlord/NewLease',
-                    {
-                        address: userAddress,
-                        estateAddress: houseAddress,
-                        rent: price,
-                        dataHash: "test"
-                    }
-                );
-                console.log('response = ' + response.result);
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
-                let encryptKey = await personalIdentityInstance.methods
-                    .getEncryptMaterial('HLFPrivateKey')
-                    .call({ from: account });
-                let privateKey = await ethereum.request({
-                    method: 'eth_decrypt',
-                    params: [encryptKey, account],
-                });
-                let signature_string;
-                signature_string = sign(privateKey, response.digest);
-                response = await ajaxAwait(
-                    '/leaseSystem/proposalAndCreateCommit',
-                    { signature: signature_string, func: 'NewLease' }
-                );
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
-
-                result = response.result;
-                signature_string = sign(privateKey, response.commitDigest);
-                response = await ajaxAwait('/leaseSystem/commitSend', {
-                    signature: signature_string,
-                    func: 'NewLease',
-                    estateAddress: houseAddress
-                });
-                if (response.error) {
-                    return alert(`error: ${response.result}`);
-                }
-
-                if (alert(`${result}`)) {
-                    window.location.reload();
-                }
-                window.location.reload();
-            });
         }
 
         async function main() {

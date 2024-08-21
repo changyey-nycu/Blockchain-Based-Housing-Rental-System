@@ -83,7 +83,7 @@ class AccessControlManager extends Contract {
       accJson.Permission[dataRequester] = {};
     }
 
-    accJson.Permission[dataRequester][dataType] = {
+    accJson.Permission[dataRequester][attribute] = {
       "data": dataValue,
       "startTime": startTime,
       "endTime": endTime
@@ -93,7 +93,7 @@ class AccessControlManager extends Contract {
     return "Update Permission successfully." + pubkey;
   }
 
-  async RevokePermission(ctx, userPubkey, dataRequester, dataValue, dataType) {
+  async RevokePermission(ctx, userPubkey, dataRequester, dataValue, attribute) {
     let acc = await ctx.stub.getState(userPubkey);
 
     if (!acc || acc.length === 0) {
@@ -103,9 +103,9 @@ class AccessControlManager extends Contract {
     let accJson = JSON.parse(acc.toString());
 
     if (accJson.Permission[dataRequester] &&
-      accJson.Permission[dataRequester][dataType] &&
-      accJson.Permission[dataRequester][dataType].data === dataValue) {
-      delete accJson.Permission[dataRequester][dataType];
+      accJson.Permission[dataRequester][attribute] &&
+      accJson.Permission[dataRequester][attribute].data === dataValue) {
+      delete accJson.Permission[dataRequester][attribute];
     }
 
     await ctx.stub.putState(pubkey, Buffer.from(JSON.stringify(accJson)));
@@ -123,6 +123,25 @@ class AccessControlManager extends Contract {
       throw new Error(`permission denied!`);
     }
     return JSON.stringify(permissions);
+  }
+
+  async ConfirmPermission(ctx, dataRequester, userPubkey, attribute) {
+    let acc = await ctx.stub.getState(userPubkey);
+
+    if (acc && acc.length) {
+      try {
+        let accJson = JSON.parse(acc.toString());
+        const permissions = accJson.Permission[dataRequester];
+        if (permissions.include(attribute)) {
+          return true;
+        }
+      } catch (error) {
+        return false;
+      }
+    }
+    else {
+      return false;
+    }
   }
 }
 exports.contracts = [AccessControlManager];

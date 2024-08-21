@@ -887,6 +887,7 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/searchHouse', { address: address, houseList: houseList });
     });
 
+    // view the house rent data
     router.post('/searchHouse/leasePage', async (req, res) => {
         const address = req.session.address;
         const { addr, uploader } = req.body;
@@ -914,6 +915,7 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/leasePage', { address: address, HouseData: obj, rentData: data, added: false });
     });
 
+    // tenant add this house to favorite
     router.post('/searchHouse/leasePage/add', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { houseAddress, uploaderAddress } = req.body;
@@ -948,6 +950,7 @@ module.exports = function (dbconnection) {
         }
     });
 
+    // tenant ready to sign this house
     router.post('/searchHouse/leasePage/newSigner', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { houseAddress, uploaderAddress } = req.body;
@@ -965,6 +968,8 @@ module.exports = function (dbconnection) {
     });
 
     // Agreement PART
+
+    // View favorite and rent house situation , can choose person to create a agreement
     router.get('/leaseManage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let favoriteList = await Interest.find({ address: address });
@@ -1014,6 +1019,40 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/leasePage', { address: address, HouseData: obj, rentData: data, added: true });
     });
 
+
+
+    // owner create agreement, can edit agreement content 
+    router.post('/leaseManage/agreement', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { signer, estateAddress } = req.body;
+        // let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
+        res.send({ url: `leaseManage/createAgreement?f=${signer}&e=${estateAddress} ` });
+    });
+
+    router.get('/leaseManage/createAgreement', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const signer = req.query.f;
+        const estateAddress = req.query.e;
+        let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
+        let ownerData = await Profile.findOne({ address: address }, 'address pubkey');
+        let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
+        let rentData = {};
+        try {
+            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', ownerData.pubkey, estateAddress);
+            rentData = JSON.parse(obj3.toString());
+        } catch (error) {
+            console.log(error);
+            rentData = {};
+        }
+        res.render('leaseSystem/agreement/createAgreement', {
+            address: address,
+            houseData: houseData, rentData: rentData,
+            ownerData: ownerData, tenantData: tenant,
+            contract_address: contract_address
+        });
+    });
+
+    // already add a agreement in blockchain , edit DB
     router.post('/leaseManage/agreementCreate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { hashed, ownerAddress, houseAddress } = req.body;
@@ -1024,36 +1063,6 @@ module.exports = function (dbconnection) {
         else {
             res.send({ msg: `error` });
         }
-    });
-
-    router.post('/leaseManage/agreement', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const { follower, estateAddress } = req.body;
-        // let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
-        res.send({ url: `leaseManage/agreement?f=${follower}&e=${estateAddress} ` });
-    });
-
-    router.get('/leaseManage/agreement', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const follower = req.query.f;
-        const estateAddress = req.query.e;
-        let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
-        let ownerData = await Profile.findOne({ address: address }, 'address pubkey');
-        let tenant = await Profile.findOne({ address: follower }, 'address pubkey');
-        let rentData = {};
-        try {
-            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', ownerData.pubkey, estateAddress);
-            rentData = JSON.parse(obj3.toString());
-        } catch (error) {
-            console.log(error);
-            rentData = {};
-        }
-        res.render('leaseSystem/agreement/agreement', {
-            address: address,
-            houseData: houseData, rentData: data,
-            ownerData: ownerData, tenantData: tenant,
-            contract_address: contract_address
-        });
     });
 
     return router;

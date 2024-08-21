@@ -2,57 +2,75 @@
 
     <body>
         <div class="container mt-3">
-            <div class="col-md-5 center-block" style="float: none; margin: auto">
-                <div style="margin-top: 10px">
-                    <a href="/leaseSystem/leaseManage">back</a>
-                </div>
+            <div style="margin-top: 10px">
+                <a href="/leaseSystem/leaseManage">back</a>
+            </div>
+            <div class="col-md-5 center-block card" style="float: none; margin: auto">
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Tenant Data</h4>
                 </div>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Tenant Address</span>
-                    <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
-                        value="<%=tenantData.address%>" readonly>
-                </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Tenant Pubkey</span>
-                    <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
-                        value="<%=tenantData.pubkey%>" readonly>
+                    <input type="text" class="form-control" value="<%=tenant%>" readonly>
                 </div>
             </div>
         </div>
 
         <div class="container mt-3">
-            <div class="col-md-5 center-block" style="float: none; margin: auto">
+            <div class="col-md-5 center-block card" style="float: none; margin: auto">
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Get Personal Data</h4>
                 </div>
-                <form action="">
+                <!-- <form action="/leaseSystem/dataSharing/test" method="post"> -->
+                    <input type="text" id="tenantAddress" name="tenantAddress" value="<%=tenant%>" hidden>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="A" id="A">
-                        <label class="form-check-label" for="A">
-                            A
+                        <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
+                        <label class="form-check-label" for="name">
+                            name
                         </label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="B" id="B">
-                        <label class="form-check-label" for="B">
-                            B
+                        <input class="form-check-input" type="checkbox" name="email" value="true" id="email">
+                        <label class="form-check-label" for="email">
+                            email
                         </label>
                     </div>
-                    <div class="form-control">
-                        <input type="button" class="btn btn-primary" value="send request" id="send">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="job" value="true" id="job">
+                        <label class="form-check-label" for="job">
+                            job
+                        </label>
                     </div>
-                </form>
-
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="salary" value="true" id="salary">
+                        <label class="form-check-label" for="salary">
+                            salary
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="deposit" value="true" id="deposit">
+                        <label class="form-check-label" for="deposit">
+                            deposit
+                        </label>
+                    </div>
+                    <div class="mt-3 center-block">
+                        <input type="button" class="btn btn-primary" value="get result" id="getResult">
+                    </div>
+                <!-- </form> -->
             </div>
         </div>
 
     </body>
     <script>
-        async function buildListener() {
-            $('#CreateAgreement').on('click', async function (e) {
+        var contract_address = '<%= contract_address %>';
+        var address = '<%= address %>';
+        var pubkey = '<%= pubkey %>';
 
+        async function buildListener() {
+            $('#getResult').on('click', async function (e) {
+                let name = $(`#name`).val();
+                console.log(name);
+                
             })
         }
 

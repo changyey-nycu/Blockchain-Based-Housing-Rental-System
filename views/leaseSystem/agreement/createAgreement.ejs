@@ -112,14 +112,6 @@
                                     <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
                                         value="<%=tenantData.pubkey%>" readonly>
                                 </div>
-                                <% if (address==houseData.ownerAddress) {%>
-                                    <div class="input-group-append"><button type="button" id="request"
-                                            class="btn btn-secondary">request personal data</button></div>
-                                    <%} %>
-                                    <% if (address==tenantData.address) {%>
-                                        <div class="input-group-append"><button type="button" id="upload"
-                                                class="btn btn-secondary">upload personal data</button></div>
-                                        <%} %>
                             </div>
                         </div>
                     </div>
@@ -214,7 +206,7 @@
                 try {
                     if (response.hashed) {
                         alert(response.msg);
-                        alert(response.hashed);
+                        // alert(response.hashed);
 
                         let result = await ajaxAwait(
                             '/leaseSystem/leaseManage/agreementCreate',
@@ -224,7 +216,7 @@
                                 hashed: response.hashed
                             }
                         );
-                        alert(result.msg);
+                        // alert(result.msg);
                     }
                     else {
                         alert(`create error ${response.error}`);
@@ -236,10 +228,6 @@
             })
 
             $('#ViewAgreement').on('click', async function (e) {
-                console.log(houseData);
-                console.log(rentData);
-                console.log(ownerData);
-                console.log(tenantData);
                 let content = $("#content").val();
                 let duration = $("#duration").val();
                 let leaseData = {
@@ -247,12 +235,6 @@
                     "duration": duration
                 }
 
-                let Data = {
-                    ownerAddress: ownerData.address,
-                    tenantAddress: tenantData.address,
-                    houseAddress: houseData.houseAddress,
-                }
-                console.log(Data);
                 $.ajax({
                     type: 'POST',
                     url: '/leaseSystem/agreement/agreementPage',

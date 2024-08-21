@@ -93,31 +93,72 @@ module.exports = function (dbconnection) {
         }
     };
 
-    router.get('/request', isAuthenticated, async (req, res) => {
+    router.post('/upload', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const pubkey = req.session.pubkey;
-        res.render('leaseSystem/dataSharing/request', { address: address, pubkey: pubkey });
+        const { ownerAddress, houseAddress } = req.body;
+        res.send({ url: 'dataSharing/upload?owner=' + ownerAddress + '&house=' + houseAddress });
     });
 
     router.get('/upload', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const pubkey = req.session.pubkey;
-        res.render('leaseSystem/dataSharing/upload', { address: address, pubkey: pubkey });
-    });
-
-    router.post('/saveData', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const { data } = req.body;
+        const owner = req.query.owner;
+        const house = req.query.house;
         let localData;
         try {
             localData = await PersonalData.findOne({ address: address });
             if (!localData) {
-                localData = new PersonalData({ data: data });
+                localData = new PersonalData({ address: address, pubkey: pubkey });
+                localData.save();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        res.render('leaseSystem/dataSharing/upload', {
+            address: address, pubkey: pubkey, owner: owner
+            , house: house, tenantData: localData, contract_address: contract_address
+        });
+    });
+
+    router.post('/request', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const pubkey = req.session.pubkey;
+        const { tenantAddress, houseAddress } = req.body;
+        res.send({ url: 'dataSharing/request?tenant=' + tenantAddress + '&house=' + houseAddress });
+    });
+
+    router.get('/request', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const pubkey = req.session.pubkey;
+        const tenant = req.query.tenant;
+        const house = req.query.house;
+        // let localData;
+        // try {
+        //     localData = await PersonalData.findOne({ address: tenant });
+        //     if (!localData) {
+        //         localData = new PersonalData({ address: tenant });
+        //         localData.save();
+        //     }
+        // } catch (error) {
+        //     console.log(error);
+        // }
+        res.render('leaseSystem/dataSharing/request', { address: address, pubkey: pubkey, tenant: tenant, house: house, contract_address: contract_address });
+    });
+
+    router.post('/saveData', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { nameInput, emailInput, phoneInput, jobInput, salaryInput, depositInput } = req.body;
+        let localData;
+        try {
+            localData = await PersonalData.findOne({ address: address });
+            if (!localData) {
+                localData = new PersonalData({ address: address, pubkey: pubkey, name: nameInput, email: emailInput, phone: phoneInput, job: jobInput, salary: salaryInput, deposit: depositInput });
                 localData.save();
                 res.send({ msg: 'save data success.' });
             }
             localData = await PersonalData.findOneAndUpdate({ address: address },
-                { data: data }, { new: true });
+                { name: nameInput, email: emailInput, phone: phoneInput, job: jobInput, salary: salaryInput, deposit: depositInput }, { new: true });
             res.send({ msg: 'save data success.' });
 
         } catch (error) {
@@ -126,12 +167,12 @@ module.exports = function (dbconnection) {
         }
     })
 
-    router.post('/updatePermission', async (req, res) => {
-        const { name, userAddress, userPubkey, IDNumber, houseAddress, area, date } = req.body;
+    router.post('/updatePermission', isAuthenticated, async (req, res) => {
+        const { name, email, job, salary, deposit } = req.body;
 
         // save to chain
         try {
-            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area, date);
+            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, houseAddress, area, date);
             console.log(result.toString());
             return res.send({ msg: "success." });
         } catch (error) {
@@ -140,19 +181,29 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post('/getData', async (req, res) => {
-        const { name, userAddress, userPubkey, IDNumber, houseAddress, area, date } = req.body;
-        // save to chain
+    router.post('/getData', isAuthenticated, async (req, res) => {
+        const { tenantAddress } = req.body;
+        const {name, email, job, salary, deposit} = req.body;
         // get chain Access control
-
-        try {
-            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area, date);
-            console.log(result.toString());
-            return res.send({ msg: "success." });
-        } catch (error) {
-            console.log(error);
-            return res.send({ msg: "error." });
+        let { dataRequester, userPubkey } = req.body;
+        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', dataRequester, userPubkey);
+        let permit = (permitBuffer.toString() === 'true');
+        if (permit) {
+            try {
+                // get data
+                return res.send({ msg: "success." });
+            } catch (error) {
+                console.log(error);
+                return res.send({ msg: "permission denied." });
+            }
         }
+        return res.send({ msg: "permission denied." });
+    });
+
+    router.post('/test', async (req, res) => {
+        console.log(req.body);
+
+        return res.send({ msg: "success." });
     });
 
     return router;

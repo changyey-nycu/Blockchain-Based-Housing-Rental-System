@@ -287,6 +287,7 @@ module.exports = function (dbconnection) {
         }
     })
 
+    // owner create a agreement to certain tenant
     router.post("/createAgreement", isAuthenticated, async (req, res) => {
         let { ownerAddress, ownerPubkey, tenantAddress, tenantPubkey, houseAddress, area, startDate, duration, rent, content } = req.body;
 
@@ -330,10 +331,18 @@ module.exports = function (dbconnection) {
         }
     })
 
+    // view the agreement data in the database, need to create first
     router.post('/agreementPage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { ownerAddress, tenantAddress, houseAddress } = req.body;
-        res.send({ url: `/leaseSystem/agreement/agreementPage?owner=${ownerAddress}&tenant=${tenantAddress}&house=${houseAddress}` });
+        let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+
+        if (!agreement) {
+            res.send({ msg: "The agreement is not exist, please create agreement first." });
+        }
+        else {
+            res.send({ url: `/leaseSystem/agreement/agreementPage?owner=${ownerAddress}&tenant=${tenantAddress}&house=${houseAddress}` });
+        }
     });
 
     router.get("/agreementPage", async (req, res) => {
@@ -346,8 +355,8 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/agreement/agreementPage', { address: address, agreement: agreement, contract_address: contract_address });
     })
 
+    // owner and tenant sign the agreement
     router.post("/signAgreement", isAuthenticated, async (req, res) => {
-        // PartyAkey, PartyBkey, agreementHashed, signature, type
         let { address, ownerAddress, tenantAddress, houseAddress } = req.body;
         let signature = req.body['signature[]'];
 
@@ -408,7 +417,6 @@ module.exports = function (dbconnection) {
 
     //     return res.send({ msg: "done." });
     // })
-
 
 
     return router;

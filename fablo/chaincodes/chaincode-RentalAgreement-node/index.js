@@ -90,7 +90,7 @@ class RentalAgreement extends Contract {
     return `Sign for ${type} Successfully.`;
   }
 
-  // test for on chain verify(can compare speed in 1)
+  // test for on chain verify(can compare speed with SignAgreement)
   async SignAgreement2(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type) {
     let agreement = await ctx.stub.getState(PartyAkey);
     let agreementData;
@@ -117,7 +117,7 @@ class RentalAgreement extends Contract {
 
   async VerifySign(ctx, pubkey, plaintext, signature) {
     const publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
-    return publickeyObject.verify(plaintext, Buffer.from(signature.split(",")));
+    return publickeyObject.verify(plaintext, Buffer.from(signature));
   }
 
   async VerifyAgreementSign(ctx, pubkey, agreementHashed) {
