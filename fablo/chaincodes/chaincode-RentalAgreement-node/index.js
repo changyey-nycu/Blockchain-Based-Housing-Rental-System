@@ -101,10 +101,10 @@ class RentalAgreement extends Contract {
       throw new Error(`The agreement key:${PartyAkey} does not exist`);
     }
 
-    if (type == "PartyA" && await this.VerifySign(ctx, PartyAkey, signature, agreementHashed)) {
+    if (type == "PartyA" && await this.VerifySign(ctx, PartyAkey, agreementHashed, signature.split(","))) {
       agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
     }
-    else if (type == "PartyB" && await this.VerifySign(ctx, PartyBkey, signature, agreementHashed)) {
+    else if (type == "PartyB" && await this.VerifySign(ctx, PartyBkey, agreementHashed, signature.split(","))) {
       agreementData.Agreement[agreementHashed].sign["PartyB"] = signature;
     }
     else {
@@ -116,6 +116,10 @@ class RentalAgreement extends Contract {
   }
 
   async VerifySign(ctx, pubkey, plaintext, signature) {
+    console.log(signature);
+    console.log(plaintext);
+
+
     const publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
     return publickeyObject.verify(plaintext, Buffer.from(signature));
   }
@@ -132,13 +136,15 @@ class RentalAgreement extends Contract {
     try {
       let A = false, B = false;
       if (agreementData.Agreement[agreementHashed].sign.PartyA) {
-        var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
-        // console.log(agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
-        A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
+        // var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
+        // // console.log(agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
+        // A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
+        A = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyA, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
       }
       if (agreementData.Agreement[agreementHashed].sign.PartyB) {
-        var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
-        B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
+        // var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
+        // B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
+        B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
       }
       return A && B;
     } catch (error) {

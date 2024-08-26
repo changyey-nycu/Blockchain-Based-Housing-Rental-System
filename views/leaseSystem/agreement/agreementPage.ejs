@@ -72,6 +72,12 @@
                             <input type="button" value="sign" id="SignAgreement">
                             <% } %>
                     </div>
+                    <% if (agreement.partyASign && agreement.partyBSign) {%>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Verify both Sign</span>
+                            <input type="button" value="Verify" id="VerifySign">
+                            <% } %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,6 +161,25 @@
                 );
                 alert(response.msg);
                 window.location.reload();
+            });
+            
+            $('#VerifySign').on('click', async function (e) {
+                // async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type)
+                let owner = $("#ownerAddress").val();
+                let tenant = $("#tenantAddress").val();
+                let house = $("#houseAddress").val();
+                let response;
+                
+                response = await ajaxAwait(
+                    '/leaseSystem/agreement/verifySign',
+                    {
+                        ownerAddress: owner,
+                        tenantAddress: tenant,
+                        houseAddress: house,
+                    }
+                );
+                alert(response.msg);
+                // window.location.reload();
             });
         }
 

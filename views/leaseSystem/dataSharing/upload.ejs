@@ -10,7 +10,7 @@
                     <div class="card-header">
                         <h4 style="margin:auto" class="font-weight-bold">Requester Data</h4>
                     </div>
-                    <div class="input-group mb-3">
+                    <div class="input-group mt-3 mb-3">
                         <span class="input-group-text">Owner Address</span>
                         <input type="text" class="form-control" id="uploader" name="uploader" value="<%=owner%>"
                             readonly>
@@ -32,42 +32,51 @@
                         <h4 style="margin:auto" class="font-weight-bold">Your Data</h4>
                     </div>
                     <form action="/leaseSystem/dataSharing/saveData" method="post">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Tenant Address</span>
+                        <input type="text" id="ownerAddress" name="ownerAddress" value="<%=owner%>" hidden>
+                        <input type="text" id="ownerPubkey" name="ownerPubkey" value="<%=ownerPubkey%>" hidden>
+                        <input type="text" id="houseAddress" name="houseAddress" value="<%=house%>" hidden>
+                        <div class="input-group mt-3 mb-3">
+                            <span class="input-group-text">Your Address</span>
                             <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
                                 value="<%=tenantData.address%>" readonly>
                         </div>
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Tenant Pubkey</span>
+                            <span class="input-group-text">Your Pubkey</span>
                             <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
                                 value="<%=tenantData.pubkey%>" readonly>
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">name</span>
-                            <input type="text" class="form-control" id="nameInput" name="nameInput" value="">
+                            <input type="text" class="form-control" id="nameInput" name="nameInput"
+                                value="<%=tenantData.name%>">
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">email</span>
-                            <input type="text" class="form-control" id="emailInput" name="emailInput" value="">
+                            <input type="text" class="form-control" id="emailInput" name="emailInput"
+                                value="<%=tenantData.email%>">
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">phone</span>
-                            <input type="text" class="form-control" id="phoneInput" name="phoneInput" value="">
+                            <input type="text" class="form-control" id="phoneInput" name="phoneInput"
+                                value="<%=tenantData.phone%>">
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">job</span>
-                            <input type="text" class="form-control" id="jobInput" name="jobInput" value="">
+                            <input type="text" class="form-control" id="jobInput" name="jobInput"
+                                value="<%=tenantData.job%>">
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">salary</span>
-                            <input type="number" class="form-control" id="salaryInput" name="salaryInput" value="">
+                            <input type="number" class="form-control" id="salaryInput" name="salaryInput"
+                                value="<%=tenantData.salary%>">
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">deposit</span>
-                            <input type="number" class="form-control" id="depositInput" name="depositInput" value="">
+                            <input type="number" class="form-control" id="depositInput" name="depositInput"
+                                value="<%=tenantData.deposit%>">
                         </div>
                         <div class="mb-3">
-                            <input type="button" class="btn btn-primary" value="save data" id="save">
+                            <input type="submit" class="btn btn-primary" value="save data" id="save">
                         </div>
                     </form>
 
@@ -83,35 +92,36 @@
                     </div>
                     <!-- <form action="" method="post"> -->
                     <div class="form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="" id="name">
+                        <input class="form-check-input" type="checkbox" value="name" id="name">
                         <label class="form-check-label" for="name">
                             name
                         </label>
                     </div>
                     <div class="form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="" id="email">
+                        <input class="form-check-input" type="checkbox" value="email" id="email">
                         <label class="form-check-label" for="email">
                             email
                         </label>
                     </div>
                     <div class="form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="" id="job">
+                        <input class="form-check-input" type="checkbox" value="job" id="job">
                         <label class="form-check-label" for="job">
                             job
                         </label>
                     </div>
                     <div class=" form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="" id="salary">
+                        <input class="form-check-input" type="checkbox" value="salary" id="salary">
                         <label class="form-check-label" for="salary">
                             salary
                         </label>
                     </div>
                     <div class=" form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="" id="deposit">
+                        <input class="form-check-input" type="checkbox" value="deposit" id="deposit">
                         <label class="form-check-label" for="deposit">
                             deposit
                         </label>
                     </div>
+
                     <div class="text-center mt-3">
                         <input type="button" class="btn btn-primary" value="send access result" id="send">
                     </div>
@@ -129,6 +139,7 @@
         var pubkey = '<%= pubkey %>';
         var house = '<%= house %>';
         var owner = '<%= owner %>';
+        var ownerPubkey = '<%= ownerPubkey %>';
 
         const preventMalleability = (sig, ecdsa) => {
             const halfOrder = ecdsa.n.shrn(1);
@@ -186,8 +197,30 @@
                 personalIdentityAddress
             );
             $('#send').on('click', async function (e) {
-
-                window.location.reload();
+                let name = $("#name").is(":checked");
+                let email = $("#email").is(":checked");
+                let job = $("#job").is(":checked");
+                let salary = $("#salary").is(":checked");
+                let deposit = $("#deposit").is(":checked");
+                $.ajax({
+                    type: 'POST',
+                    url: '/leaseSystem/dataSharing/updatePermission',
+                    dataType: 'json',
+                    data: {
+                        userPubkey: pubkey,
+                        dataRequester: ownerPubkey,
+                        name: name,
+                        email: email,
+                        job: job,
+                        salary: salary,
+                        deposit: deposit
+                    }
+                }).then((res) => {
+                    if (res.url) {
+                        window.location.href = res.url;
+                    }
+                })
+                // window.location.reload();
             })
 
         }

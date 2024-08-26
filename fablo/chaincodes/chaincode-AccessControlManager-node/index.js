@@ -66,14 +66,53 @@ class AccessControlManager extends Contract {
     }
     return ctx.stub.deleteState(key);
   }
-  async UpdatePermission(ctx, userPubkey, dataRequester, dataValue, dataType, startTime, endTime) {
+  async UpdatePermission(ctx, userPubkey, dataRequester, attribute, endTime) {
     let acc = await ctx.stub.getState(userPubkey);
+    let accJson =
+    {
+      Permission: {} // only user can change
+    };
 
-    if (!acc || acc.length === 0) {
-      throw new Error(`The user acc key:${userPubkey} does not exist`);
+    if (acc && acc.length > 0) {
+      accJson = JSON.parse(acc.toString());
     }
 
-    let accJson = JSON.parse(acc.toString());
+    if (!accJson.Permission) {
+      accJson.Permission = {};
+    }
+
+    if (!accJson.Permission[dataRequester]) {
+      accJson.Permission[dataRequester] = {};
+    }
+
+    let attJson = JSON.parse(attribute.toString());
+    
+    Object.keys(attJson).forEach(async key => {
+      console.log(`${key} : ${attJson[key]}`);
+
+      accJson.Permission[dataRequester][key] = {
+        "data": attJson[key],
+        "endTime": endTime
+      };
+    })
+
+
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
+    return "Update Permission successfully." + userPubkey;
+  }
+
+  async UpdateOnePermission(ctx, userPubkey, dataRequester, attribute, permit, endTime) {
+    let acc = await ctx.stub.getState(userPubkey);
+    let accJson =
+    {
+      Permission: {} // only user can change
+    };
+
+    if (acc && acc.length > 0) {
+      accJson = JSON.parse(acc.toString());
+    }
+
+
 
     if (!accJson.Permission) {
       accJson.Permission = {};
@@ -84,38 +123,36 @@ class AccessControlManager extends Contract {
     }
 
     accJson.Permission[dataRequester][attribute] = {
-      "data": dataValue,
-      "startTime": startTime,
+      "data": permit,
       "endTime": endTime
     };
 
-    await ctx.stub.putState(pubkey, Buffer.from(JSON.stringify(accJson)));
-    return "Update Permission successfully." + pubkey;
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
+    return "Update Permission successfully." + userPubkey;
   }
 
-  async RevokePermission(ctx, userPubkey, dataRequester, dataValue, attribute) {
+  async RevokePermission(ctx, userPubkey, dataRequester, attribute) {
     let acc = await ctx.stub.getState(userPubkey);
 
     if (!acc || acc.length === 0) {
-      throw new Error(`The user acc key:${pubkey} does not exist`);
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
 
     let accJson = JSON.parse(acc.toString());
 
     if (accJson.Permission[dataRequester] &&
-      accJson.Permission[dataRequester][attribute] &&
-      accJson.Permission[dataRequester][attribute].data === dataValue) {
+      accJson.Permission[dataRequester][attribute]) {
       delete accJson.Permission[dataRequester][attribute];
     }
 
-    await ctx.stub.putState(pubkey, Buffer.from(JSON.stringify(accJson)));
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
     return "Permission revoked successfully.";
   }
 
   async GetPermission(ctx, dataRequester, userPubkey) {
     let acc = await ctx.stub.getState(userPubkey);
     if (!acc || acc.length === 0) {
-      throw new Error(`The user acc key:${pubkey} does not exist`);
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
     let accJson = JSON.parse(acc.toString());
     const permissions = accJson.Permission[dataRequester];

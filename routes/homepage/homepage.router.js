@@ -1065,5 +1065,24 @@ module.exports = function (dbconnection) {
         }
     });
 
+    router.post('/leaseManage/agreementCreate', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { hashed, ownerAddress, houseAddress } = req.body;
+        let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: houseAddress }, { rentHashed: hashed, state: "signing" });
+        if (obj) {
+            res.send({ msg: `success` });
+        }
+        else {
+            res.send({ msg: `error` });
+        }
+    });
+
+    router.post('/leaseManage/upload', isAuthenticated, async (req, res) => {
+        const { ownerAddress, houseAddress } = req.body;
+        let owner = await Profile.findOne({ address: ownerAddress });
+        let ownerPubkey = owner.pubkey;
+        res.send({ url: 'dataSharing/upload?owner=' + ownerAddress + '&house=' + houseAddress + '&key=' + ownerPubkey });
+    });
+
     return router;
 }

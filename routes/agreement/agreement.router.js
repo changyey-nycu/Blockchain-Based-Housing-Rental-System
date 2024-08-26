@@ -370,7 +370,7 @@ module.exports = function (dbconnection) {
             if (address == ownerAddress) {
                 type = "PartyA";
                 if (verifiedSignature(signature, agreement.ownerPubkey, agreement.hashed)) {
-                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement2', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
                     await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
                         { partyASign: signature.toString() });
@@ -380,7 +380,7 @@ module.exports = function (dbconnection) {
             else if (address == tenantAddress) {
                 type = "PartyB";
                 if (verifiedSignature(signature, agreement.tenantPubkey, agreement.hashed)) {
-                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement2', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
                     await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
                         { partyBSign: signature.toString() });
@@ -397,6 +397,15 @@ module.exports = function (dbconnection) {
         }
         return res.send({ msg: "sign fail." });
     })
+
+    router.post("/verifySign", async (req, res) => {
+        let { ownerAddress, tenantAddress, houseAddress } = req.body;
+        let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.ownerPubkey, agreement.hashed);
+        console.log(result.toString());
+        return res.send({ msg: result.toString() });
+    })
+
 
     // router.post("/test", async (req, res) => {
     //     let { address, PartyAkey, agreementHashed } = req.body;

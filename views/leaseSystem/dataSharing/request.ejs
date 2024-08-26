@@ -21,42 +21,71 @@
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Get Personal Data</h4>
                 </div>
-                <!-- <form action="/leaseSystem/dataSharing/test" method="post"> -->
-                    <input type="text" id="tenantAddress" name="tenantAddress" value="<%=tenant%>" hidden>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
-                        <label class="form-check-label" for="name">
-                            name
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="email" value="true" id="email">
-                        <label class="form-check-label" for="email">
-                            email
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="job" value="true" id="job">
-                        <label class="form-check-label" for="job">
-                            job
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="salary" value="true" id="salary">
-                        <label class="form-check-label" for="salary">
-                            salary
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="deposit" value="true" id="deposit">
-                        <label class="form-check-label" for="deposit">
-                            deposit
-                        </label>
-                    </div>
-                    <div class="mt-3 center-block">
-                        <input type="button" class="btn btn-primary" value="get result" id="getResult">
-                    </div>
-                <!-- </form> -->
+
+                <input type="text" id="tenantAddress" name="tenantAddress" value="<%=tenant%>" hidden>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
+                    <label class="form-check-label" for="name">
+                        name
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="email" value="true" id="email">
+                    <label class="form-check-label" for="email">
+                        email
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="job" value="true" id="job">
+                    <label class="form-check-label" for="job">
+                        job
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="salary" value="true" id="salary">
+                    <label class="form-check-label" for="salary">
+                        salary
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="deposit" value="true" id="deposit">
+                    <label class="form-check-label" for="deposit">
+                        deposit
+                    </label>
+                </div>
+                <div class="mt-3 mb-3 center-block">
+                    <input type="button" class="btn btn-primary" value="get result" id="getResult">
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="container mt-3" id="dataPage">
+            <div class="col-md-5 center-block card" style="float: none; margin: auto">
+                <div class="card-header">
+                    <h4 style="margin:auto" class="font-weight-bold">Tenant Data</h4>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">name</span>
+                    <input class="form-control" type="text" id="getName" readonly>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Email</span>
+                    <input class="form-control" type="text" id="getEmail" readonly>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Job</span>
+                    <input class="form-control" type="text" id="getJob" readonly>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Salary</span>
+                    <input class="form-control" type="text" id="getSalary" readonly>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Deposit</span>
+                    <input class="form-control" type="text" id="getDeposit" readonly>
+                </div>
             </div>
         </div>
 
@@ -70,12 +99,18 @@
             $('#getResult').on('click', async function (e) {
                 let name = $(`#name`).val();
                 console.log(name);
-                
+                $('#dataPage').show();
+                $('#getName').val("test name");
+                $('#getEmail').val("test Email");
+                $('#getJob').val("test Job");
+                $('#getSalary').val("test Salary");
+                $('#getDeposit').val("test Deposit");
             })
         }
 
         async function main() {
             buildListener();
+            $('#dataPage').hide();
         }
 
         main();

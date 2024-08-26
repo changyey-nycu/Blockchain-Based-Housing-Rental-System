@@ -121,7 +121,7 @@
                         data: {
                             ownerAddress: uploaderAddress,
                             tenantAddress: address,
-                            houseAddress: houseAddress,
+                            houseAddress: houseAddress
                         },
                         type: 'post'
                     }).then((res) => {
@@ -141,7 +141,7 @@
                     let uploaderAddress = $(`#uploader-${i}`).val();
                     $.ajax({
                         type: 'POST',
-                        url: '/leaseSystem/dataSharing/upload',
+                        url: '/leaseSystem/leaseManage/upload',
                         dataType: 'json',
                         data: {
                             ownerAddress: uploaderAddress,
