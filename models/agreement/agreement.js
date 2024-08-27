@@ -19,7 +19,7 @@ const agreementSchema = new mongoose.Schema({
         type: String
     },
     area: {
-        type: Number
+        type: mongoose.Types.Decimal128
     },
     startDate: {
         type: String

@@ -21,8 +21,8 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">Owner Address</span>
-                            <input type="text" class="form-control" id="userAddress" name="userAddress"
-                                value="<%=address%>" readonly>
+                            <input type="text" class="form-control" id="ownerAddress" name="ownerAddress"
+                                value="<%=HouseData.ownerAddress%>" readonly>
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">House Address</span>
@@ -156,7 +156,7 @@
 
             $('#NewLease').on('click', async function (e) {
                 let price = $("#price").val();
-                let userAddress = $("#userAddress").val();
+                let ownerAddress = $("#ownerAddress").val();
                 let houseAddress = $("#houseAddress").val();
 
                 if (!isNumber(price)) {
@@ -166,12 +166,11 @@
                 // userPubkey, estateAddress, rent, dataHash
                 let response, result;
                 response = await ajaxAwait(
-                    '/leaseSystem/landlord/NewLease',
+                    '/leaseSystem/agent/NewLease',
                     {
-                        address: userAddress,
+                        ownerAddress: ownerAddress,
                         estateAddress: houseAddress,
-                        rent: price,
-                        dataHash: "test"
+                        rent: price
                     }
                 );
                 console.log('response = ' + response.result);

@@ -15,7 +15,7 @@ const realEstateSchema = new mongoose.Schema({
     },
     area: {
         require: true,
-        type: Number
+        type: mongoose.Types.Decimal128
     },
     date: {
         type: String

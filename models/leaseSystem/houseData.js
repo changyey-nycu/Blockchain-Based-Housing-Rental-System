@@ -9,7 +9,7 @@ const Schema = new mongoose.Schema({
         type: String
     },
     area: {
-        type: Number
+        type: mongoose.Types.Decimal128
     },
     city: {
         type: String

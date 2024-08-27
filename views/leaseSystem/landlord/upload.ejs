@@ -44,15 +44,12 @@
     <script>
         async function buildListener() {
             $('#estateBind').on('click', async function (e) {
-                let userAddress = $("#userAddress").val();
+                // let userAddress = $("#userAddress").val();
                 // let IDNumberBind = $("#IDNumberBind").val();
                 let houseAddressBind = $("#houseAddressBind").val();
 
-                let data;
-                data = {
-                    "userAddress": userAddress,
-                    // "IDNumber": IDNumberBind,
-                    "houseAddress": houseAddressBind,
+                let data = {
+                    "houseAddress": houseAddressBind
                 }
 
                 $.ajax({

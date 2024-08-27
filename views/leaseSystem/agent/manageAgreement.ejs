@@ -157,12 +157,12 @@
 
             for (let i = 0; i < agreement.length; i++) {
                 $(`#edit-${i}`).on('click', async function (e) {
-                    // let ownerAddress = $(`#acceptOwner-${i}`).val();
+                    let ownerAddress = $(`#acceptOwner-${i}`).val();
                     let estateAddress = $(`#accept-addr-${i}`).val();
-                    
+
                     $.ajax({
                         url: '/leaseSystem/agent/estatePage',
-                        data: {"addr": estateAddress },
+                        data: { "estateAddress": estateAddress, "owner": ownerAddress },
                         type: 'post'
                     }).then((res) => {
                         if (res.url) {
@@ -172,12 +172,12 @@
                 })
 
                 $(`#rent-${i}`).on('click', async function (e) {
-                    // let ownerAddress = $(`#acceptOwner-${i}`).val();
+                    let ownerAddress = $(`#acceptOwner-${i}`).val();
                     let estateAddress = $(`#accept-addr-${i}`).val();
 
                     $.ajax({
                         url: '/leaseSystem/agent/rent',
-                        data: { "addr": estateAddress },
+                        data: { "addr": estateAddress, "owner": ownerAddress },
                         type: 'post'
                     }).then((res) => {
                         if (res.url) {
@@ -194,7 +194,7 @@
                     response = await ajaxAwait(
                         '/leaseSystem/agent/AcceptEstate',
                         {
-                            address: ownerAddress,
+                            ownerAddress: ownerAddress,
                             estateAddress: estateAddress,
                         }
                     );
@@ -246,7 +246,7 @@
                     response = await ajaxAwait(
                         '/leaseSystem/agent/RejectEstate',
                         {
-                            address: ownerAddress,
+                            ownerAddress: ownerAddress,
                             estateAddress: estateAddress,
                         }
                     );

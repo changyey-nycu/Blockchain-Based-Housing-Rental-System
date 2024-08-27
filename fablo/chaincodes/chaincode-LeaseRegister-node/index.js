@@ -67,12 +67,9 @@ class LeaseRegister extends Contract {
       return "Lease not exist." + estateAddress;
     }
 
-    // if (!leaseJson.Data[estateAddress]) {
-    //   leaseJson.Data[estateAddress] = {};
-    // }
-
-    leaseJson.Data[estateAddress].state = "delete";
-
+    if (leaseJson.Data && leaseJson.Data[estateAddress]) {
+      delete leaseJson.Data[estateAddress];
+    }
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
     return "Update Estate successfully." + userPubkey;
   }
@@ -97,6 +94,11 @@ class LeaseRegister extends Contract {
     const leaseData = leaseJson.Data[estateAddress];
 
     return JSON.stringify(leaseData);
+  }
+
+  async LeaseIsExist(ctx, userPubkey, estateAddress) {
+    let lease = await ctx.stub.getState(userPubkey);
+    return lease && lease.length > 0 && lease.Data[estateAddress].dataHash != 0;
   }
 
   async GetAllOnlineLease(ctx) {

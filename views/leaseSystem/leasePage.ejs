@@ -5,72 +5,72 @@
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <% if (added) {%>
                     <div style="margin-top: 10px">
-                        <a href="/leaseSystem/leaseManage">back</a>
+                        <a href="/leaseSystem/leaseManage">Manage lease</a>
                     </div>
-                    <%} else{%>
+                    <% } %>
                         <div style="margin-top: 10px">
-                            <a href="/leaseSystem/searchHouse">back</a>
+                            <a href="/leaseSystem/searchHouse">go to searchHouse</a>
                         </div>
-                        <% }%>
-
-                            <div style="margin-top: 10px" class="card text-center">
-                                <div class="card-header">
-                                    <h4 style="margin:auto" class="font-weight-bold">House Data</h4>
-                                </div>
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Title</span>
-                                    <input type="text" class="form-control" id="title" name="title"
-                                        value="<%=HouseData.title%>" readonly>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label class="form-label">Picture</label>
-                                    <picture></picture>
-                                </div>
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">Owner Address</span>
-                                    <input type="text" class="form-control" id="uploader" name="uploader"
-                                        value="<%=HouseData.ownerAddress%>" readonly>
-                                </div>
-                                <% if (HouseData.agent !="0x" ) { %>
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text">Agent Address</span>
-                                        <input type="text" class="form-control" id="uploader" name="uploader"
-                                            value="<%=HouseData.agent%>" readonly>
-                                    </div>
-                                    <%} %>
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">House Address</span>
-                                            <input type="text" class="form-control" id="houseAddress"
-                                                name="houseAddress" value="<%=HouseData.houseAddress%>" readonly>
-                                        </div>
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">House Area</span>
-                                            <input type="text" class="form-control" value="<%=HouseData.area%>"
-                                                readonly>
-                                        </div>
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">Room Type</span>
-                                            <input type="text" class="form-control" value="<%=HouseData.type%>"
-                                                readonly>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <label class="form-label">Describe</label>
-                                            <input type="text" class="form-control" id="describe" name="describe"
-                                                value="<%=HouseData.describe%>" readonly>
-                                        </div>
-                                        <% if (!added) {%>
-                                            <div class="mb-3">
-                                                <button class="btn btn-primary" id="add">add favorite</button>
-                                            </div>
-                                            <%} else {%>
-                                                <div class="mb-3">
-                                                    <button class="btn btn-primary" id="remove">remove favorite</button>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <button class="btn btn-primary" id="newSigner">want to sign</button>
-                                                </div>
-                                                <% } %>
+                        <div style="margin-top: 10px" class="card text-center">
+                            <div class="card-header">
+                                <h4 style="margin:auto" class="font-weight-bold">House Data</h4>
                             </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Title</span>
+                                <input type="text" class="form-control" id="title" name="title"
+                                    value="<%=HouseData.title%>" readonly>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Picture</label>
+                                <picture></picture>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Owner Address</span>
+                                <input type="text" class="form-control" id="uploader" name="uploader"
+                                    value="<%=HouseData.ownerAddress%>" readonly>
+                            </div>
+                            <% if (HouseData.agent !="0x" ) { %>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Agent Address</span>
+                                    <input type="text" class="form-control" id="uploader" name="uploader"
+                                        value="<%=HouseData.agent%>" readonly>
+                                </div>
+                                <%} %>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">House Address</span>
+                                        <input type="text" class="form-control" id="houseAddress" name="houseAddress"
+                                            value="<%=HouseData.houseAddress%>" readonly>
+                                    </div>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">House Area</span>
+                                        <input type="text" class="form-control" value="<%=HouseData.area%>" readonly>
+                                    </div>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">Room Type</span>
+                                        <input type="text" class="form-control" value="<%=HouseData.type%>" readonly>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Describe</label>
+                                        <input type="text" class="form-control" id="describe" name="describe"
+                                            value="<%=HouseData.describe%>" readonly>
+                                    </div>
+                                    <% if (!added) {%>
+                                        <div class="mb-3" id="notAdded">
+                                            <button class="btn btn-primary" id="add">add favorite</button>
+                                        </div>
+                                        <%} else {%>
+                                            <div id="isAdded">
+                                                <div class="mb-3">
+                                                    <button class="btn btn-primary" id="remove">remove
+                                                        favorite</button>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <button class="btn btn-primary" id="newSigner">want to
+                                                        sign</button>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                        </div>
             </div>
         </div>
     </body>
@@ -88,7 +88,8 @@
                     type: 'post'
                 }).then((res) => {
                     alert(res.msg);
-                    window.location.reload();
+                    $('#notAdded').hide();
+                    $('#isAdded').show();
                 })
             })
 

@@ -55,7 +55,7 @@
                     let houseAddress = $(`#addr-${i}`).val();
                     $.ajax({
                         url: '/leaseSystem/landlord/estatePage',
-                        data: { "addr": houseAddress },
+                        data: { "houseAddress": houseAddress },
                         type: 'post'
                     }).then((res) => {
                         if (res.url) {
@@ -69,7 +69,7 @@
 
                     $.ajax({
                         url: '/leaseSystem/landlord/rent',
-                        data: { "addr": houseAddress },
+                        data: { "houseAddress": houseAddress },
                         type: 'post'
                     }).then((res) => {
                         if (res.url) {
@@ -83,7 +83,7 @@
 
                     $.ajax({
                         url: '/leaseSystem/landlord/agent',
-                        data: { "addr": houseAddress },
+                        data: { "houseAddress": houseAddress },
                         type: 'post',
                     }).then((res) => {
                         if (res.url) {

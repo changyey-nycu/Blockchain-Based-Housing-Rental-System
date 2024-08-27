@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
 
 const agencySchema = new mongoose.Schema({
-    name: {
-        require: true,
-        type: String,
-    },
     IDNumber: {
-        require: true,
         type: String,
+        unique: true
+    },
+    name: {
+        type: String,
+        require: true
     },
     date: {
         type: String,
-        unique: true
+        require: true
     }
 });
 
