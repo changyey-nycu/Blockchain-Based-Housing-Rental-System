@@ -54,11 +54,11 @@
                                         <input type="text" class="form-control" id="describe" name="describe"
                                             value="<%=HouseData.describe%>" readonly>
                                     </div>
-                                    <% if (!added) {%>
+                                    
                                         <div class="mb-3" id="notAdded">
                                             <button class="btn btn-primary" id="add">add favorite</button>
                                         </div>
-                                        <%} else {%>
+                                        
                                             <div id="isAdded">
                                                 <div class="mb-3">
                                                     <button class="btn btn-primary" id="remove">remove
@@ -69,13 +69,20 @@
                                                         sign</button>
                                                 </div>
                                             </div>
-                                            <% } %>
+                                            
                         </div>
             </div>
         </div>
     </body>
     <script>
+        let added = '<%-added%>';
         async function buildListener() {
+            if (added === "true") {
+                $('#notAdded').hide();
+            }
+            else{
+                $('#isAdded').hide();
+            }
             $(`#add`).on('click', async function (e) {
                 let houseAddress = $(`#houseAddress`).val();
                 let uploaderAddress = $(`#uploader`).val();

@@ -216,9 +216,7 @@
                         deposit: deposit
                     }
                 }).then((res) => {
-                    if (res.url) {
-                        window.location.href = res.url;
-                    }
+                    alert(res.msg);
                 })
                 // window.location.reload();
             })

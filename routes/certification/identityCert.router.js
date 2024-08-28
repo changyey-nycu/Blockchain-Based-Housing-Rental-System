@@ -183,26 +183,32 @@ module.exports = function (dbconnection1) {
         }
 
         // SKIP for test
-        // check exist
-        let obj = await Agency.findOne({ name: name, IDNumber: IDNumber, date: date });
-        if (obj) {
-            let errors = "The agent data already exists.";
-            console.log(errors);
-            return res.send({ msg: errors });
+
+        try {
+            // check exist
+            let obj = await Agency.findOne({ name: name, IDNumber: IDNumber, date: date });
+            if (obj) {
+                let errors = "The agent data already exists.";
+                console.log(errors);
+                // return res.send({ msg: errors });
+            }
+
+            // save to gov DB
+            try {
+                const AgencyData = new Agency({
+                    name: name,
+                    IDNumber: IDNumber,
+                    date: date
+                })
+                await AgencyData.save();
+            } catch (error) {
+                console.log(error);
+                // return res.send({ msg: "save data error." });
+            }
+        } catch (error) {
+
         }
 
-        // save to gov DB
-        try {
-            const AgencyData = new Agency({
-                name: name,
-                IDNumber: IDNumber,
-                date: date
-            })
-            await AgencyData.save();
-        } catch (error) {
-            console.log(error);
-            return res.send({ msg: "save data error." });
-        }
 
         // save to chain
         try {

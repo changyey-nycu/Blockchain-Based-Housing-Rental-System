@@ -211,6 +211,7 @@
                         let result = await ajaxAwait(
                             '/leaseSystem/leaseManage/agreementCreate',
                             {
+                                tenantAddress: tenantData.address,
                                 ownerAddress: ownerData.address,
                                 houseAddress: houseData.houseAddress,
                                 hashed: response.hashed
@@ -228,13 +229,6 @@
             })
 
             $('#ViewAgreement').on('click', async function (e) {
-                let content = $("#content").val();
-                let duration = $("#duration").val();
-                let leaseData = {
-                    "content": content,
-                    "duration": duration
-                }
-
                 $.ajax({
                     type: 'POST',
                     url: '/leaseSystem/agreement/agreementPage',

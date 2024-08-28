@@ -173,11 +173,11 @@
 
                 $(`#rent-${i}`).on('click', async function (e) {
                     let ownerAddress = $(`#acceptOwner-${i}`).val();
-                    let estateAddress = $(`#accept-addr-${i}`).val();
+                    let houseAddress = $(`#accept-addr-${i}`).val();
 
                     $.ajax({
                         url: '/leaseSystem/agent/rent',
-                        data: { "addr": estateAddress, "owner": ownerAddress },
+                        data: { "houseAddress": houseAddress, "owner": ownerAddress },
                         type: 'post'
                     }).then((res) => {
                         if (res.url) {

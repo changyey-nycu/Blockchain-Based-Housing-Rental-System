@@ -84,14 +84,21 @@ class AccessControlManager extends Contract {
     if (!accJson.Permission[dataRequester]) {
       accJson.Permission[dataRequester] = {};
     }
+    let attJson;
+    // console.log(attribute);
+    try {
+      attJson = JSON.parse(attribute.toString());
+    } catch (error) {
+      console.log(attribute.toString());
+      attJson = attribute;
+    }
 
-    let attJson = JSON.parse(attribute.toString());
-    
-    Object.keys(attJson).forEach(async key => {
-      console.log(`${key} : ${attJson[key]}`);
+
+    Object.keys(attribute).forEach(async key => {
+      // console.log(`${key} : ${attribute[key]}`);
 
       accJson.Permission[dataRequester][key] = {
-        "data": attJson[key],
+        "data": attribute[key],
         "endTime": endTime
       };
     })

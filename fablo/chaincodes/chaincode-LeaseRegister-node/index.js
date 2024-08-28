@@ -96,9 +96,15 @@ class LeaseRegister extends Contract {
     return JSON.stringify(leaseData);
   }
 
-  async LeaseIsExist(ctx, userPubkey, estateAddress) {
+  async IsLeaseExist(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
-    return lease && lease.length > 0 && lease.Data[estateAddress].dataHash != 0;
+    if (lease && lease.length > 0) {
+      let leaseJson = JSON.parse(lease.toString());
+      return leaseJson.Data.hasOwnProperty(estateAddress);
+    }
+    else {
+      return false;
+    }
   }
 
   async GetAllOnlineLease(ctx) {

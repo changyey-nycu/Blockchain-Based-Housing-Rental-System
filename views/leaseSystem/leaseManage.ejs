@@ -58,7 +58,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (let index=0; index < rentData.length; index++) {%>
+                            <% for (let index=0; index < rentData.length; index++) { let signIndex=-1;%>
                                 <tr>
                                     <td>
                                         <input type="text" id="estateAddress-<%= index %>"
@@ -67,19 +67,35 @@
                                     </td>
                                     <td>
                                         <select name="signer-<%= index %>" id="signer-<%= index %>">
-                                            <option value="" selected>---select a person to sign---</option>
-                                            <% for (let i=0; i < signerList.length; i++) {
-                                                if(signerList[i].houseAddress==rentData[index].estateAddress) {%>
-                                                <option value="<%= signerList[i].address %>">
-                                                    <%= signerList[i].address %>
-                                                </option>
-                                                <% } } %>
+
+                                            <%for (let i=0; i < signerList.length; i++) {
+                                                if(signerList[i].houseAddress==rentData[index].estateAddress) { if
+                                                (signerList[i].agreement==true) { signIndex=i; } } } %>
+
+                                                <% if(signIndex==-1){ %>
+                                                    <option value="" selected>---select a person to sign---</option>
+                                                    <%for (let i=0; i < signerList.length; i++) {%>
+                                                        <option value="<%= signerList[i].address %>">
+                                                            <%= signerList[i].address %>
+                                                        </option>
+                                                        <% }} else{ %>
+                                                            <option value="<%= signerList[signIndex].address %>"
+                                                                selected>
+                                                                <%= signerList[signIndex].address %>
+                                                            </option>
+                                                            <%}%>
                                         </select>
                                     </td>
+                                    <% if(signIndex==-1){ %>
+                                        <td><button class="btn btn-primary" id="createAgreement-<%= index %>">Create
+                                                Agreement</button></td>
+                                        <%} else{ %>
+                                            <td><button class="btn btn-primary" id="viewAgreement-<%= index %>">View
+                                                    Agreement</button></td>
+                                            <%}%>
 
-                                    <td><button class="btn btn-primary" id="createAgreement-<%= index %>">Create
-                                            Agreement</button></td>
-                                    <td><button class="btn btn-primary" id="request-<%= index %>">acc</button></td>
+                                                <td><button class="btn btn-primary"
+                                                        id="request-<%= index %>">acc</button></td>
                                 </tr>
                                 <%} %>
                         </tbody>
@@ -187,6 +203,34 @@
                     })
                 })
 
+                $(`#viewAgreement-${index}`).on('click', async function (e) {
+                    let estateAddress = $(`#estateAddress-${index}`).val();
+                    let signer = $(`#signer-${index}`).val();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/leaseSystem/agreement/agreementPage',
+                        dataType: 'json',
+                        data: {
+                            ownerAddress: address,
+                            tenantAddress: signer,
+                            houseAddress: estateAddress
+                        },
+                        success: function (res) {
+                            console.log('success');
+                            if (res.url) {
+                                window.location.href = res.url;
+                            }
+                        },
+                        fail: function (xhr, ajaxOptions, thrownError) {
+                            console.log('fail');
+                            reject(false);
+                        },
+                    });
+
+                    // console.log(response.toString());
+
+                })
+                
                 $(`#request-${index}`).on('click', async function (e) {
                     let estateAddress = $(`#estateAddress-${index}`).val();
                     let signer = $(`#signer-${index}`).val();

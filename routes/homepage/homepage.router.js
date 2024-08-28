@@ -46,6 +46,7 @@ var newLease = {};
 const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
+const { error } = require('console');
 
 module.exports = function (dbconnection) {
     const HouseData = dbconnection.model('houseDatas', require('../../models/leaseSystem/houseData'));
@@ -507,7 +508,7 @@ module.exports = function (dbconnection) {
             let { signature, func, estateAddress, ownerAddress } = req.body;
             let signature_buffer = convertSignature(signature);
             let response = await commitSend(req.session.address, func, signature_buffer);
-            // console.log(response);
+            console.log(response);
 
             // change local database
             try {
@@ -521,10 +522,13 @@ module.exports = function (dbconnection) {
                     // }
                 }
                 else if (!response.error && func == "AcceptEstate") {
-                    let obj = await HouseData.findOneAndUpdate({ houseAddress: ownerAddress }, { agent: req.session.address, state: "agent" });
+                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: estateAddress }, { agent: req.session.address, state: "agent" });
                     if (obj) {
                         console.log(obj);
                         // console.log("update local data");
+                    }
+                    else {
+                        console.log("error");
                     }
                 }
             } catch (error) {
@@ -692,8 +696,11 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await leaseRegisterInstance.evaluateTransaction('LeaseIsExist', owner.pubkey, estateAddress);
-        if (isExist == true) {
+        let isExist = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        // let isExist = await leaseRegisterInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
+        // let a = JSON.parse(isExist.toString())
+
+        if (isExist.toString() == "true") {
             console.log('exist = ' + isExist);
             return res.send({ 'error': "error", "result": "The house is published." });
         }
@@ -781,7 +788,8 @@ module.exports = function (dbconnection) {
     router.post('/agent/AcceptEstate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let { ownerAddress, estateAddress } = req.body;
-        let owner = await Profile.findOne({ address: ownerAddress });
+        let owner = await Profile.findOne({ address: address });
+
         try {
             const digest = await createTransaction(address.toLowerCase(), 'AcceptEstate', owner.pubkey, estateAddress);
             return res.send({ 'digest': digest });
@@ -794,7 +802,7 @@ module.exports = function (dbconnection) {
     router.post('/agent/RejectEstate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let { ownerAddress, estateAddress } = req.body;
-        let owner = await Profile.findOne({ address: ownerAddress });
+        let owner = await Profile.findOne({ address: address });
         try {
             const digest = await createTransaction(address.toLowerCase(), 'RejectEstate', owner.pubkey, estateAddress);
             return res.send({ 'digest': digest });
@@ -826,29 +834,31 @@ module.exports = function (dbconnection) {
 
     router.post('/agent/estateUpdate', isAuthenticated, async (req, res) => {
         //  get local data, then update the record in system DB
-        const { userAddress, houseAddress, title, roomType, describe } = req.body;
+        const address = req.session.address;
+        const { ownerAddress, houseAddress, title, roomType, describe } = req.body;
         if (describe.toString().length > 300) {
             return res.send({ msg: "describe too long" });
         }
         let houseData;
         try {
             houseData = await HouseData.findOneAndUpdate(
-                { ownerAddress: userAddress, houseAddress: houseAddress },
+                { ownerAddress: ownerAddress, houseAddress: houseAddress },
                 { title: title, type: roomType, describe: describe }, { new: true }
             )
         } catch (error) {
             console.log(error);
         }
 
-        return res.render('leaseSystem/landlord/manageEstate', { address: userAddress, HouseData: houseData });
+        return res.render('leaseSystem/agent/agentEstatePage', { address: address, HouseData: houseData });
     });
 
     // setting estate rent data and rent
     router.post('/agent/rent', isAuthenticated, async (req, res) => {
         // const address = req.session.address;
-        const { estateAddress, owner } = req.body;
+        const { houseAddress, owner } = req.body;
+
         // let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
-        res.send({ url: 'rent?owner=' + owner + '&addr=' + estateAddress });
+        res.send({ url: 'rent?owner=' + owner + '&addr=' + houseAddress });
     });
 
     router.get('/agent/rent', isAuthenticated, async (req, res) => {
@@ -873,9 +883,9 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await leaseRegisterInstance.evaluateTransaction('LeaseIsExist', owner.pubkey, estateAddress);
-        let isExistAgent = await leaseRegisterInstance.evaluateTransaction('LeaseIsExist', agent.pubkey, estateAddress);
-        if (isExist == true && isExistAgent == true) {
+        let isExist = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        let isExistAgent = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
+        if (isExist.toString() == "true" && isExistAgent.toString() == "true") {
             console.log('exist = ' + isExist + " , " + isExistAgent);
             return res.send({ 'error': "error", "result": "The house is published." });
         }
@@ -903,7 +913,7 @@ module.exports = function (dbconnection) {
         );
         console.log(userData);
         if (!userData) {
-            errors = "The agent data error in system.";
+            let errors = "The agent data error in system.";
             console.log(errors);
             return res.send({ msg: errors });
         }
@@ -968,6 +978,8 @@ module.exports = function (dbconnection) {
         try {
             if (address != undefined) {
                 let isAdd = await Interest.findOne({ address: address, ownerAddress: uploaderData.address, houseAddress: addr });
+                console.log(isAdd);
+
                 if (isAdd) {
                     added = true;
                 }
@@ -1071,7 +1083,7 @@ module.exports = function (dbconnection) {
 
         let houseData = await HouseData.findOne({ ownerAddress: uploaderData.address, houseAddress: addr });
 
-        let leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', uploader, addr);
+        let leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', uploaderData.pubkey, addr);
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -1129,21 +1141,14 @@ module.exports = function (dbconnection) {
     // already add a agreement in blockchain , edit DB
     router.post('/leaseManage/agreementCreate', isAuthenticated, async (req, res) => {
         // const address = req.session.address;
-        const { hashed, ownerAddress, houseAddress } = req.body;
+        const { hashed, ownerAddress, houseAddress, tenantAddress } = req.body;
         let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: houseAddress }, { rentHashed: hashed, state: "signing" });
-        if (obj) {
-            res.send({ msg: `success` });
-        }
-        else {
-            res.send({ msg: `error` });
-        }
-    });
-
-    router.post('/leaseManage/agreementCreate', isAuthenticated, async (req, res) => {
-        // const address = req.session.address;
-        const { hashed, ownerAddress, houseAddress } = req.body;
-        let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: houseAddress }, { rentHashed: hashed, state: "signing" });
-        if (obj) {
+        let obj2 = await Interest.findOneAndUpdate({
+            address: tenantAddress,
+            ownerAddress: ownerAddress,
+            houseAddress: houseAddress
+        }, { agreement: true });
+        if (obj && obj2) {
             res.send({ msg: `success` });
         }
         else {

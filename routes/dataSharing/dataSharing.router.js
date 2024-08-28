@@ -361,12 +361,12 @@ module.exports = function (dbconnection) {
             "salary": salary,
             "deposit": deposit
         }
-        console.log(attributes);
+        let attString = JSON.stringify(attributes);
 
         // save to chain
         try {
             // userPubkey, dataRequester, attribute, endTime
-            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, dataRequester, attributes, "endTime");
+            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, dataRequester, attString, "endTime");
             console.log(result.toString());
 
             return res.send({ msg: "update success." });
