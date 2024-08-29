@@ -94,15 +94,14 @@ class AccessControlManager extends Contract {
     }
 
 
-    Object.keys(attribute).forEach(async key => {
+    Object.keys(attJson).forEach(async key => {
       // console.log(`${key} : ${attribute[key]}`);
 
       accJson.Permission[dataRequester][key] = {
-        "data": attribute[key],
+        "data": attJson[key],
         "endTime": endTime
       };
     })
-
 
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
     return "Update Permission successfully." + userPubkey;
@@ -118,8 +117,6 @@ class AccessControlManager extends Contract {
     if (acc && acc.length > 0) {
       accJson = JSON.parse(acc.toString());
     }
-
-
 
     if (!accJson.Permission) {
       accJson.Permission = {};
@@ -176,7 +173,7 @@ class AccessControlManager extends Contract {
       try {
         let accJson = JSON.parse(acc.toString());
         const permissions = accJson.Permission[dataRequester];
-        if (permissions.include(attribute)) {
+        if (permissions.hasOwnProperty(key) && permissions.key.data == "true") {
           return true;
         }
       } catch (error) {
@@ -186,6 +183,41 @@ class AccessControlManager extends Contract {
     else {
       return false;
     }
+  }
+
+  async ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes) {
+    let acc = await ctx.stub.getState(userPubkey);
+    let permit = {};
+    if (acc && acc.length) {
+      let attJson;
+      // console.log(attribute);
+      try {
+        attJson = JSON.parse(attributes.toString());
+      } catch (error) {
+        console.log(attributes.toString());
+        attJson = attributes;
+      }
+
+      try {
+        let accJson = JSON.parse(acc.toString());
+        const permissions = accJson.Permission[dataRequester];
+
+        Object.keys(attJson).forEach(async key => {
+          // console.log(`${key} : ${attribute[key]}`);
+          if (permissions.hasOwnProperty(key) && permissions.key.data == "true") {
+            permit.key = true;
+          }
+          else {
+            permit.key = false;
+          }
+
+        })
+
+      } catch (error) {
+        throw new Error(`permission denied! ${error}`);
+      }
+    }
+    return JSON.stringify(permit);
   }
 }
 exports.contracts = [AccessControlManager];

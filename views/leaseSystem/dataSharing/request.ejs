@@ -11,7 +11,8 @@
                 </div>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Tenant Address</span>
-                    <input type="text" class="form-control" value="<%=tenant%>" readonly>
+                    <input type="text" class="form-control" id="tenantAddress" name="tenantAddress" value="<%=tenant%>"
+                        readonly>
                 </div>
             </div>
         </div>
@@ -21,8 +22,6 @@
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Get Personal Data</h4>
                 </div>
-
-                <input type="text" id="tenantAddress" name="tenantAddress" value="<%=tenant%>" hidden>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
                     <label class="form-check-label" for="name">
@@ -97,14 +96,34 @@
 
         async function buildListener() {
             $('#getResult').on('click', async function (e) {
-                let name = $(`#name`).val();
-                console.log(name);
-                $('#dataPage').show();
-                $('#getName').val("test name");
-                $('#getEmail').val("test Email");
-                $('#getJob').val("test Job");
-                $('#getSalary').val("test Salary");
-                $('#getDeposit').val("test Deposit");
+                let tenantAddress = $("#tenantAddress").val();
+                let name = $("#name").is(":checked");
+                let email = $("#email").is(":checked");
+                let job = $("#job").is(":checked");
+                let salary = $("#salary").is(":checked");
+                let deposit = $("#deposit").is(":checked");
+                $.ajax({
+                    type: 'POST',
+                    url: '/leaseSystem/dataSharing/getData',
+                    dataType: 'json',
+                    data: {
+                        tenantAddress: tenantAddress,
+                        name: name,
+                        email: email,
+                        job: job,
+                        salary: salary,
+                        deposit: deposit
+                    }
+                }).then((res) => {
+                    alert(res.msg);
+                    console.log(res.data);
+                    $('#getName').val(res.data.name);
+                    $('#getEmail').val(res.data.email);
+                    $('#getJob').val(res.data.job);
+                    $('#getSalary').val(res.data.salary);
+                    $('#getDeposit').val(res.data.deposit);
+                    $('#dataPage').show();
+                })
             })
         }
 

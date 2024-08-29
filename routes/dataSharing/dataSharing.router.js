@@ -396,20 +396,33 @@ module.exports = function (dbconnection) {
         const pubkey = req.session.pubkey;
         const { tenantAddress } = req.body;
         const { name, email, job, salary, deposit } = req.body;
-        // get chain Access control
 
-        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', dataRequester, userPubkey);
-        let permit = (permitBuffer.toString() === 'true');
-        if (permit) {
-            try {
-                // get data
-                return res.send({ msg: "success." });
-            } catch (error) {
-                console.log(error);
-                return res.send({ msg: "permission denied." });
+        let tenantData = await PersonalData.findOne({ address: tenantAddress });
+
+        // get chain Access control
+        let attributes = {};
+        attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
+        // ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes)
+        // let permitBuffer = await accInstance.evaluateTransaction('ConfirmMutiPermission', pubkey, tenantData.pubkey, attributes);
+        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', pubkey, tenantData.pubkey);
+        // console.log(permitBuffer);
+        let permitJson = JSON.parse(permitBuffer.toString());
+        console.log(permitJson);
+
+        let data = {};
+        Object.keys(permitJson).forEach(async key => {
+            if (permitJson[key].data == "true") {
+                data[key] = tenantData[key];
             }
-        }
-        return res.send({ msg: "permission denied." });
+            else {
+                data[key] = "permission deny";
+            }
+
+        })
+console.log(data);
+
+
+        return res.send({ msg: "done", "data": data });
     });
 
     router.post('/test', async (req, res) => {

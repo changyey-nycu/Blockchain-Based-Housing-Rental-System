@@ -8,6 +8,9 @@ const interestSchema = new mongoose.Schema({
     ownerAddress: {
         type: String,
     },
+    agentAddress: {
+        type: String,
+    },
     houseAddress: {
         type: String
     },

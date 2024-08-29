@@ -993,12 +993,13 @@ module.exports = function (dbconnection) {
     // tenant add this house to favorite
     router.post('/searchHouse/leasePage/add', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        const { houseAddress, uploaderAddress } = req.body;
+        const { houseAddress, ownerAddress, agentAddress } = req.body;
         try {
             let obj = new Interest({
                 address: address,
-                ownerAddress: uploaderAddress,
+                ownerAddress: ownerAddress,
                 houseAddress: houseAddress,
+                agentAddress: agentAddress,
                 willingness: false,
                 agreement: false
             })
@@ -1011,11 +1012,11 @@ module.exports = function (dbconnection) {
 
     router.post('/searchHouse/leasePage/remove', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        const { houseAddress, uploaderAddress } = req.body;
+        const { houseAddress, ownerAddress } = req.body;
         try {
             let obj = await Interest.findOneAndDelete({
                 address: address,
-                ownerAddress: uploaderAddress,
+                ownerAddress: ownerAddress,
                 houseAddress: houseAddress
             })
 
@@ -1028,11 +1029,11 @@ module.exports = function (dbconnection) {
     // tenant ready to sign this house
     router.post('/searchHouse/leasePage/newSigner', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        const { houseAddress, uploaderAddress } = req.body;
+        const { houseAddress, ownerAddress } = req.body;
         try {
             let obj = await Interest.findOneAndUpdate({
                 address: address,
-                ownerAddress: uploaderAddress,
+                ownerAddress: ownerAddress,
                 houseAddress: houseAddress
             }, { willingness: true })
 

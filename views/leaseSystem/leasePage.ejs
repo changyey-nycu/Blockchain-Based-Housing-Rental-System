@@ -26,13 +26,13 @@
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Owner Address</span>
-                                <input type="text" class="form-control" id="uploader" name="uploader"
+                                <input type="text" class="form-control" id="owner" name="owner"
                                     value="<%=HouseData.ownerAddress%>" readonly>
                             </div>
                             <% if (HouseData.agent !="0x" ) { %>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Agent Address</span>
-                                    <input type="text" class="form-control" id="uploader" name="uploader"
+                                    <input type="text" class="form-control" id="agent" name="agent"
                                         value="<%=HouseData.agent%>" readonly>
                                 </div>
                                 <%} %>
@@ -54,43 +54,47 @@
                                         <input type="text" class="form-control" id="describe" name="describe"
                                             value="<%=HouseData.describe%>" readonly>
                                     </div>
-                                    
-                                        <div class="mb-3" id="notAdded">
-                                            <button class="btn btn-primary" id="add">add favorite</button>
+
+                                    <div class="mb-3" id="notAdded">
+                                        <button class="btn btn-primary" id="add">add favorite</button>
+                                    </div>
+
+                                    <div id="isAdded">
+                                        <div class="mb-3">
+                                            <button class="btn btn-primary" id="remove">remove
+                                                favorite</button>
                                         </div>
-                                        
-                                            <div id="isAdded">
-                                                <div class="mb-3">
-                                                    <button class="btn btn-primary" id="remove">remove
-                                                        favorite</button>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <button class="btn btn-primary" id="newSigner">want to
-                                                        sign</button>
-                                                </div>
-                                            </div>
-                                            
+                                        <div class="mb-3">
+                                            <button class="btn btn-primary" id="newSigner">want to
+                                                sign</button>
+                                        </div>
+                                    </div>
+
                         </div>
             </div>
         </div>
     </body>
     <script>
         let added = '<%-added%>';
+        let houseData = JSON.parse('<%- JSON.stringify(HouseData) %>');
         async function buildListener() {
             if (added === "true") {
                 $('#notAdded').hide();
             }
-            else{
+            else {
                 $('#isAdded').hide();
             }
             $(`#add`).on('click', async function (e) {
                 let houseAddress = $(`#houseAddress`).val();
-                let uploaderAddress = $(`#uploader`).val();
+                let ownerAddress = $(`#owner`).val();
+                let agentAddress = houseData.agent;
+
                 $.ajax({
                     url: '/leaseSystem/searchHouse/leasePage/add',
                     data: {
                         "houseAddress": houseAddress,
-                        "uploaderAddress": uploaderAddress
+                        "ownerAddress": ownerAddress,
+                        "agentAddress": agentAddress
                     },
                     type: 'post'
                 }).then((res) => {
@@ -102,12 +106,12 @@
 
             $(`#remove`).on('click', async function (e) {
                 let houseAddress = $(`#houseAddress`).val();
-                let uploaderAddress = $(`#uploader`).val();
+                let ownerAddress = $(`#owner`).val();
                 $.ajax({
                     url: '/leaseSystem/searchHouse/leasePage/remove',
                     data: {
                         "houseAddress": houseAddress,
-                        "uploaderAddress": uploaderAddress
+                        "ownerAddress": ownerAddress
                     },
                     type: 'post'
                 }).then((res) => {
@@ -118,12 +122,12 @@
 
             $(`#newSigner`).on('click', async function (e) {
                 let houseAddress = $(`#houseAddress`).val();
-                let uploaderAddress = $(`#uploader`).val();
+                let ownerAddress = $(`#uploader`).val();
                 $.ajax({
                     url: '/leaseSystem/searchHouse/leasePage/newSigner',
                     data: {
                         "houseAddress": houseAddress,
-                        "uploaderAddress": uploaderAddress
+                        "ownerAddress": ownerAddress
                     },
                     type: 'post'
                 }).then((res) => {
