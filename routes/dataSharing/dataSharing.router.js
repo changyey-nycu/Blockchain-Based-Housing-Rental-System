@@ -352,6 +352,7 @@ module.exports = function (dbconnection) {
     })
 
     router.post('/updatePermission', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
         const { name, email, job, salary, deposit } = req.body;
         const { userPubkey, dataRequester } = req.body;
         let attributes = {
@@ -363,13 +364,15 @@ module.exports = function (dbconnection) {
         }
         let attString = JSON.stringify(attributes);
 
-        // save to chain
+        // save to chain offline sign
         try {
             // userPubkey, dataRequester, attribute, endTime
             let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, dataRequester, attString, "endTime");
             console.log(result.toString());
-
             return res.send({ msg: "update success." });
+
+            // const digest = await createTransaction(address.toLowerCase(), 'UpdatePermission', userPubkey, dataRequester, attString, "endTime");
+            // return res.send({ 'digest': digest });
         } catch (error) {
             console.log(error);
             return res.send({ msg: "update error." });
@@ -419,7 +422,7 @@ module.exports = function (dbconnection) {
             }
 
         })
-console.log(data);
+        console.log(data);
 
 
         return res.send({ msg: "done", "data": data });

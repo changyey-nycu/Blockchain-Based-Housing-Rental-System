@@ -11,9 +11,9 @@
                         <h4 style="margin:auto" class="font-weight-bold">Agreement Data</h4>
                     </div>
                     <div class="input-group mb-3">
-                        <span class="input-group-text">Owner Address</span>
-                        <input type="text" class="form-control" id="ownerAddress" name="ownerAddress"
-                            value="<%=agreement.ownerAddress%>" readonly>
+                        <span class="input-group-text">Landlord Address</span>
+                        <input type="text" class="form-control" id="landlordAddress" name="landlordAddress"
+                            value="<%=agreement.landlordAddress%>" readonly>
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Tenant Address</span>
@@ -60,7 +60,7 @@
                         <span class="input-group-text">Owner Sign</span>
                         <input type="text" class="form-control" id="partyA" name="partyA"
                             value="<%=agreement.partyASign%>" readonly>
-                        <% if (address==agreement.ownerAddress && !agreement.partyASign) {%>
+                        <% if (address==agreement.landlordAddress && !agreement.partyASign) {%>
                             <input type="button" value="sign" id="SignAgreement">
                             <% } %>
                     </div>
@@ -127,7 +127,7 @@
 
             $('#SignAgreement').on('click', async function (e) {
                 // async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type)
-                let owner = $("#ownerAddress").val();
+                let landlordAddress = $("#landlordAddress").val();
                 let tenant = $("#tenantAddress").val();
                 let house = $("#houseAddress").val();
                 let response, result;
@@ -153,7 +153,7 @@
                     '/leaseSystem/agreement/signAgreement',
                     {
                         address: account.toLowerCase(),
-                        ownerAddress: owner,
+                        ownerAddress: landlordAddress,
                         tenantAddress: tenant,
                         houseAddress: house,
                         signature: derSign
@@ -165,7 +165,7 @@
             
             $('#VerifySign').on('click', async function (e) {
                 // async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type)
-                let owner = $("#ownerAddress").val();
+                let landlordAddress = $("#landlordAddress").val();
                 let tenant = $("#tenantAddress").val();
                 let house = $("#houseAddress").val();
                 let response;
@@ -173,7 +173,7 @@
                 response = await ajaxAwait(
                     '/leaseSystem/agreement/verifySign',
                     {
-                        ownerAddress: owner,
+                        ownerAddress: landlordAddress,
                         tenantAddress: tenant,
                         houseAddress: house,
                     }

@@ -24,7 +24,7 @@
                             <% for (let index=0; index < favorite.length; index++) {%>
                                 <tr>
                                     <td>
-                                        <input type="text" id="uploader-<%= index %>" name="uploader-<%= index %>"
+                                        <input type="text" id="owner-<%= index %>" name="owner-<%= index %>"
                                             value="<%=favorite[index].ownerAddress%>" readonly>
                                     </td>
                                     <td>
@@ -114,12 +114,12 @@
 
                 $(`#details-${i}`).on('click', async function (e) {
                     let houseAddress = $(`#houseAddress-${i}`).val();
-                    let uploaderAddress = $(`#uploader-${i}`).val();
+                    let ownerAddress = $(`#owner-${i}`).val();
                     $.ajax({
                         url: '/leaseSystem/leaseManage/leasePage',
                         data: {
                             "addr": houseAddress,
-                            "uploader": uploaderAddress
+                            "owner": ownerAddress
                         },
                         type: 'post'
                     }).then((res) => {
@@ -131,11 +131,11 @@
 
                 $(`#signing-${i}`).on('click', async function (e) {
                     let houseAddress = $(`#houseAddress-${i}`).val();
-                    let uploaderAddress = $(`#uploader-${i}`).val();
+                    let ownerAddress = $(`#owner-${i}`).val();
                     let result = await $.ajax({
                         url: '/leaseSystem/agreement/agreementPage',
                         data: {
-                            ownerAddress: uploaderAddress,
+                            ownerAddress: ownerAddress,
                             tenantAddress: address,
                             houseAddress: houseAddress
                         },
@@ -154,13 +154,13 @@
 
                 $(`#upload-${i}`).on('click', async function (e) {
                     let houseAddress = $(`#houseAddress-${i}`).val();
-                    let uploaderAddress = $(`#uploader-${i}`).val();
+                    let ownerAddress = $(`#owner-${i}`).val();
                     $.ajax({
                         type: 'POST',
                         url: '/leaseSystem/leaseManage/upload',
                         dataType: 'json',
                         data: {
-                            ownerAddress: uploaderAddress,
+                            ownerAddress: ownerAddress,
                             houseAddress: houseAddress
                         },
                         success: function (res) {

@@ -42,8 +42,6 @@ var wallet;
 var gateway;
 var adminUser;
 
-var signAgreement = {};
-
 const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
@@ -107,199 +105,32 @@ module.exports = function (dbconnection) {
         }
     };
 
-    // HLF Transaction offline signing PART
-
-    async function createTransaction() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 to end is chaincode function parameter
-        var user = await buildCertUser(wallet, fabric_common, arguments[0]);
-        var userContext = gateway.client.newIdentityContext(user);
-
-        var endorsementStore;
-        // console.log('arguments[1] = ' + arguments[1]);
-        switch (arguments[1]) {
-            case 'SignAgreement':
-                endorsementStore = signAgreement;
-                break;
-        }
-
-        var paras = [];
-        for (var i = 2; i < arguments.length; i++) {
-            paras.push(arguments[i])
-        }
-
-        // Need to add other contract
-        var endorsement = agreementChannel.channel.newEndorsement('RentalAgreement');
-        var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
-        var proposalBytes = endorsement.build(userContext, build_options);
-        const digest = hashFunction(proposalBytes);
-        endorsementStore[arguments[0]] = endorsement;
-
-        return new Promise(function (reslove, reject) {
-            reslove(digest);
-        })
-    };
-
-    async function proposalAndCreateCommit() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 is signature
-
-        var endorsementStore;
-        switch (arguments[1]) {
-            case 'SignAgreement':
-                endorsementStore = signAgreement;
-                break;
-        }
-        if (typeof (endorsementStore) == "undefined") {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "func dosen't exist."
-                });
-            })
-        }
-
-        // console.log('endorsementStore = ' + JSON.stringify(endorsementStore[arguments[0]]));
-
-        let endorsement = endorsementStore[arguments[0]];
-        endorsement.sign(arguments[2]);
-        // console.log(endorsement);
-        let proposalResponses = await endorsement.send({ targets: agreementChannel.channel.getEndorsers() });
-        // console.log(proposalResponses);
-        // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
-        // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
-        // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
-        if (proposalResponses.error) {
-            console.log(proposalResponses.error);
-        }
-        if (proposalResponses.responses[0].response.status == 200) {
-            let user = await buildCertUser(wallet, fabric_common, arguments[0]);
-            let userContext = gateway.client.newIdentityContext(user)
-
-            let commit = endorsement.newCommit();
-            let commitBytes = commit.build(userContext);
-            let commitDigest = hashFunction(commitBytes);
-            let result = proposalResponses.responses[0].response.payload.toString();
-            endorsementStore[arguments[0]] = commit;
-
-            return new Promise(function (reslove, reject) {
-                reslove({
-                    'commitDigest': commitDigest,
-                    'result': result
-                });
-            })
-        }
-        else {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': proposalResponses.responses[0].response.message
-                });
-            })
-        }
-    };
-
-    async function commitSend() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 is signature
-
-        var endorsementStore;
-        switch (arguments[1]) {
-            case 'SignAgreement':
-                endorsementStore = signAgreement;
-                break;
-        }
-        if (typeof (endorsementStore) == "undefined") {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "func doesn't exist."
-                });
-            })
-        }
-        let commit = endorsementStore[arguments[0]];
-        commit.sign(arguments[2]);
-        let commitSendRequest = {};
-        commitSendRequest.requestTimeout = 300000;
-        commitSendRequest.targets = agreementChannel.channel.getCommitters();
-        let commitResponse = await commit.send(commitSendRequest);
-
-        if (commitResponse['status'] == "SUCCESS") {
-            return new Promise(function (reslove, reject) {
-                reslove({
-                    'result': true
-                });
-            })
-        }
-        else {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "commit error"
-                });
-            })
-        }
-    }
-
-    function convertSignature(signature) {
-        signature = signature.split("/");
-        let signature_array = new Uint8Array(signature.length);
-        for (var i = 0; i < signature.length; i++) {
-            signature_array[i] = parseInt(signature[i]);
-        }
-        let signature_buffer = Buffer.from(signature_array);
-        return signature_buffer;
-    }
-
     function verifiedSignature(signature, pubkey, data) {
         var publickeyObject = ecdsa.keyFromPublic(pubkey, 'hex');
         return publickeyObject.verify(data, Buffer.from(signature));
     }
 
-    router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
-        try {
-            let { signature, func } = req.body;
-
-            let signature_buffer = convertSignature(signature);
-            let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer);
-            // console.log(response);
-            return res.send(response);
-
-        } catch (error) {
-            console.log(error);
-            return res.send(error);
-        }
-    });
-
-    router.post("/commitSend", isAuthenticated, async (req, res) => {
-        try {
-            let { signature, func } = req.body;
-            let signature_buffer = convertSignature(signature);
-            let response = await commitSend(req.session.address, func, signature_buffer);
-            // console.log(response);
-            return res.send(response);
-        } catch (error) {
-            console.log(error);
-            return res.send(error);
-        }
-    })
-
     // owner create a agreement to certain tenant
     router.post("/createAgreement", isAuthenticated, async (req, res) => {
-        let { ownerAddress, ownerPubkey, tenantAddress, tenantPubkey, houseAddress, area, startDate, duration, rent, content } = req.body;
+        const address = req.session.address;
+        let { houseOwner, houseAddress,
+            createrPubkey, tenantAddress, tenantPubkey, agentAddress,
+            area, startDate, duration, rent, content } = req.body;
+            
+        if (address != houseOwner && address != agentAddress) {
+            return res.send({ error: "address error." });
+        }
 
-        let encryptString = ownerAddress.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
+        let encryptString = address.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
         let hashed = keccak256(encryptString).toString('hex');
 
         try {
             const agreementData = new AgreementData({
-                ownerAddress: ownerAddress,
-                ownerPubkey: ownerPubkey,
+                landlordAddress: address,
+                landlordPubkey: createrPubkey,
                 tenantAddress: tenantAddress,
                 tenantPubkey: tenantPubkey,
+                houseOwner: houseOwner,
                 houseAddress: houseAddress,
                 area: area,
                 startDate: startDate,
@@ -318,7 +149,7 @@ module.exports = function (dbconnection) {
         }
 
         try {
-            let PartyAkey = ownerPubkey;
+            let PartyAkey = createrPubkey;
             let PartyBkey = tenantPubkey;
             let rentData = hashed;
 
@@ -335,13 +166,16 @@ module.exports = function (dbconnection) {
     router.post('/agreementPage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { ownerAddress, tenantAddress, houseAddress } = req.body;
-        let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        if (!agreement) {
+            agreement = await AgreementData.findOne({ houseOwner: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        }
 
         if (!agreement) {
             res.send({ msg: "The agreement is not exist, please create agreement first." });
         }
         else {
-            res.send({ url: `/leaseSystem/agreement/agreementPage?owner=${ownerAddress}&tenant=${tenantAddress}&house=${houseAddress}` });
+            res.send({ url: `/leaseSystem/agreement/agreementPage?owner=${agreement.landlordAddress}&tenant=${tenantAddress}&house=${houseAddress}` });
         }
     });
 
@@ -351,7 +185,7 @@ module.exports = function (dbconnection) {
         const tenant = req.query.tenant;
         const house = req.query.house;
 
-        let agreement = await AgreementData.findOne({ ownerAddress: owner, tenantAddress: tenant, houseAddress: house });
+        let agreement = await AgreementData.findOne({ landlordAddress: owner, tenantAddress: tenant, houseAddress: house });
         res.render('leaseSystem/agreement/agreementPage', { address: address, agreement: agreement, contract_address: contract_address });
     })
 
@@ -362,17 +196,17 @@ module.exports = function (dbconnection) {
 
         let type;
         try {
-            let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+            let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
             if (!agreement) {
                 let error = "error: agreement not exist.";
                 throw error;
             }
             if (address == ownerAddress) {
                 type = "PartyA";
-                if (verifiedSignature(signature, agreement.ownerPubkey, agreement.hashed)) {
-                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement2', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                if (verifiedSignature(signature, agreement.landlordPubkey, agreement.hashed)) {
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.landlordPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
-                    await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+                    await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
                         { partyASign: signature.toString() });
                     return res.send({ msg: "sign success." });
                 }
@@ -380,9 +214,9 @@ module.exports = function (dbconnection) {
             else if (address == tenantAddress) {
                 type = "PartyB";
                 if (verifiedSignature(signature, agreement.tenantPubkey, agreement.hashed)) {
-                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement2', agreement.ownerPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                    let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.landlordPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
                     console.log(result.toString());
-                    await AgreementData.findOneAndUpdate({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+                    await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
                         { partyBSign: signature.toString() });
                     return res.send({ msg: "sign success." });
                 }
@@ -400,8 +234,12 @@ module.exports = function (dbconnection) {
 
     router.post("/verifySign", async (req, res) => {
         let { ownerAddress, tenantAddress, houseAddress } = req.body;
-        let agreement = await AgreementData.findOne({ ownerAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
-        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.ownerPubkey, agreement.hashed);
+        let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.landlordPubkey, agreement.hashed);
+        if (result.toString() == "true") {
+            await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+                { state: "active" });
+        }
         console.log(result.toString());
         return res.send({ msg: result.toString() });
     })

@@ -2,7 +2,7 @@
 
     <body>
         <!-- choose condition to show-->
-        <div class="container mt-3">
+        <!-- <div class="container mt-3">
             <form style="margin-block: 10px" method="dialog">
                 <div class="row g-3 align-items-center">
                     <div class="col-auto">
@@ -36,13 +36,13 @@
                     </div>
                 </div>
             </form>
-        </div>
+        </div> -->
         <!-- list all searching house -->
         <div class="container mt-3">
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
-                        <th scope="col">Picture</th>
+                        <!-- <th scope="col">Picture</th> -->
                         <th scope="col">house address</th>
                         <th scope="col">price</th>
                         <th scope="col">uploader key</th>
@@ -51,16 +51,16 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">example Picture</th>
-                        <td>example address</td>
+                        <!-- <th scope="row">example Picture</th> -->
+                        <td scope="row">example address</td>
                         <td>example price</td>
                         <td>example uploader</td>
                         <td>example Details</td>
                     </tr>
                     <% for (let index=0; index < houseList.length; index++) {%>
                         <tr>
-                            <th scope="row">example Picture</th>
-                            <td>
+                            <!-- <th scope="row">example Picture</th> -->
+                            <td scope="row">
                                 <input type="text" id="estateAddress-<%= index %>" name="estateAddress-<%= index %>"
                                     value="<%=houseList[index].estateAddress%>" readonly>
                             </td>

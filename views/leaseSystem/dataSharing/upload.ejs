@@ -202,11 +202,28 @@
                 let job = $("#job").is(":checked");
                 let salary = $("#salary").is(":checked");
                 let deposit = $("#deposit").is(":checked");
-                $.ajax({
-                    type: 'POST',
-                    url: '/leaseSystem/dataSharing/updatePermission',
-                    dataType: 'json',
-                    data: {
+                // $.ajax({
+                //     type: 'POST',
+                //     url: '/leaseSystem/dataSharing/updatePermission',
+                //     dataType: 'json',
+                //     data: {
+                //         userPubkey: pubkey,
+                //         dataRequester: ownerPubkey,
+                //         name: name,
+                //         email: email,
+                //         job: job,
+                //         salary: salary,
+                //         deposit: deposit
+                //     }
+                // }).then((res) => {
+                //     alert(res.msg);
+                // })
+                // window.location.reload();
+
+                let response, result;
+                response = await ajaxAwait(
+                    '/leaseSystem/dataSharing/updatePermission',
+                    {
                         userPubkey: pubkey,
                         dataRequester: ownerPubkey,
                         name: name,
@@ -215,10 +232,42 @@
                         salary: salary,
                         deposit: deposit
                     }
-                }).then((res) => {
-                    alert(res.msg);
-                })
-                // window.location.reload();
+                );
+                console.log('response = ' + response.result);
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+                let encryptKey = await personalIdentityInstance.methods
+                    .getEncryptMaterial('HLFPrivateKey')
+                    .call({ from: account });
+                let privateKey = await ethereum.request({
+                    method: 'eth_decrypt',
+                    params: [encryptKey, account],
+                });
+                let signature_string;
+                signature_string = sign(privateKey, response.digest);
+                response = await ajaxAwait(
+                    '/leaseSystem/dataSharing/proposalAndCreateCommit',
+                    { signature: signature_string, func: 'UpdatePermission' }
+                );
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+
+                result = response.result;
+                signature_string = sign(privateKey, response.commitDigest);
+                response = await ajaxAwait('/leaseSystem/dataSharing/commitSend', {
+                    signature: signature_string,
+                    func: 'UpdatePermission'
+                });
+                if (response.error) {
+                    return alert(`error: ${response.result}`);
+                }
+
+                if (alert(`${result}`)) {
+                    window.location.reload();
+                }
+                window.location.reload();
             })
 
         }

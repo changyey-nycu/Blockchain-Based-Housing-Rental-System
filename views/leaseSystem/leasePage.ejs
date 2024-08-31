@@ -122,7 +122,7 @@
 
             $(`#newSigner`).on('click', async function (e) {
                 let houseAddress = $(`#houseAddress`).val();
-                let ownerAddress = $(`#uploader`).val();
+                let ownerAddress = $(`#owner`).val();
                 $.ajax({
                     url: '/leaseSystem/searchHouse/leasePage/newSigner',
                     data: {

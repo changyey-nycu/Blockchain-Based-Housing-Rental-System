@@ -873,7 +873,7 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         let { ownerAddress, estateAddress, rent } = req.body;
         let owner = await Profile.findOne({ address: ownerAddress });
-        let agent = await Profile.findOne({ address: ownerAddress });
+        let agent = await Profile.findOne({ address: address });
 
         // check is agent to user
         let houseData = await HouseData.findOne({ ownerAddress: ownerAddress, houseAddress: estateAddress });
@@ -887,7 +887,7 @@ module.exports = function (dbconnection) {
         let isExistAgent = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
         if (isExist.toString() == "true" && isExistAgent.toString() == "true") {
             console.log('exist = ' + isExist + " , " + isExistAgent);
-            return res.send({ 'error': "error", "result": "The house is published." });
+            return res.send({ 'error': "error", "result": "The house is already published." });
         }
 
         // hashed (may add date)
@@ -964,6 +964,9 @@ module.exports = function (dbconnection) {
         let uploaderData = await Profile.findOne({ pubkey: uploader });
 
         let houseData = await HouseData.findOne({ ownerAddress: uploaderData.address, houseAddress: addr });
+        if (!houseData) {
+            houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: addr });
+        }
 
         let leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', uploader, addr);
         let data = {};
@@ -1036,7 +1039,7 @@ module.exports = function (dbconnection) {
                 ownerAddress: ownerAddress,
                 houseAddress: houseAddress
             }, { willingness: true })
-
+            
             return res.send({ msg: "update success, please waiting for owner accept and create the agreement" });
         } catch (error) {
             return res.send({ msg: "update error" });
@@ -1049,12 +1052,24 @@ module.exports = function (dbconnection) {
     router.get('/leaseManage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let favoriteList = await Interest.find({ address: address });
-        let signerList = await Interest.find({ ownerAddress: address, willingness: true });
+        let signerList;
+        // await Interest.find({ ownerAddress: address, willingness: true };
+        // console.log(signerList);
 
-        let key = await Profile.findOne({ address: address });
+        let ownerSignerList = await Interest.find({ ownerAddress: address, willingness: true });
+        // console.log(signerList2);
+
+        let agentSignerList = await Interest.find({ agentAddress: address, willingness: true });
+        // console.log(signerList3);
+
+        signerList = ownerSignerList.concat(agentSignerList);
+
+        // console.log(signerList);
+
+        let user = await Profile.findOne({ address: address });
         let data = {};
         try {
-            let leaseData = await leaseRegisterInstance.evaluateTransaction('GetPersonLease', key.pubkey);
+            let leaseData = await leaseRegisterInstance.evaluateTransaction('GetPersonLease', user.pubkey);
             data = JSON.parse(leaseData.toString());
         } catch (error) {
             // console.log(error);
@@ -1089,7 +1104,7 @@ module.exports = function (dbconnection) {
         try {
             data = JSON.parse(leaseData.toString());
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             data = leaseData;
         }
 
@@ -1120,12 +1135,21 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         const signer = req.query.f;
         const estateAddress = req.query.e;
+        
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
-        let ownerData = await Profile.findOne({ address: address }, 'address pubkey');
+        if (!houseData) {
+            houseData = await HouseData.findOne({ agent: address, houseAddress: estateAddress });
+        }
+        let ownerData = await Profile.findOne({ address: houseData.ownerAddress }, 'address pubkey');
+        let userData = ownerData;
+        if (houseData.agent == address) {
+            userData = await Profile.findOne({ address: address }, 'address pubkey');
+        }
+
         let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
         let rentData = {};
         try {
-            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', ownerData.pubkey, estateAddress);
+            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', userData.pubkey, estateAddress);
             rentData = JSON.parse(obj3.toString());
         } catch (error) {
             console.log(error);
@@ -1134,7 +1158,7 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/agreement/createAgreement', {
             address: address,
             houseData: houseData, rentData: rentData,
-            ownerData: ownerData, tenantData: tenant,
+            userData: userData, tenantData: tenant,
             contract_address: contract_address
         });
     });

@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 
 const agreementSchema = new mongoose.Schema({
-    ownerAddress: {
+    landlordAddress: {
         require: true,
         type: String,
     },
-    ownerPubkey: {
+    landlordPubkey: {
         type: String,
     },
-    tenantAddress:{
+    tenantAddress: {
         require: true,
         type: String,
     },
     tenantPubkey: {
         type: String,
+    },
+    houseOwner: {
+        type: String
     },
     houseAddress: {
         type: String
@@ -40,10 +43,10 @@ const agreementSchema = new mongoose.Schema({
     content: {
         type: String
     },
-    partyASign:{
+    partyASign: {
         type: String
     },
-    partyBSign:{
+    partyBSign: {
         type: String
     }
 });
