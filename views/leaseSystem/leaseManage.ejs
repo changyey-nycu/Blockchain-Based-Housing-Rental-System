@@ -67,7 +67,7 @@
                                     </td>
                                     <td>
                                         <select name="signer-<%= index %>" id="signer-<%= index %>">
-
+                                            <!-- if agreement is created, signer will fixed to that selected person -->
                                             <%for (let i=0; i < signerList.length; i++) {
                                                 if(signerList[i].houseAddress==rentData[index].estateAddress) { if
                                                 (signerList[i].agreement==true) { signIndex=i; } } } %>
@@ -226,11 +226,8 @@
                             reject(false);
                         },
                     });
-
-                    // console.log(response.toString());
-
                 })
-                
+
                 $(`#request-${index}`).on('click', async function (e) {
                     let estateAddress = $(`#estateAddress-${index}`).val();
                     let signer = $(`#signer-${index}`).val();

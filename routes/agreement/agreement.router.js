@@ -37,12 +37,11 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
 var agreementChannel, rentalAgreementInstance;
+var entrustChannel, leaseRegisterInstance;
 
 var wallet;
 var gateway;
 var adminUser;
-
-const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
 
@@ -92,6 +91,9 @@ module.exports = function (dbconnection) {
 
         agreementChannel = await gateway.getNetwork('agreement-channel');
         rentalAgreementInstance = await agreementChannel.getContract('RentalAgreement');
+
+        entrustChannel = await gateway.getNetwork('entrust-channel');
+        leaseRegisterInstance = await entrustChannel.getContract('LeaseRegister');
     }
     init();
 
@@ -116,7 +118,7 @@ module.exports = function (dbconnection) {
         let { houseOwner, houseAddress,
             createrPubkey, tenantAddress, tenantPubkey, agentAddress,
             area, startDate, duration, rent, content } = req.body;
-            
+
         if (address != houseOwner && address != agentAddress) {
             return res.send({ error: "address error." });
         }
@@ -239,6 +241,13 @@ module.exports = function (dbconnection) {
         if (result.toString() == "true") {
             await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
                 { state: "active" });
+            try {
+                let result = await leaseRegisterInstance.submitTransaction('Signed',  agreement.landlordPubkey, houseAddress);
+                console.log(result.toString());
+            } catch (error) {
+                console.log(error);
+            }
+
         }
         console.log(result.toString());
         return res.send({ msg: result.toString() });

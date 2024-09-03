@@ -93,6 +93,12 @@
           "peers": [
             "peer0"
           ]
+        },
+        {
+          "name": "Org3",
+          "peers": [
+            "peer0"
+          ]
         }
       ]
     },
@@ -141,20 +147,20 @@
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },
     {
-      "name": "LeaseRegister",
-      "version": "0.0.1",
-      "lang": "node",
-      "channel": "entrust-channel",
-      "directory": "./chaincodes/chaincode-LeaseRegister-node",
-      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
-    },
-    {
       "name": "EstateAgent",
       "version": "0.0.1",
       "lang": "node",
       "channel": "entrust-channel",
       "directory": "./chaincodes/chaincode-EstateAgent-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
+    },
+    {
+      "name": "LeaseRegister",
+      "version": "0.0.1",
+      "lang": "node",
+      "channel": "entrust-channel",
+      "directory": "./chaincodes/chaincode-LeaseRegister-node",
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org3MSP.member')"
     },
     {
       "name": "RentalAgreement",

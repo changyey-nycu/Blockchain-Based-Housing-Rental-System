@@ -25,7 +25,7 @@ class LeaseRegister extends Contract {
     return pubkey;
   }
 
-  async NewLease(ctx, userPubkey, estateAddress, rent, dataHash) {
+  async NewLease(ctx, userPubkey, owner, estateAddress, rent) {
     let lease = await ctx.stub.getState(userPubkey);
     let leaseJson;
     try {
@@ -42,8 +42,6 @@ class LeaseRegister extends Contract {
       };
     }
 
-    // console.log(leaseJson);
-
     if (!leaseJson.Data[estateAddress]) {
       leaseJson.Data[estateAddress] = {};
     }
@@ -51,9 +49,9 @@ class LeaseRegister extends Contract {
     leaseJson.Data[estateAddress] = {
       "uploader": userPubkey,
       "estateAddress": estateAddress,
+      "owner": owner,
       "rent": rent,
-      "state": "online",
-      "dataHash": dataHash
+      "state": "online"
     }
 
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
@@ -95,6 +93,18 @@ class LeaseRegister extends Contract {
 
     return JSON.stringify(leaseData);
   }
+  
+  async Signed(ctx, userPubkey, estateAddress) {
+    let lease = await ctx.stub.getState(userPubkey);
+    if (!lease || lease.length === 0) {
+      throw new Error(`The user key:${userPubkey} does not exist`);
+    }
+    let leaseJson = JSON.parse(lease.toString());
+    leaseJson.Data[estateAddress].state = "signed";
+
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
+    return "Update Lease Signed successfully.";
+  }
 
   async IsLeaseExist(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
@@ -113,7 +123,6 @@ class LeaseRegister extends Contract {
     const iterator = await ctx.stub.getStateByRange('', '');
     let result = await iterator.next();
     while (!result.done) {
-      // console.log(Buffer.from(result.value.toString()).toString('utf8'));
       const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
 
       let record;
@@ -124,10 +133,13 @@ class LeaseRegister extends Contract {
         record = strValue;
       }
       console.log(record);
-      allResults.push(record);
-      // for (let index = 0; index < record.length; index++) {
-      //   allResults.push(record[index]);
-      // }
+      Object.values(record.Data).forEach(value => {
+        if (value.state == "online") {
+          console.log(value);
+          allResults.push(record);
+        }
+      });
+
       result = await iterator.next();
     }
     return JSON.stringify(allResults);

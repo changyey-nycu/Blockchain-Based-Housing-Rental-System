@@ -75,11 +75,9 @@ class RentalAgreement extends Contract {
     }
 
     if (type == "PartyA") {
-      //  && await this.VerifySign(ctx, PartyAkey, signature, agreementHashed)
       agreementData.Agreement[agreementHashed].sign["PartyA"] = signature;
     }
     else if (type == "PartyB") {
-      //  && await this.VerifySign(ctx, PartyBkey, signature, agreementHashed)
       agreementData.Agreement[agreementHashed].sign["PartyB"] = signature;
     }
     else {
@@ -137,7 +135,6 @@ class RentalAgreement extends Contract {
       let A = false, B = false;
       if (agreementData.Agreement[agreementHashed].sign.PartyA) {
         // var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
-        // // console.log(agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
         // A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
         A = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyA, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
       }

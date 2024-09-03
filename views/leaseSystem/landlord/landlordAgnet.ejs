@@ -61,27 +61,20 @@
 
         <!-- list agent -->
         <div class="container mt-3">
-            <div class="col-md-5 " style="float: none; margin: auto">
+            <div class="col-md-5 card" style="float: none; margin: auto">
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">choose an option</h4>
                 </div>
-                <form>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
-                            value="option1">
-                        <label class="form-check-label" for="inlineRadio1">1</label>
+                <div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="option" id="Leasing" value="Leasing">
+                        <label class="form-check-label" for="Leasing">Only Agency Leasing</label>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
-                            value="option2">
-                        <label class="form-check-label" for="inlineRadio2">2</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="option" id="Escrow" value="Escrow">
+                        <label class="form-check-label" for="Escrow">Leasing and Escrow</label>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3"
-                            value="option3">
-                        <label class="form-check-label" for="inlineRadio3">3</label>
-                    </div>
-                </form>
+                </div>
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Agent List</h4>
                 </div>
@@ -91,7 +84,7 @@
                             <th scope="col">name</th>
                             <th scope="col">address</th>
                             <!-- <th scope="col">pubkey</th> -->
-                            <th scope="col">checkbox</th>
+                            <th scope="col">select</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -191,6 +184,13 @@
                 let userAddress = $("#userAddress").val();
                 let houseAddress = $("#houseAddress").val();
                 let agentAddress = $("#agentAddress").val();
+                let type = "none";
+                if ($("#Leasing").is(":checked")) {
+                    type = "Leasing";
+                }
+                if ($("#Escrow").is(":checked")) {
+                    type = "Escrow";
+                }
 
                 const agent = allAgentList.find(
                     (rq) => rq.address === agentAddress
@@ -204,7 +204,7 @@
                         agentPubkey: pubkey,
                         estateAddress: houseAddress,
                         ownerAddress: userAddress,
-                        type: "all"
+                        type: type
                     }
                 );
                 console.log('response = ' + response.result);
@@ -232,7 +232,7 @@
                 signature_string = sign(privateKey, response.commitDigest);
                 response = await ajaxAwait('/leaseSystem/commitSend', {
                     signature: signature_string,
-                    func: 'AddEstate',
+                    func: 'AddEstate'
                 });
                 if (response.error) {
                     return alert(`error: ${response.result}`);

@@ -513,23 +513,11 @@ module.exports = function (dbconnection) {
             // change local database
             try {
                 if (!response.error && func == "NewLease") {
-                    // console.log("change DB state");
-                    // console.log(req.session.address);
                     let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "online" });
-                    // if (obj) {
-                    //     // console.log(obj);
-                    //     // console.log("update local data");
-                    // }
                 }
                 else if (!response.error && func == "AcceptEstate") {
-                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: estateAddress }, { agent: req.session.address, state: "agent" });
-                    if (obj) {
-                        console.log(obj);
-                        // console.log("update local data");
-                    }
-                    else {
-                        console.log("error");
-                    }
+                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: estateAddress }, { agent: req.session.address, state: type });
+                    // console.log(obj);
                 }
             } catch (error) {
                 console.log("local db update error");
@@ -706,11 +694,11 @@ module.exports = function (dbconnection) {
         }
 
         // hashed (may add date)
-        let hashedString = address.toString() + estateAddress.toString();
-        let dataHash = keccak256(hashedString).toString('hex');
+        // let hashedString = address.toString() + estateAddress.toString();
+        // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLease', owner.pubkey, estateAddress, rent, dataHash);
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', owner.pubkey, houseData.ownerAddress, estateAddress, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -895,7 +883,7 @@ module.exports = function (dbconnection) {
         let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, estateAddress, rent, dataHash);
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, houseData.ownerAddress, estateAddress, rent, dataHash);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -933,14 +921,11 @@ module.exports = function (dbconnection) {
             console.log(error);
             data = obj2;
         }
-        // console.log(obj2.toString());
-        // let obj = await HouseData.find({ state: "online" });
+
         let houseList = [];
         for (let index = 0; index < data.length; index++) {
-            // console.log(data[index].Data);
             Object.values(data[index].Data).forEach(value => {
                 if (value.state == "online") {
-                    // console.log(value);
                     houseList.push(value);
                 }
             });
@@ -1039,7 +1024,7 @@ module.exports = function (dbconnection) {
                 ownerAddress: ownerAddress,
                 houseAddress: houseAddress
             }, { willingness: true })
-            
+
             return res.send({ msg: "update success, please waiting for owner accept and create the agreement" });
         } catch (error) {
             return res.send({ msg: "update error" });
@@ -1053,18 +1038,11 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         let favoriteList = await Interest.find({ address: address });
         let signerList;
-        // await Interest.find({ ownerAddress: address, willingness: true };
-        // console.log(signerList);
 
         let ownerSignerList = await Interest.find({ ownerAddress: address, willingness: true });
-        // console.log(signerList2);
-
         let agentSignerList = await Interest.find({ agentAddress: address, willingness: true });
-        // console.log(signerList3);
 
         signerList = ownerSignerList.concat(agentSignerList);
-
-        // console.log(signerList);
 
         let user = await Profile.findOne({ address: address });
         let data = {};
@@ -1072,7 +1050,6 @@ module.exports = function (dbconnection) {
             let leaseData = await leaseRegisterInstance.evaluateTransaction('GetPersonLease', user.pubkey);
             data = JSON.parse(leaseData.toString());
         } catch (error) {
-            // console.log(error);
             data = {};
         }
 
@@ -1135,7 +1112,7 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         const signer = req.query.f;
         const estateAddress = req.query.e;
-        
+
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
         if (!houseData) {
             houseData = await HouseData.findOne({ agent: address, houseAddress: estateAddress });
