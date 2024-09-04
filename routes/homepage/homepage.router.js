@@ -516,7 +516,7 @@ module.exports = function (dbconnection) {
                     let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "online" });
                 }
                 else if (!response.error && func == "AcceptEstate") {
-                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: estateAddress }, { agent: req.session.address, state: type });
+                    let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: estateAddress }, { agent: req.session.address, state: "agent" });
                     // console.log(obj);
                 }
             } catch (error) {
@@ -676,8 +676,12 @@ module.exports = function (dbconnection) {
         let { address, estateAddress, rent } = req.body;
         let owner = await Profile.findOne({ address: address });
 
-        // check is agent for someone
+        // check if the house owner and is agent for someone
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
+        if (!houseData) {
+            console.log('houseData = ' + houseData);
+            return res.send({ 'error': "error", "result": `The house not exist.` });
+        }
         if (houseData.agent != '0x') {
             console.log('houseData.agent = ' + houseData.agent);
             return res.send({ 'error': "error", "result": `The house is agent to ${houseData.agent}.` });
@@ -725,7 +729,7 @@ module.exports = function (dbconnection) {
         // get chain data
 
         try {
-            let obj2 = await estateAgentInstance.evaluateTransaction('GetAgent', pubkey);
+            let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentCertificate', pubkey);
             let data = JSON.parse(obj2.toString());
         } catch (error) {
             console.log(error);
@@ -757,7 +761,7 @@ module.exports = function (dbconnection) {
         let pubkey = dbPubkey.pubkey;
 
         // get chain data
-        let obj2 = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey);
+        let obj2 = await estateAgentInstance.evaluateTransaction('GetAllAgentEstate', pubkey);
         let data = {};
         try {
             data = JSON.parse(obj2.toString());
@@ -879,11 +883,11 @@ module.exports = function (dbconnection) {
         }
 
         // hashed (may add date)
-        let hashedString = address.toString() + estateAddress.toString();
-        let dataHash = keccak256(hashedString).toString('hex');
+        // let hashedString = address.toString() + estateAddress.toString();
+        // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, houseData.ownerAddress, estateAddress, rent, dataHash);
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, houseData.ownerAddress, estateAddress, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -910,6 +914,7 @@ module.exports = function (dbconnection) {
     });
 
     // Search lease PART
+    var allLease = [];
     // show all rent data in blockchain
     router.get('/searchHouse', async (req, res) => {
         const address = req.session.address;
@@ -930,6 +935,7 @@ module.exports = function (dbconnection) {
                 }
             });
         }
+        allLease = houseList;
         res.render('leaseSystem/searchHouse', { address: address, houseList: houseList });
     });
 
@@ -1045,6 +1051,7 @@ module.exports = function (dbconnection) {
         signerList = ownerSignerList.concat(agentSignerList);
 
         let user = await Profile.findOne({ address: address });
+        let rentData = [];
         let data = {};
         try {
             let leaseData = await leaseRegisterInstance.evaluateTransaction('GetPersonLease', user.pubkey);
@@ -1052,31 +1059,56 @@ module.exports = function (dbconnection) {
         } catch (error) {
             data = {};
         }
-
-        let rentData = [];
         Object.keys(data).forEach(function (key) {
             rentData.push(data[key]);
         })
+
+        if (!allLease.length) {
+            let obj2 = await leaseRegisterInstance.evaluateTransaction('GetAllOnlineLease');
+            let data = JSON.parse(obj2.toString());
+            for (let index = 0; index < data.length; index++) {
+                Object.values(data[index].Data).forEach(value => {
+                    if (value.state == "online") {
+                        allLease.push(value);
+                    }
+                });
+            }
+        }
+
+
+        allLease.forEach(elelment => {
+            if (elelment.owner == user.address && elelment.agent != "0x") {
+                rentData.push(elelment);
+            }
+        });
 
         res.render('leaseSystem/leaseManage', { address: address, favorite: favoriteList, signerList: signerList, rentData: rentData });
     });
 
     router.post('/leaseManage/leasePage', async (req, res) => {
         // const address = req.session.address;
-        const { addr, uploader } = req.body;
-        res.send({ url: 'leaseManage/leasePage?addr=' + addr + '&uploader=' + uploader });
+        const { addr, owner, agent } = req.body;
+        res.send({ url: 'leaseManage/leasePage?addr=' + addr + '&owner=' + owner + '&agent=' + agent });
     });
 
 
     router.get('/leaseManage/leasePage', async (req, res) => {
         const address = req.session.address;
         const addr = req.query.addr;
-        const uploader = req.query.uploader;
-        let uploaderData = await Profile.findOne({ address: uploader });
+        const owner = req.query.owner;
+        const agent = req.query.agent;
+        let ownerData = await Profile.findOne({ address: owner });
 
-        let houseData = await HouseData.findOne({ ownerAddress: uploaderData.address, houseAddress: addr });
+        let houseData = await HouseData.findOne({ ownerAddress: ownerData.address, houseAddress: addr });
 
-        let leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', uploaderData.pubkey, addr);
+        let leaseData;
+        if (agent == "0x") {
+            leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', ownerData.pubkey, addr);
+        }
+        else {
+            let agentData = await Profile.findOne({ address: agent });
+            leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', agentData.pubkey, addr);
+        }
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -1088,7 +1120,7 @@ module.exports = function (dbconnection) {
         let added = false;
         try {
             if (address != undefined) {
-                let isAdd = await Interest.findOne({ address: address, ownerAddress: uploaderData.address, houseAddress: addr });
+                let isAdd = await Interest.findOne({ address: address, ownerAddress: ownerData.address, houseAddress: addr });
                 if (isAdd) {
                     added = true;
                 }
@@ -1102,16 +1134,42 @@ module.exports = function (dbconnection) {
 
     // owner create agreement, can edit agreement content 
     router.post('/leaseManage/agreement', isAuthenticated, async (req, res) => {
-        // const address = req.session.address;
-        const { signer, estateAddress } = req.body;
+        const address = req.session.address;
+        const { signer, estateAddress, uploaderKey } = req.body;
+        // check the user has a access right to this house
+        let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
+        if (!houseData) {
+            houseData = await HouseData.findOne({ agent: address, houseAddress: estateAddress });
+        }
+        let userData = await Profile.findOne({ address: address }, 'address pubkey');
+
+        if (houseData.agent == address) {
+            userData = await Profile.findOne({ address: address }, 'address pubkey');
+
+            let agentOnChain;
+            let agentEstate;
+            try {
+                agentOnChain = await estateAgentInstance.evaluateTransaction('GetAgentEstate', userData.pubkey, estateAddress);
+                agentEstate = JSON.parse(agentOnChain.toString());
+                if (agentEstate.type != "Escrow") {
+                    res.send({ msg: 'agreement need to create by the owner.' });
+                    return;
+                }
+            } catch (error) {
+                console.log(error);
+                res.send({ msg: 'error' });
+                return;
+            }
+        }
         // let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
-        res.send({ url: `leaseManage/createAgreement?f=${signer}&e=${estateAddress} ` });
+        res.send({ url: `leaseManage/createAgreement?f=${signer}&e=${estateAddress}&k=${uploaderKey} ` });
     });
 
     router.get('/leaseManage/createAgreement', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const signer = req.query.f;
         const estateAddress = req.query.e;
+        const uploaderKey = req.query.k;
 
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
         if (!houseData) {
@@ -1121,12 +1179,25 @@ module.exports = function (dbconnection) {
         let userData = ownerData;
         if (houseData.agent == address) {
             userData = await Profile.findOne({ address: address }, 'address pubkey');
+
+            let agentOnChain;
+            let agentEstate;
+            try {
+                agentOnChain = await estateAgentInstance.evaluateTransaction('GetAgentEstate', uploaderKey, estateAddress);
+                agentEstate = JSON.parse(agentOnChain.toString());
+                if (agentEstate.type != "Escrow") {
+                    res.send({ msg: 'agreement need to create by the owner.' });
+                }
+            } catch (error) {
+                console.log(error);
+                res.send({ msg: 'error' });
+            }
         }
 
         let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
         let rentData = {};
         try {
-            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', userData.pubkey, estateAddress);
+            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', uploaderKey, estateAddress);
             rentData = JSON.parse(obj3.toString());
         } catch (error) {
             console.log(error);
@@ -1141,7 +1212,7 @@ module.exports = function (dbconnection) {
     });
 
     // already add a agreement in blockchain , edit DB
-    router.post('/leaseManage/agreementCreate', isAuthenticated, async (req, res) => {
+    router.post('/leaseManage/agreementCreateDone', isAuthenticated, async (req, res) => {
         // const address = req.session.address;
         const { hashed, ownerAddress, houseAddress, tenantAddress } = req.body;
         let obj = await HouseData.findOneAndUpdate({ ownerAddress: ownerAddress, houseAddress: houseAddress }, { rentHashed: hashed, state: "signing" });

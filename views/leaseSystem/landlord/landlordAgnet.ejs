@@ -89,25 +89,24 @@
                     </thead>
                     <tbody>
                         <% for (let index=0; index < agentList.length; index++) {%>
-                            <form action="" method="dialog">
-                                <tr>
-                                    <td scope="col">
-                                        <input class="form-control" type="text" id="name" name="name"
-                                            value="<%=agentList[index].name%>" readonly>
-                                    </td>
-                                    <td scope="col">
-                                        <input class="form-control" type="text" id="agentAddress" name="agentAddress"
-                                            value="<%=agentList[index].address%>" readonly>
-                                    </td>
-                                    <!-- <td scope="col" id="agentPubkey">
+                            <!-- <form action="" method="dialog"> -->
+                            <tr>
+                                <td scope="col">
+                                    <input class="form-control" type="text" id="name-<%= index %>"
+                                        name="name-<%= index %>" value="<%=agentList[index].name%>" readonly>
+                                </td>
+                                <td scope="col">
+                                    <input class="form-control" type="text" id="agentAddress-<%= index %>"
+                                        name="agentAddress-<%= index %>" value="<%=agentList[index].address%>" readonly>
+                                </td>
+                                <!-- <td scope="col" id="agentPubkey">
                                         
                                     </td> -->
-                                    <td scope="col">
-                                        <button type="submit" class="btn btn-primary"
-                                            id="entrustSubmit">entrust</button>
-                                    </td>
-                                </tr>
-                            </form>
+                                <td scope="col">
+                                    <button type="submit" class="btn btn-primary" id="entrustSubmit-<%= index %>">entrust</button>
+                                </td>
+                            </tr>
+                            <!-- </form> -->
                             <%} %>
                     </tbody>
                 </table>
@@ -179,70 +178,76 @@
                 personalIdentityABI,
                 personalIdentityAddress
             );
-
-            $('#entrustSubmit').on('click', async function (e) {
-                let userAddress = $("#userAddress").val();
-                let houseAddress = $("#houseAddress").val();
-                let agentAddress = $("#agentAddress").val();
-                let type = "none";
-                if ($("#Leasing").is(":checked")) {
-                    type = "Leasing";
-                }
-                if ($("#Escrow").is(":checked")) {
-                    type = "Escrow";
-                }
-
-                const agent = allAgentList.find(
-                    (rq) => rq.address === agentAddress
-                )
-                let pubkey = agent.pubkey;
-                let response, result;
-                response = await ajaxAwait(
-                    '/leaseSystem/landlord/entrustSubmit',
-                    {
-                        address: account,
-                        agentPubkey: pubkey,
-                        estateAddress: houseAddress,
-                        ownerAddress: userAddress,
-                        type: type
+            for (let index = 0; index < allAgentList.length; index++) {
+                $(`#entrustSubmit-${index}`).on('click', async function (e) {
+                    let userAddress = $("#userAddress").val();
+                    let houseAddress = $(`#houseAddress`).val();
+                    let agentAddress = $(`#agentAddress-${index}`).val();
+                    let type = "none";
+                    if ($("#Leasing").is(":checked")) {
+                        type = "Leasing";
                     }
-                );
-                console.log('response = ' + response.result);
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
-                let encryptKey = await personalIdentityInstance.methods
-                    .getEncryptMaterial('HLFPrivateKey')
-                    .call({ from: account });
-                let privateKey = await ethereum.request({
-                    method: 'eth_decrypt',
-                    params: [encryptKey, account],
-                });
-                let signature_string;
-                signature_string = sign(privateKey, response.digest);
-                response = await ajaxAwait(
-                    '/leaseSystem/proposalAndCreateCommit',
-                    { signature: signature_string, func: 'AddEstate' }
-                );
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
+                    if ($("#Escrow").is(":checked")) {
+                        type = "Escrow";
+                    }
 
-                result = response.result;
-                signature_string = sign(privateKey, response.commitDigest);
-                response = await ajaxAwait('/leaseSystem/commitSend', {
-                    signature: signature_string,
-                    func: 'AddEstate'
-                });
-                if (response.error) {
-                    return alert(`error: ${response.result}`);
-                }
+                    if (type == "none") {
+                        alert('you must choose an option.');
+                        return;
+                    }
 
-                if (alert(`${result}`)) {
+                    const agent = allAgentList.find(
+                        (rq) => rq.address === agentAddress
+                    )
+                    let pubkey = agent.pubkey;
+                    let response, result;
+                    response = await ajaxAwait(
+                        '/leaseSystem/landlord/entrustSubmit',
+                        {
+                            address: account,
+                            agentPubkey: pubkey,
+                            estateAddress: houseAddress,
+                            ownerAddress: userAddress,
+                            type: type
+                        }
+                    );
+                    console.log('response = ' + response.result);
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+                    let encryptKey = await personalIdentityInstance.methods
+                        .getEncryptMaterial('HLFPrivateKey')
+                        .call({ from: account });
+                    let privateKey = await ethereum.request({
+                        method: 'eth_decrypt',
+                        params: [encryptKey, account],
+                    });
+                    let signature_string;
+                    signature_string = sign(privateKey, response.digest);
+                    response = await ajaxAwait(
+                        '/leaseSystem/proposalAndCreateCommit',
+                        { signature: signature_string, func: 'AddEstate' }
+                    );
+                    if (response.error) {
+                        return alert(`error :${response.result}`);
+                    }
+
+                    result = response.result;
+                    signature_string = sign(privateKey, response.commitDigest);
+                    response = await ajaxAwait('/leaseSystem/commitSend', {
+                        signature: signature_string,
+                        func: 'AddEstate'
+                    });
+                    if (response.error) {
+                        return alert(`error: ${response.result}`);
+                    }
+
+                    if (alert(`${result}`)) {
+                        window.location.reload();
+                    }
                     window.location.reload();
-                }
-                window.location.reload();
-            });
+                });
+            }
         }
 
         async function main() {

@@ -118,7 +118,7 @@ class EstateAgent extends Contract {
     return "reject success";
   }
 
-  async GetAgent(ctx, userPubkey) {
+  async GetAgentCertificate(ctx, userPubkey) {
     let agent = await ctx.stub.getState(userPubkey);
     if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
@@ -129,13 +129,25 @@ class EstateAgent extends Contract {
     return JSON.stringify(agentData);
   }
 
-  async GetAgentEstate(ctx, userPubkey) {
+  async GetAllAgentEstate(ctx, userPubkey) {
     let agent = await ctx.stub.getState(userPubkey);
     if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
     let agentJson = JSON.parse(agent.toString());
     const agentData = agentJson.Agreement;
+
+    return JSON.stringify(agentData);
+  }
+
+  async GetAgentEstate(ctx, userPubkey, estateAddress) {
+    let agent = await ctx.stub.getState(userPubkey);
+    if (!agent || agent.length === 0) {
+      throw new Error(`The user acc key:${userPubkey} does not exist`);
+    }
+    
+    let agentJson = JSON.parse(agent.toString());
+    const agentData = agentJson.Agreement[estateAddress];
 
     return JSON.stringify(agentData);
   }
