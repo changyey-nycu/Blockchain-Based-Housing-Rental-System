@@ -122,7 +122,7 @@ class RentalAgreement extends Contract {
     return publickeyObject.verify(plaintext, Buffer.from(signature));
   }
 
-  async VerifyAgreementSign(ctx, pubkey, agreementHashed) {
+  async VerifyAgreementSignTest(ctx, pubkey, agreementHashed) {
     let agreement = await ctx.stub.getState(pubkey);
     let agreementData;
 
@@ -142,6 +142,41 @@ class RentalAgreement extends Contract {
         // var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
         // B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
         B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
+      }
+      return A && B;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async VerifyAgreementSign(ctx, pubkey, agreementHashed, estateAddress) {
+    let agreement = await ctx.stub.getState(pubkey);
+    let agreementData;
+
+    try {
+      agreementData = JSON.parse(agreement.toString());
+    } catch (error) {
+      throw new Error(`The agreement key:${PartyAkey} does not exist`);
+    }
+    try {
+      let A = false, B = false;
+      if (agreementData.Agreement[agreementHashed].sign.PartyA) {
+        // var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
+        // A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
+        A = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyA, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
+      }
+      if (agreementData.Agreement[agreementHashed].sign.PartyB) {
+        // var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
+        // B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
+        B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
+      }
+      if (A && B) {
+        let estatePublishResponse = await ctx.stub.invokeChaincode("EstatePublish", ["Signed", pubkey, estateAddress], "lease-channel");
+        
+        if(estatePublishResponse.status != 200){
+            throw new Error(certManagerResponse.message);
+        }
       }
       return A && B;
     } catch (error) {

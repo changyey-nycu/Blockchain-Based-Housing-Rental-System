@@ -13,9 +13,9 @@ Available Accounts
 (4) 0x6F03947036cba3279b07Cd6ea5Ca674cA51E52ba (100 ETH)    test A
 (5) 0x889735777f51c84272a7FEb0d763280179A529a9 (100 ETH)    test B
 (6) 0x2C46BcB6dA3ae85dA881edeEd4eC2fE92670f90F (100 ETH)    test C
-(7) 0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E (100 ETH)    orgA
-(8) 0x3E014E5c311a7D6F652CA4F8bb016f4338A44118 (100 ETH)    orgB
-(9) 0x75c4Fb2e81a6d3420125F5145182F528d1699146 (100 ETH)    orgD
+(7) 0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E (100 ETH)    
+(8) 0x3E014E5c311a7D6F652CA4F8bb016f4338A44118 (100 ETH)    
+(9) 0x75c4Fb2e81a6d3420125F5145182F528d1699146 (100 ETH)    
 
 Lower Case
 (4) 0xe092b1fa25df5786d151246e492eed3d15ea4daa
@@ -36,16 +36,12 @@ Private Keys
 (9) 0x2d9d98ee99c8f7c664125ff2b3b91f356e880917b2d9fc508ffe1b647bd7a9fd
 
 
-# may bug
+# offline signature bug
 result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
 
 
-# Q
-agreement sign verify in server part or blockchain part
-
 # note
-abi -> output.abi
-house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}
+did json file : abi -> output.abi in Solidity compiler ver 8.19
 註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
 
 
@@ -63,34 +59,11 @@ ORG3 財政部國稅局(Ministry of Finance/National Taxation Bureau)
 ORG4 司法院(Judicial Yuan)
 
 
-區塊鏈
-
-DID : 控管資料
-
-union {
-estate channel : 紀錄房產資料
-政府 內政部地政司(Ministry of Interior)
-
-
-lease house channel : 出租資料
-系統???
-
-
-entrust channel : 委託房仲資料
-政府 內政部地政司
-}
-
-assets channel : 租金負擔能力
-政府 財政部國稅局(Ministry of Finance/National Taxation Bureau) 財力證明?
-
-
-lease channel : 儲存租屋契約
-政府 司法院
-
-
 資料庫
 
 DID : 個資
 系統 : 房屋資料
 司法院 : 合約資料
 內政部地政司 : 不動產/證照
+
+house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}

@@ -36,8 +36,8 @@ var cryptoSuite = fabric_common.Utils.newCryptoSuite();
 var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
-var agreementChannel, rentalAgreementInstance;
-var entrustChannel, leaseRegisterInstance;
+var leaseChannel, rentalAgreementInstance;
+var EstatePublishInstance;
 
 var wallet;
 var gateway;
@@ -89,11 +89,9 @@ module.exports = function (dbconnection) {
             discovery: { enabled: true, asLocalhost: true }
         });
 
-        agreementChannel = await gateway.getNetwork('agreement-channel');
-        rentalAgreementInstance = await agreementChannel.getContract('RentalAgreement');
-
-        entrustChannel = await gateway.getNetwork('entrust-channel');
-        leaseRegisterInstance = await entrustChannel.getContract('LeaseRegister');
+        leaseChannel = await gateway.getNetwork('lease-channel');
+        rentalAgreementInstance = await leaseChannel.getContract('RentalAgreement');
+        EstatePublishInstance = await leaseChannel.getContract('EstatePublish');
     }
     init();
 
@@ -237,18 +235,18 @@ module.exports = function (dbconnection) {
     router.post("/verifySign", async (req, res) => {
         let { ownerAddress, tenantAddress, houseAddress } = req.body;
         let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
-        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.landlordPubkey, agreement.hashed);
-        if (result.toString() == "true") {
-            await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
-                { state: "active" });
-            try {
-                let result = await leaseRegisterInstance.submitTransaction('Signed',  agreement.landlordPubkey, houseAddress);
-                console.log(result.toString());
-            } catch (error) {
-                console.log(error);
-            }
+        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.landlordPubkey, agreement.hashed, houseAddress);
+        // if (result.toString() == "true") {
+        //     await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
+        //         { state: "active" });
+        //     try {
+        //         let result = await EstatePublishInstance.submitTransaction('Signed', agreement.landlordPubkey, houseAddress);
+        //         console.log(result.toString());
+        //     } catch (error) {
+        //         console.log(error);
+        //     }
 
-        }
+        // }
         console.log(result.toString());
         return res.send({ msg: result.toString() });
     })

@@ -8,7 +8,7 @@ function uint8arrayToStringMethod(myUint8Arr) {
   return String.fromCharCode.apply(null, myUint8Arr);
 }
 
-class LeaseRegister extends Contract {
+class EstatePublish extends Contract {
   async GetIdentity(ctx) {
     let org = ctx.clientIdentity.getMSPID();
     let ID = ctx.clientIdentity.getID();
@@ -146,4 +146,4 @@ class LeaseRegister extends Contract {
   }
 }
 
-exports.contracts = [LeaseRegister];
+exports.contracts = [EstatePublish];

@@ -80,7 +80,7 @@
       ]
     },
     {
-      "name": "entrust-channel",
+      "name": "lease-channel",
       "orgs": [
         {
           "name": "Org1",
@@ -90,23 +90,6 @@
         },
         {
           "name": "Org2",
-          "peers": [
-            "peer0"
-          ]
-        },
-        {
-          "name": "Org3",
-          "peers": [
-            "peer0"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "agreement-channel",
-      "orgs": [
-        {
-          "name": "Org1",
           "peers": [
             "peer0"
           ]
@@ -150,23 +133,23 @@
       "name": "EstateAgent",
       "version": "0.0.1",
       "lang": "node",
-      "channel": "entrust-channel",
+      "channel": "lease-channel",
       "directory": "./chaincodes/chaincode-EstateAgent-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member')"
     },
     {
-      "name": "LeaseRegister",
+      "name": "EstatePublish",
       "version": "0.0.1",
       "lang": "node",
-      "channel": "entrust-channel",
-      "directory": "./chaincodes/chaincode-LeaseRegister-node",
+      "channel": "lease-channel",
+      "directory": "./chaincodes/chaincode-EstatePublish-node",
       "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org3MSP.member')"
     },
     {
       "name": "RentalAgreement",
       "version": "0.0.1",
       "lang": "node",
-      "channel": "agreement-channel",
+      "channel": "lease-channel",
       "directory": "./chaincodes/chaincode-RentalAgreement-node",
       "endorsement": "OR('Org1MSP.member', 'Org3MSP.member')"
     },

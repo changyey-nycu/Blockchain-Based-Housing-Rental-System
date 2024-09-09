@@ -26,7 +26,7 @@ const { buildCCPOrg1, buildWallet } = require('../../util/AppUtil');
 const require_signature = "LeaseSystem?nonce:778";
 
 var caClient;
-var registerChannel, entrustChannel, estateRegisterInstance, estateAgentInstance;
+var registerChannel, leaseChannel, estateRegisterInstance, estateAgentInstance;
 var wallet;
 var gateway;
 var adminUser;
@@ -81,8 +81,8 @@ module.exports = function (dbconnection1) {
         registerChannel = await gateway.getNetwork('register-channel');
         estateRegisterInstance = await registerChannel.getContract('EstateRegister');
 
-        entrustChannel = await gateway.getNetwork('entrust-channel');
-        estateAgentInstance = await entrustChannel.getContract('EstateAgent');
+        leaseChannel = await gateway.getNetwork('lease-channel');
+        estateAgentInstance = await leaseChannel.getContract('EstateAgent');
     }
 
     init();

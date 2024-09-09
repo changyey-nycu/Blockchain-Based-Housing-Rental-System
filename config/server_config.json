@@ -11,19 +11,5 @@
         "pubkey": "novaq02ocUQSVkuNpjcdpyFKNG3YtG4W21UDJ7s8l08",
         "key": "b97de1848f97378ee439b37e776ffe11a2fff415b2f93dc240b2d16e9c184ba9"
     },
-    "org_info" :{
-        "orgA": {
-          "address" : "0x6a71E87487C0eC01EcFFd09a2042Cb5eD507393E",
-          "key" : "c01836866febf10022ec9ae632677937f3070d4ed4819e5c6e03d3e8ec02dc2e"
-        },
-        "orgB" : {
-            "address": "0x3E014E5c311a7D6F652CA4F8bb016f4338A44118",
-            "key":"df207d299d941818bb4f7822cf003662370a7d685016dfc3f1e2cac03d47fc1d"
-        },
-        "orgC" : {
-            "address": "0x75c4Fb2e81a6d3420125F5145182F528d1699146",
-            "key":"2d9d98ee99c8f7c664125ff2b3b91f356e880917b2d9fc508ffe1b647bd7a9fd"
-        }
-    },
     "web3_provider": "http://127.0.0.1:8545"
 }

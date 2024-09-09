@@ -33,7 +33,7 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
 var registerChannel, estateRegisterInstance;
-var entrustChannel, estateAgentInstance, leaseRegisterInstance;
+var leaseChannel, estateAgentInstance, EstatePublishInstance;
 var wallet;
 var gateway;
 var adminUser;
@@ -105,9 +105,9 @@ module.exports = function (dbconnection) {
         estateRegisterInstance = await registerChannel.getContract('EstateRegister');
 
 
-        entrustChannel = await gateway.getNetwork('entrust-channel');
-        estateAgentInstance = await entrustChannel.getContract('EstateAgent');
-        leaseRegisterInstance = await entrustChannel.getContract('LeaseRegister');
+        leaseChannel = await gateway.getNetwork('lease-channel');
+        estateAgentInstance = await leaseChannel.getContract('EstateAgent');
+        EstatePublishInstance = await leaseChannel.getContract('EstatePublish');
     }
     init();
 
@@ -323,19 +323,19 @@ module.exports = function (dbconnection) {
         switch (arguments[1]) {
             case 'AddEstate':
                 endorsementStore = addEstate;
-                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+                var endorsement = leaseChannel.channel.newEndorsement('EstateAgent');
                 break;
             case 'AcceptEstate':
                 endorsementStore = acceptEstate;
-                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+                var endorsement = leaseChannel.channel.newEndorsement('EstateAgent');
                 break;
             case 'RejectEstate':
                 endorsementStore = rejectEstate;
-                var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+                var endorsement = leaseChannel.channel.newEndorsement('EstateAgent');
                 break;
             case 'NewLease':
                 endorsementStore = newLease;
-                var endorsement = entrustChannel.channel.newEndorsement('LeaseRegister');
+                var endorsement = leaseChannel.channel.newEndorsement('EstatePublish');
                 break;
         }
 
@@ -345,7 +345,7 @@ module.exports = function (dbconnection) {
         }
 
         // Need to add other contract
-        // var endorsement = entrustChannel.channel.newEndorsement('EstateAgent');
+        // var endorsement = leaseChannel.channel.newEndorsement('EstateAgent');
         var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
         var proposalBytes = endorsement.build(userContext, build_options);
         const digest = hashFunction(proposalBytes);
@@ -390,7 +390,7 @@ module.exports = function (dbconnection) {
         let endorsement = endorsementStore[arguments[0]];
         endorsement.sign(arguments[2]);
         // console.log(endorsement);
-        let proposalResponses = await endorsement.send({ targets: entrustChannel.channel.getEndorsers() });
+        let proposalResponses = await endorsement.send({ targets: leaseChannel.channel.getEndorsers() });
         // console.log(proposalResponses);
         // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
         // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
@@ -457,7 +457,7 @@ module.exports = function (dbconnection) {
         commit.sign(arguments[2])
         let commitSendRequest = {};
         commitSendRequest.requestTimeout = 300000
-        commitSendRequest.targets = entrustChannel.channel.getCommitters();
+        commitSendRequest.targets = leaseChannel.channel.getCommitters();
         let commitResponse = await commit.send(commitSendRequest);
 
         if (commitResponse['status'] == "SUCCESS") {
@@ -687,8 +687,8 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
-        // let isExist = await leaseRegisterInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
+        let isExist = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        // let isExist = await EstatePublishInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
         // let a = JSON.parse(isExist.toString())
 
         if (isExist.toString() == "true") {
@@ -873,8 +873,8 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
-        let isExistAgent = await leaseRegisterInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
+        let isExist = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        let isExistAgent = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
         if (isExist.toString() == "true" && isExistAgent.toString() == "true") {
             console.log('exist = ' + isExist + " , " + isExistAgent);
             return res.send({ 'error': "error", "result": "The house is already published." });
@@ -916,7 +916,7 @@ module.exports = function (dbconnection) {
     // show all rent data in blockchain
     router.get('/searchHouse', async (req, res) => {
         const address = req.session.address;
-        let obj2 = await leaseRegisterInstance.evaluateTransaction('GetAllOnlineLease');
+        let obj2 = await EstatePublishInstance.evaluateTransaction('GetAllOnlineLease');
         let data = {};
         try {
             data = JSON.parse(obj2.toString());
@@ -957,7 +957,7 @@ module.exports = function (dbconnection) {
             houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: addr });
         }
 
-        let leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', uploader, addr);
+        let leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', uploader, addr);
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -1052,7 +1052,7 @@ module.exports = function (dbconnection) {
         let rentData = [];
         let data = {};
         try {
-            let leaseData = await leaseRegisterInstance.evaluateTransaction('GetPersonLease', user.pubkey);
+            let leaseData = await EstatePublishInstance.evaluateTransaction('GetPersonLease', user.pubkey);
             data = JSON.parse(leaseData.toString());
         } catch (error) {
             data = {};
@@ -1062,7 +1062,7 @@ module.exports = function (dbconnection) {
         })
 
         if (!allLease.length) {
-            let obj2 = await leaseRegisterInstance.evaluateTransaction('GetAllOnlineLease');
+            let obj2 = await EstatePublishInstance.evaluateTransaction('GetAllOnlineLease');
             let data = JSON.parse(obj2.toString());
             for (let index = 0; index < data.length; index++) {
                 Object.values(data[index].Data).forEach(value => {
@@ -1101,11 +1101,11 @@ module.exports = function (dbconnection) {
 
         let leaseData;
         if (agent == "0x") {
-            leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', ownerData.pubkey, addr);
+            leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', ownerData.pubkey, addr);
         }
         else {
             let agentData = await Profile.findOne({ address: agent });
-            leaseData = await leaseRegisterInstance.evaluateTransaction('GetLease', agentData.pubkey, addr);
+            leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', agentData.pubkey, addr);
         }
         let data = {};
         try {
@@ -1195,7 +1195,7 @@ module.exports = function (dbconnection) {
         let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
         let rentData = {};
         try {
-            let obj3 = await leaseRegisterInstance.evaluateTransaction('GetLease', uploaderKey, estateAddress);
+            let obj3 = await EstatePublishInstance.evaluateTransaction('GetLease', uploaderKey, estateAddress);
             rentData = JSON.parse(obj3.toString());
         } catch (error) {
             console.log(error);
