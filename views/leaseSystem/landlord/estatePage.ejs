@@ -10,7 +10,7 @@
                     <h4 style="margin:auto" class="font-weight-bold">Manage House Data</h4>
                 </div>
                 <div style="margin-top: 10px" class="card text-center">
-                    <form method="post" action="/leaseSystem/landlord/estateUpdate">
+                    <form method="post" action="/leaseSystem/landlord/estateUpdate" enctype="multipart/form-data">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Title</span>
                             <input type="text" class="form-control" id="title" name="title"
@@ -44,11 +44,11 @@
                         <div class="col-12 mb-3">
                             <label class="form-label">Describe(less than 300 chars)</label> 
                             <input type="text" class="form-control" id="describe" name="describe"
-                            value="<%=HouseData.describe%>">
+                            value="<%=HouseData.describe%>" />
                         </div>
                         <div class="col-12 mb-3">
                             <label class="form-label">Picture</label>
-                            <input type="file" class="form-control" id="picture" name="picture">
+                            <input type="file" class="form-control" id="picture" name="picture" multiple />
                         </div>
                         <div class="input-group mb-3; row">
                             <div class="col"><button class="btn btn-primary" type="submit" id="save">save</button></div>

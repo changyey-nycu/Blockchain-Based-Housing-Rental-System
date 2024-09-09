@@ -46,7 +46,6 @@ var newLease = {};
 const require_signature = "LeaseSystem?nonce:778";
 
 const mongoose = require('mongoose');
-const { error } = require('console');
 
 module.exports = function (dbconnection) {
     const HouseData = dbconnection.model('houseDatas', require('../../models/leaseSystem/houseData'));
@@ -808,7 +807,6 @@ module.exports = function (dbconnection) {
     router.post('/agent/estatePage', isAuthenticated, async (req, res) => {
         // const address = req.session.address;
         const { estateAddress, owner } = req.body;
-        // console.log(addr);
 
         // let obj = await HouseData.findOne({ ownerAddress: address, houseAddress: req.body.addr });
         res.send({ url: 'estatePage?owner=' + owner + '&addr=' + estateAddress });
