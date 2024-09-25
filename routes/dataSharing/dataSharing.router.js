@@ -27,12 +27,13 @@ const require_signature = "LeaseSystem?nonce:778";
 
 var caClient;
 var accChannel, accInstance;
+var leaseChannel, estatePublishInstance;
 var wallet;
 var gateway;
 var adminUser;
 
-var updatePermission = {};
-var revokePermission = {};
+// var updatePermission = {};
+// var revokePermission = {};
 
 
 
@@ -82,6 +83,9 @@ module.exports = function (dbconnection) {
 
         accChannel = await gateway.getNetwork('acc-channel');
         accInstance = await accChannel.getContract('AccessControlManager');
+
+        leaseChannel = await gateway.getNetwork('lease-channel');
+        estatePublishInstance = await leaseChannel.getContract('EstatePublish');
     }
 
     init();
@@ -96,195 +100,189 @@ module.exports = function (dbconnection) {
         }
     };
 
-    async function createTransaction() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 to end is chaincode function parameter
-        var user = await buildCertUser(wallet, fabric_common, arguments[0]);
-        var userContext = gateway.client.newIdentityContext(user);
+    // async function createTransaction() {
+    //     // parameter 0 is user identity
+    //     // parameter 1 is chaincode function Name
+    //     // parameter 2 to end is chaincode function parameter
+    //     var user = await buildCertUser(wallet, fabric_common, arguments[0]);
+    //     var userContext = gateway.client.newIdentityContext(user);
 
-        var endorsementStore;
-        // console.log('arguments[1] = ' + arguments[1]);
-        switch (arguments[1]) {
-            case 'UpdatePermission':
-                endorsementStore = updatePermission;
-                break;
-            case 'RevokePermission':
-                endorsementStore = revokePermission;
-                break;
-        }
+    //     var endorsementStore;
+    //     // console.log('arguments[1] = ' + arguments[1]);
+    //     switch (arguments[1]) {
+    //         case 'UpdatePermission':
+    //             endorsementStore = updatePermission;
+    //             break;
+    //         case 'RevokePermission':
+    //             endorsementStore = revokePermission;
+    //             break;
+    //     }
 
-        var paras = [];
-        for (var i = 2; i < arguments.length; i++) {
-            paras.push(arguments[i])
-        }
+    //     var paras = [];
+    //     for (var i = 2; i < arguments.length; i++) {
+    //         paras.push(arguments[i])
+    //     }
 
-        // Need to add other contract
-        var endorsement = accChannel.channel.newEndorsement('AccessControlManager');
-        var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
-        var proposalBytes = endorsement.build(userContext, build_options);
-        const digest = hashFunction(proposalBytes);
-        endorsementStore[arguments[0]] = endorsement;
+    //     // Need to add other contract
+    //     var endorsement = accChannel.channel.newEndorsement('AccessControlManager');
+    //     var build_options = { fcn: arguments[1], args: paras, generateTransactionId: true };
+    //     var proposalBytes = endorsement.build(userContext, build_options);
+    //     const digest = hashFunction(proposalBytes);
+    //     endorsementStore[arguments[0]] = endorsement;
 
-        return new Promise(function (reslove, reject) {
-            reslove(digest);
-        })
-    };
+    //     return new Promise(function (reslove, reject) {
+    //         reslove(digest);
+    //     })
+    // };
 
-    async function proposalAndCreateCommit() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 is signature
+    // async function proposalAndCreateCommit() {
+    //     // parameter 0 is user identity
+    //     // parameter 1 is chaincode function Name
+    //     // parameter 2 is signature
 
-        var endorsementStore;
-        switch (arguments[1]) {
-            case 'UpdatePermission':
-                endorsementStore = updatePermission;
-                break;
-            case 'RevokePermission':
-                endorsementStore = revokePermission;
-                break;
-        }
-        if (typeof (endorsementStore) == "undefined") {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "func dosen't exist."
-                });
-            })
-        }
+    //     var endorsementStore;
+    //     switch (arguments[1]) {
+    //         case 'UpdatePermission':
+    //             endorsementStore = updatePermission;
+    //             break;
+    //         case 'RevokePermission':
+    //             endorsementStore = revokePermission;
+    //             break;
+    //     }
+    //     if (typeof (endorsementStore) == "undefined") {
+    //         return new Promise(function (reslove, reject) {
+    //             reject({
+    //                 'error': true,
+    //                 'result': "func dosen't exist."
+    //             });
+    //         })
+    //     }
 
-        // console.log('endorsementStore = ' + JSON.stringify(endorsementStore[arguments[0]]));
+    //     // console.log('endorsementStore = ' + JSON.stringify(endorsementStore[arguments[0]]));
 
-        let endorsement = endorsementStore[arguments[0]];
-        endorsement.sign(arguments[2]);
-        // console.log(endorsement);
-        let proposalResponses = await endorsement.send({ targets: accChannel.channel.getEndorsers() });
-        // console.log(proposalResponses);
-        // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
-        // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
-        // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
-        if (proposalResponses.error) {
-            console.log(proposalResponses.error);
-        }
-        if (proposalResponses.responses[0].response.status == 200) {
-            let user = await buildCertUser(wallet, fabric_common, arguments[0]);
-            let userContext = gateway.client.newIdentityContext(user)
+    //     let endorsement = endorsementStore[arguments[0]];
+    //     endorsement.sign(arguments[2]);
+    //     // console.log(endorsement);
+    //     let proposalResponses = await endorsement.send({ targets: accChannel.channel.getEndorsers() });
+    //     // console.log(proposalResponses);
+    //     // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
+    //     // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
+    //     // console.log('proposalResponses.responses[0].response.status = ' + proposalResponses.responses[0].response.status);
+    //     if (proposalResponses.error) {
+    //         console.log(proposalResponses.error);
+    //     }
+    //     if (proposalResponses.responses[0].response.status == 200) {
+    //         let user = await buildCertUser(wallet, fabric_common, arguments[0]);
+    //         let userContext = gateway.client.newIdentityContext(user)
 
-            let commit = endorsement.newCommit();
-            let commitBytes = commit.build(userContext)
-            let commitDigest = hashFunction(commitBytes)
-            let result = proposalResponses.responses[0].response.payload.toString();
-            endorsementStore[arguments[0]] = commit;
+    //         let commit = endorsement.newCommit();
+    //         let commitBytes = commit.build(userContext)
+    //         let commitDigest = hashFunction(commitBytes)
+    //         let result = proposalResponses.responses[0].response.payload.toString();
+    //         endorsementStore[arguments[0]] = commit;
 
-            return new Promise(function (reslove, reject) {
-                reslove({
-                    'commitDigest': commitDigest,
-                    'result': result
-                });
-            })
-        }
-        else {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': proposalResponses.responses[0].response.message
-                });
-            })
-        }
-    };
+    //         return new Promise(function (reslove, reject) {
+    //             reslove({
+    //                 'commitDigest': commitDigest,
+    //                 'result': result
+    //             });
+    //         })
+    //     }
+    //     else {
+    //         return new Promise(function (reslove, reject) {
+    //             reject({
+    //                 'error': true,
+    //                 'result': proposalResponses.responses[0].response.message
+    //             });
+    //         })
+    //     }
+    // };
 
-    async function commitSend() {
-        // parameter 0 is user identity
-        // parameter 1 is chaincode function Name
-        // parameter 2 is signature
+    // async function commitSend() {
+    //     // parameter 0 is user identity
+    //     // parameter 1 is chaincode function Name
+    //     // parameter 2 is signature
 
-        var endorsementStore;
-        switch (arguments[1]) {
-            case 'UpdatePermission':
-                endorsementStore = updatePermission;
-                break;
-            case 'RevokePermission':
-                endorsementStore = revokePermission;
-                break;
-        }
-        if (typeof (endorsementStore) == "undefined") {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "func doesn't exist."
-                });
-            })
-        }
-        let commit = endorsementStore[arguments[0]]
-        commit.sign(arguments[2])
-        let commitSendRequest = {};
-        commitSendRequest.requestTimeout = 300000
-        commitSendRequest.targets = accChannel.channel.getCommitters();
-        let commitResponse = await commit.send(commitSendRequest);
+    //     var endorsementStore;
+    //     switch (arguments[1]) {
+    //         case 'UpdatePermission':
+    //             endorsementStore = updatePermission;
+    //             break;
+    //         case 'RevokePermission':
+    //             endorsementStore = revokePermission;
+    //             break;
+    //     }
+    //     if (typeof (endorsementStore) == "undefined") {
+    //         return new Promise(function (reslove, reject) {
+    //             reject({
+    //                 'error': true,
+    //                 'result': "func doesn't exist."
+    //             });
+    //         })
+    //     }
+    //     let commit = endorsementStore[arguments[0]]
+    //     commit.sign(arguments[2])
+    //     let commitSendRequest = {};
+    //     commitSendRequest.requestTimeout = 300000
+    //     commitSendRequest.targets = accChannel.channel.getCommitters();
+    //     let commitResponse = await commit.send(commitSendRequest);
 
-        if (commitResponse['status'] == "SUCCESS") {
-            return new Promise(function (reslove, reject) {
-                reslove({
-                    'result': true
-                });
-            })
-        }
-        else {
-            return new Promise(function (reslove, reject) {
-                reject({
-                    'error': true,
-                    'result': "commit error"
-                });
-            })
-        }
-    }
+    //     if (commitResponse['status'] == "SUCCESS") {
+    //         return new Promise(function (reslove, reject) {
+    //             reslove({
+    //                 'result': true
+    //             });
+    //         })
+    //     }
+    //     else {
+    //         return new Promise(function (reslove, reject) {
+    //             reject({
+    //                 'error': true,
+    //                 'result': "commit error"
+    //             });
+    //         })
+    //     }
+    // }
 
-    function convertSignature(signature) {
-        signature = signature.split("/");
-        let signature_array = new Uint8Array(signature.length);
-        for (var i = 0; i < signature.length; i++) {
-            signature_array[i] = parseInt(signature[i])
-        }
-        let signature_buffer = Buffer.from(signature_array)
-        return signature_buffer;
-    }
+    // function convertSignature(signature) {
+    //     signature = signature.split("/");
+    //     let signature_array = new Uint8Array(signature.length);
+    //     for (var i = 0; i < signature.length; i++) {
+    //         signature_array[i] = parseInt(signature[i])
+    //     }
+    //     let signature_buffer = Buffer.from(signature_array)
+    //     return signature_buffer;
+    // }
 
-    router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
-        try {
-            let { signature, func } = req.body;
+    // router.post("/proposalAndCreateCommit", isAuthenticated, async (req, res) => {
+    //     try {
+    //         let { signature, func } = req.body;
 
-            let signature_buffer = convertSignature(signature)
-            let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer)
-            // console.log(response);
-            return res.send(response);
+    //         let signature_buffer = convertSignature(signature)
+    //         let response = await proposalAndCreateCommit(req.session.address, func, signature_buffer)
+    //         // console.log(response);
+    //         return res.send(response);
 
-        } catch (error) {
-            console.log(error);
-            return res.send(error);
-        }
-    });
-
-    router.post("/commitSend", isAuthenticated, async (req, res) => {
-        try {
-            let { signature, func } = req.body;
-            let signature_buffer = convertSignature(signature);
-            let response = await commitSend(req.session.address, func, signature_buffer);
-            // console.log(response);
-
-            return res.send(response);
-        } catch (error) {
-            console.log(error);
-            return res.send(error);
-        }
-    })
-
-    // router.post('/upload', isAuthenticated, async (req, res) => {
-    //     const address = req.session.address;
-    //     const pubkey = req.session.pubkey;
-    //     const { ownerAddress, ownerPubkey, houseAddress } = req.body;
-    //     res.send({ url: 'dataSharing/upload?owner=' + ownerAddress + '&house=' + houseAddress + '&key=' + ownerPubkey });
+    //     } catch (error) {
+    //         console.log(error);
+    //         return res.send(error);
+    //     }
     // });
+
+    // router.post("/commitSend", isAuthenticated, async (req, res) => {
+    //     try {
+    //         let { signature, func } = req.body;
+    //         let signature_buffer = convertSignature(signature);
+    //         let response = await commitSend(req.session.address, func, signature_buffer);
+    //         // console.log(response);
+
+    //         return res.send(response);
+    //     } catch (error) {
+    //         console.log(error);
+    //         return res.send(error);
+    //     }
+    // })
+
 
     router.get('/upload', isAuthenticated, async (req, res) => {
         const address = req.session.address;
@@ -310,6 +308,25 @@ module.exports = function (dbconnection) {
         });
     });
 
+    router.get('/authorizeIfo', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const pubkey = req.session.pubkey;
+        let localData = {};
+        try {
+            localData = await PersonalData.findOne({ address: address });
+            if (!localData) {
+                localData = new PersonalData({ address: address, pubkey: pubkey });
+                localData.save();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+
+        res.render('leaseSystem/dataSharing/upload', {
+            address: address, pubkey: pubkey, tenantData: localData, contract_address: contract_address
+        });
+    });
+
     router.post('/request', isAuthenticated, async (req, res) => {
         // const address = req.session.address;
         // const pubkey = req.session.pubkey;
@@ -322,7 +339,15 @@ module.exports = function (dbconnection) {
         const pubkey = req.session.pubkey;
         const tenant = req.query.tenant;
         const house = req.query.house;
-        res.render('leaseSystem/dataSharing/request', { address: address, pubkey: pubkey, tenant: tenant, house: house, contract_address: contract_address });
+
+        let restrictionBuffer  = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restriction = JSON.parse(restrictionBuffer.toString());
+        console.log(restriction);
+
+        res.render('leaseSystem/dataSharing/request', {
+            address: address, pubkey: pubkey, tenant: tenant, house: house,
+            restriction: restriction, contract_address: contract_address
+        });
     });
 
     router.post('/saveData', isAuthenticated, async (req, res) => {
@@ -342,8 +367,8 @@ module.exports = function (dbconnection) {
                     { name: nameInput, email: emailInput, phone: phoneInput, job: jobInput, salary: salaryInput, deposit: depositInput }, { new: true });
             }
             res.render('leaseSystem/dataSharing/upload', {
-                address: address, pubkey: pubkey, owner: ownerAddress, ownerPubkey: ownerPubkey
-                , house: houseAddress, tenantData: localData, contract_address: contract_address
+                address: address, pubkey: pubkey, owner: ownerAddress, ownerPubkey: ownerPubkey,
+                house: houseAddress, tenantData: localData, contract_address: contract_address
             });
         } catch (error) {
             console.log(error);
@@ -414,7 +439,7 @@ module.exports = function (dbconnection) {
 
         let data = {};
         Object.keys(permitJson).forEach(async key => {
-            if (permitJson[key].data == "true") {
+            if (permitJson[key].data == "true" && attributes[key] == true) {
                 data[key] = tenantData[key];
             }
             else {
@@ -428,6 +453,38 @@ module.exports = function (dbconnection) {
         return res.send({ msg: "done", "data": data });
     });
 
+    router.post('/getAssessment', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const pubkey = req.session.pubkey;
+        const { tenantAddress } = req.body;
+        // const { name, email, job, salary, deposit } = req.body;
+        // attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
+
+        let tenantData = await PersonalData.findOne({ address: tenantAddress });
+
+        let restrictionBuffer  = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restriction = JSON.parse(restrictionBuffer.toString());
+        console.log(restriction);
+
+        // ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes)
+        // let permitBuffer = await accInstance.evaluateTransaction('ConfirmMutiPermission', pubkey, tenantData.pubkey, attributes);
+        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', pubkey, tenantData.pubkey);
+        let permitJson = JSON.parse(permitBuffer.toString());
+        console.log(permitJson);
+
+        let data = {};
+        Object.keys(restriction).forEach(async key => {
+            if (permitJson[key].data == "true") {
+                data[key] = tenantData[key];
+            }
+            else {
+                data[key] = "permission deny";
+            }
+        })
+        console.log(data);
+
+        return res.send({ msg: "done", "data": data });
+    });
     router.post('/test', async (req, res) => {
         console.log(req.body);
 

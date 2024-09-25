@@ -10,7 +10,7 @@
                     <h4 style="margin:auto" class="font-weight-bold">Manage House Data</h4>
                 </div>
                 <div style="margin-top: 10px" class="card text-center">
-                    <form method="post" action="/leaseSystem/landlord/estateUpdate" enctype="multipart/form-data">
+                    <form method="post" action="/leaseSystem/landlord/estateUpdate">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Title</span>
                             <input type="text" class="form-control" id="title" name="title"
@@ -36,9 +36,11 @@
                                 <option selected value="<%=HouseData.type%>">
                                     <%=HouseData.type%>
                                 </option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                                <option value="single room">single room</option>
+                                <option value="double room">double room</option>
+                                <option value="One Bedroom">One Bedroom</option>
+                                <option value="studio">studio</option>
+                                <option value="room to share">room to share</option>
                             </select>
                         </div>
                         <div class="col-12 mb-3">

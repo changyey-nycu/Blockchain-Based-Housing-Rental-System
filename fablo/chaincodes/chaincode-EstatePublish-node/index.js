@@ -9,23 +9,70 @@ function uint8arrayToStringMethod(myUint8Arr) {
 }
 
 class EstatePublish extends Contract {
-  async GetIdentity(ctx) {
-    let org = ctx.clientIdentity.getMSPID();
-    let ID = ctx.clientIdentity.getID();
-    let IDBytes = ctx.clientIdentity.getIDBytes();
+  // async GetIdentity(ctx) {
+  //   let org = ctx.clientIdentity.getMSPID();
+  //   let ID = ctx.clientIdentity.getID();
+  //   let IDBytes = ctx.clientIdentity.getIDBytes();
 
-    let secureContext = tls.createSecureContext({
-      cert: uint8arrayToStringMethod(IDBytes)
-    });
-    let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
-    let cert = secureSocket.getCertificate();
-    //console.log(cert)
-    let pubkey = cert.pubkey.toString('hex');
+  //   let secureContext = tls.createSecureContext({
+  //     cert: uint8arrayToStringMethod(IDBytes)
+  //   });
+  //   let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
+  //   let cert = secureSocket.getCertificate();
+  //   //console.log(cert)
+  //   let pubkey = cert.pubkey.toString('hex');
 
-    return pubkey;
+  //   return pubkey;
+  // }
+
+  async NewLease(ctx, userPubkey, owner, estateAddress, restrictions, rent) {
+    let lease = await ctx.stub.getState(userPubkey);
+    let leaseJson;
+    try {
+      if (!lease || lease.length === 0) {
+        throw `The user key:${userPubkey} does not exist`;
+      }
+      leaseJson = JSON.parse(lease.toString());
+    }
+    catch (error) {
+      console.log(error);
+      leaseJson =
+      {
+        Data: {}
+      };
+    }
+
+    if (!leaseJson.Data[estateAddress]) {
+      leaseJson.Data[estateAddress] = {};
+    }
+
+    let attJson;
+    try {
+      attJson = JSON.parse(restrictions.toString());
+    } catch (error) {
+      console.log(restrictions.toString());
+      attJson = restrictions;
+    }
+
+    leaseJson.Data[estateAddress] = {
+      "uploader": userPubkey,
+      "estateAddress": estateAddress,
+      "owner": owner,
+      "rent": rent,
+      "state": "online",
+      "restriction": {}
+    }
+
+    Object.keys(attJson).forEach(async key => {
+      // console.log(`${key} : ${attJson[key]}`);
+      leaseJson.Data[estateAddress].restriction[key] = attJson[key];
+    })
+
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
+    return "Add Lease successfully." + userPubkey;
   }
 
-  async NewLease(ctx, userPubkey, owner, estateAddress, rent) {
+  async NewLeaseBackup(ctx, userPubkey, owner, estateAddress, rent) {
     let lease = await ctx.stub.getState(userPubkey);
     let leaseJson;
     try {
@@ -93,7 +140,18 @@ class EstatePublish extends Contract {
 
     return JSON.stringify(leaseData);
   }
-  
+
+  async GetLeaseRestriction(ctx, userPubkey, estateAddress) {
+    let lease = await ctx.stub.getState(userPubkey);
+    if (!lease || lease.length === 0) {
+      throw new Error(`The user key:${userPubkey} does not exist`);
+    }
+    let leaseJson = JSON.parse(lease.toString());
+    const restrictionData = leaseJson.Data[estateAddress].restriction;
+
+    return JSON.stringify(restrictionData);
+  }
+
   async Signed(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {
@@ -136,7 +194,7 @@ class EstatePublish extends Contract {
       Object.values(record.Data).forEach(value => {
         if (value.state == "online") {
           console.log(value);
-          allResults.push(record);
+          allResults.push(value);
         }
       });
 

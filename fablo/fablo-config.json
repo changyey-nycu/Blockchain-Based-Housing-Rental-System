@@ -99,6 +99,12 @@
           "peers": [
             "peer0"
           ]
+        },
+        {
+          "name": "Org4",
+          "peers": [
+            "peer0"
+          ]
         }
       ]
     },
@@ -143,7 +149,7 @@
       "lang": "node",
       "channel": "lease-channel",
       "directory": "./chaincodes/chaincode-EstatePublish-node",
-      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org3MSP.member')"
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org3MSP.member', 'Org4MSP.member')"
     },
     {
       "name": "RentalAgreement",

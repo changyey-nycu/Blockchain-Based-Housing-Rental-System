@@ -4,22 +4,7 @@
         <div class="container mt-3">
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <div style="margin-top: 10px">
-                    <a href="/leaseSystem/leaseManage">back</a>
-                </div>
-                <div style="margin-top: 10px" class="card text-center">
-                    <div class="card-header">
-                        <h4 style="margin:auto" class="font-weight-bold">Requester Data</h4>
-                    </div>
-                    <div class="input-group mt-3 mb-3">
-                        <span class="input-group-text">Owner Address</span>
-                        <input type="text" class="form-control" id="uploader" name="uploader" value="<%=owner%>"
-                            readonly>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">House Address</span>
-                        <input type="text" class="form-control" id="houseAddress" name="houseAddress" value="<%=house%>"
-                            readonly>
-                    </div>
+                    <a href="/leaseSystem/profile/">back</a>
                 </div>
             </div>
         </div>
@@ -32,18 +17,15 @@
                         <h4 style="margin:auto" class="font-weight-bold">Your Data</h4>
                     </div>
                     <form action="/leaseSystem/dataSharing/saveData" method="post">
-                        <input type="text" id="ownerAddress" name="ownerAddress" value="<%=owner%>" hidden>
-                        <input type="text" id="ownerPubkey" name="ownerPubkey" value="<%=ownerPubkey%>" hidden>
-                        <input type="text" id="houseAddress" name="houseAddress" value="<%=house%>" hidden>
                         <div class="input-group mt-3 mb-3">
                             <span class="input-group-text">Your Address</span>
                             <input type="text" class="form-control" id="tenantAddress" name="tenantAddress"
-                                value="<%=tenantData.address%>" readonly>
+                                value="<%=address%>" readonly>
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">Your Pubkey</span>
                             <input type="text" class="form-control" id="tenantPubkey" name="tenantPubkey"
-                                value="<%=tenantData.pubkey%>" readonly>
+                                value="<%=pubkey%>" readonly>
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">name</span>
@@ -137,9 +119,6 @@
         var contract_address = '<%= contract_address %>';
         var address = '<%= address %>';
         var pubkey = '<%= pubkey %>';
-        var house = '<%= house %>';
-        var owner = '<%= owner %>';
-        var ownerPubkey = '<%= ownerPubkey %>';
 
         const preventMalleability = (sig, ecdsa) => {
             const halfOrder = ecdsa.n.shrn(1);
@@ -225,7 +204,6 @@
                     '/leaseSystem/dataSharing/updatePermission',
                     {
                         userPubkey: pubkey,
-                        dataRequester: ownerPubkey,
                         name: name,
                         email: email,
                         job: job,
@@ -234,39 +212,40 @@
                     }
                 );
                 console.log('response = ' + response.result);
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
-                let encryptKey = await personalIdentityInstance.methods
-                    .getEncryptMaterial('HLFPrivateKey')
-                    .call({ from: account });
-                let privateKey = await ethereum.request({
-                    method: 'eth_decrypt',
-                    params: [encryptKey, account],
-                });
-                let signature_string;
-                signature_string = sign(privateKey, response.digest);
-                response = await ajaxAwait(
-                    '/leaseSystem/dataSharing/proposalAndCreateCommit',
-                    { signature: signature_string, func: 'UpdatePermission' }
-                );
-                if (response.error) {
-                    return alert(`error :${response.result}`);
-                }
+                alert(response.result)
+                // if (response.error) {
+                //     return alert(`error :${response.result}`);
+                // }
+                // let encryptKey = await personalIdentityInstance.methods
+                //     .getEncryptMaterial('HLFPrivateKey')
+                //     .call({ from: account });
+                // let privateKey = await ethereum.request({
+                //     method: 'eth_decrypt',
+                //     params: [encryptKey, account],
+                // });
+                // let signature_string;
+                // signature_string = sign(privateKey, response.digest);
+                // response = await ajaxAwait(
+                //     '/leaseSystem/dataSharing/proposalAndCreateCommit',
+                //     { signature: signature_string, func: 'UpdatePermission' }
+                // );
+                // if (response.error) {
+                //     return alert(`error :${response.result}`);
+                // }
 
-                result = response.result;
-                signature_string = sign(privateKey, response.commitDigest);
-                response = await ajaxAwait('/leaseSystem/dataSharing/commitSend', {
-                    signature: signature_string,
-                    func: 'UpdatePermission'
-                });
-                if (response.error) {
-                    return alert(`error: ${response.result}`);
-                }
+                // result = response.result;
+                // signature_string = sign(privateKey, response.commitDigest);
+                // response = await ajaxAwait('/leaseSystem/dataSharing/commitSend', {
+                //     signature: signature_string,
+                //     func: 'UpdatePermission'
+                // });
+                // if (response.error) {
+                //     return alert(`error: ${response.result}`);
+                // }
 
-                if (alert(`${result}`)) {
-                    window.location.reload();
-                }
+                // if (alert(`${result}`)) {
+                //     window.location.reload();
+                // }
                 window.location.reload();
             })
 

@@ -33,7 +33,7 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
 var registerChannel, estateRegisterInstance;
-var leaseChannel, estateAgentInstance, EstatePublishInstance;
+var leaseChannel, estateAgentInstance, estatePublishInstance;
 var wallet;
 var gateway;
 var adminUser;
@@ -107,7 +107,7 @@ module.exports = function (dbconnection) {
 
         leaseChannel = await gateway.getNetwork('lease-channel');
         estateAgentInstance = await leaseChannel.getContract('EstateAgent');
-        EstatePublishInstance = await leaseChannel.getContract('EstatePublish');
+        estatePublishInstance = await leaseChannel.getContract('EstatePublish');
     }
     init();
 
@@ -153,23 +153,23 @@ module.exports = function (dbconnection) {
         });
     });
 
-    router.post('/profile/profileUpdate', isAuthenticated, async (req, res) => {
-        const identity = req.session.address;
-        const { name } = req.body;
+    // router.post('/profile/profileUpdate', isAuthenticated, async (req, res) => {
+    //     const identity = req.session.address;
+    //     const { name } = req.body;
 
-        let obj = await Profile.findOneAndUpdate(
-            { address: identity },
-            { name: name }, { new: true }
-        );
-        // console.log(obj);
-        if (!obj) {
-            errors = "Save data error.";
-            console.log(errors);
-            return res.send({ msg: errors });
-        }
+    //     let obj = await Profile.findOneAndUpdate(
+    //         { address: identity },
+    //         { name: name }, { new: true }
+    //     );
+    //     // console.log(obj);
+    //     if (!obj) {
+    //         errors = "Save data error.";
+    //         console.log(errors);
+    //         return res.send({ msg: errors });
+    //     }
 
-        res.render('leaseSystem/profile', { address: identity, user: obj });
-    });
+    //     res.render('leaseSystem/profile', { address: identity, user: obj });
+    // });
 
     router.get('/login', (req, res) => {
         req.session.destroy();
@@ -643,7 +643,8 @@ module.exports = function (dbconnection) {
     router.post('/landlord/estateUpdate', isAuthenticated, async (req, res) => {
         //  get local data, then update the record in system DB
         const { userAddress, houseAddress, title, roomType, describe } = req.body;
-        if (describe.toString().length > 300) {
+        
+        if (describe != undefined && describe.toString().length > 300) {
             return res.send({ msg: "describe too long" });
         }
         let houseData;
@@ -655,8 +656,8 @@ module.exports = function (dbconnection) {
         } catch (error) {
             console.log(error);
         }
-
-        return res.render('leaseSystem/landlord/manageEstate', { address: userAddress, HouseData: houseData });
+        // let obj = await HouseData.find({ ownerAddress: userAddress });
+        return res.render('leaseSystem/landlord/estateUpdate', { address: userAddress, HouseData: houseData });
     });
 
     router.post('/landlord/entrustSubmit', isAuthenticated, async (req, res) => {
@@ -672,7 +673,7 @@ module.exports = function (dbconnection) {
     });
 
     router.post('/landlord/NewLease', isAuthenticated, async (req, res) => {
-        let { address, estateAddress, rent } = req.body;
+        let { address, estateAddress, rent, restriction } = req.body;
         let owner = await Profile.findOne({ address: address });
 
         // check if the house owner and is agent for someone
@@ -685,10 +686,12 @@ module.exports = function (dbconnection) {
             console.log('houseData.agent = ' + houseData.agent);
             return res.send({ 'error': "error", "result": `The house is agent to ${houseData.agent}.` });
         }
+        console.log(restriction);
+        
 
         // check the house is on lease
-        let isExist = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
-        // let isExist = await EstatePublishInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
+        let isExist = await estatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        // let isExist = await estatePublishInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
         // let a = JSON.parse(isExist.toString())
 
         if (isExist.toString() == "true") {
@@ -701,7 +704,7 @@ module.exports = function (dbconnection) {
         // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLease', owner.pubkey, houseData.ownerAddress, estateAddress, rent);
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', owner.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -861,7 +864,7 @@ module.exports = function (dbconnection) {
 
     router.post('/agent/NewLease', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        let { ownerAddress, estateAddress, rent } = req.body;
+        let { ownerAddress, estateAddress, rent, restriction } = req.body;
         let owner = await Profile.findOne({ address: ownerAddress });
         let agent = await Profile.findOne({ address: address });
 
@@ -873,8 +876,8 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
-        let isExistAgent = await EstatePublishInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
+        let isExist = await estatePublishInstance.evaluateTransaction('IsLeaseExist', owner.pubkey, estateAddress);
+        let isExistAgent = await estatePublishInstance.evaluateTransaction('IsLeaseExist', agent.pubkey, estateAddress);
         if (isExist.toString() == "true" && isExistAgent.toString() == "true") {
             console.log('exist = ' + isExist + " , " + isExistAgent);
             return res.send({ 'error': "error", "result": "The house is already published." });
@@ -885,7 +888,7 @@ module.exports = function (dbconnection) {
         // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, houseData.ownerAddress, estateAddress, rent);
+            const digest = await createTransaction(address.toLowerCase(), 'NewLease', agent.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -916,7 +919,7 @@ module.exports = function (dbconnection) {
     // show all rent data in blockchain
     router.get('/searchHouse', async (req, res) => {
         const address = req.session.address;
-        let obj2 = await EstatePublishInstance.evaluateTransaction('GetAllOnlineLease');
+        let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineLease');
         let data = {};
         try {
             data = JSON.parse(obj2.toString());
@@ -957,7 +960,7 @@ module.exports = function (dbconnection) {
             houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: addr });
         }
 
-        let leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', uploader, addr);
+        let leaseData = await estatePublishInstance.evaluateTransaction('GetLease', uploader, addr);
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -977,13 +980,13 @@ module.exports = function (dbconnection) {
                 }
             }
         } catch (error) { }
-
+        
 
         res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added });
     });
 
     // tenant add this house to favorite
-    router.post('/searchHouse/leasePage/add', isAuthenticated, async (req, res) => {
+    router.post('/searchHouse/leasePage/addFavorite', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { houseAddress, ownerAddress, agentAddress } = req.body;
         try {
@@ -1052,7 +1055,7 @@ module.exports = function (dbconnection) {
         let rentData = [];
         let data = {};
         try {
-            let leaseData = await EstatePublishInstance.evaluateTransaction('GetPersonLease', user.pubkey);
+            let leaseData = await estatePublishInstance.evaluateTransaction('GetPersonLease', user.pubkey);
             data = JSON.parse(leaseData.toString());
         } catch (error) {
             data = {};
@@ -1062,7 +1065,7 @@ module.exports = function (dbconnection) {
         })
 
         if (!allLease.length) {
-            let obj2 = await EstatePublishInstance.evaluateTransaction('GetAllOnlineLease');
+            let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineLease');
             let data = JSON.parse(obj2.toString());
             for (let index = 0; index < data.length; index++) {
                 Object.values(data[index].Data).forEach(value => {
@@ -1073,9 +1076,8 @@ module.exports = function (dbconnection) {
             }
         }
 
-
         allLease.forEach(elelment => {
-            if (elelment.owner == user.address && elelment.agent != "0x") {
+            if (elelment.owner == user.address && elelment.uploader != user.pubkey) {
                 rentData.push(elelment);
             }
         });
@@ -1101,11 +1103,11 @@ module.exports = function (dbconnection) {
 
         let leaseData;
         if (agent == "0x") {
-            leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', ownerData.pubkey, addr);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetLease', ownerData.pubkey, addr);
         }
         else {
             let agentData = await Profile.findOne({ address: agent });
-            leaseData = await EstatePublishInstance.evaluateTransaction('GetLease', agentData.pubkey, addr);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetLease', agentData.pubkey, addr);
         }
         let data = {};
         try {
@@ -1114,6 +1116,7 @@ module.exports = function (dbconnection) {
             // console.log(error);
             data = leaseData;
         }
+        
 
         let added = false;
         try {
@@ -1195,7 +1198,7 @@ module.exports = function (dbconnection) {
         let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
         let rentData = {};
         try {
-            let obj3 = await EstatePublishInstance.evaluateTransaction('GetLease', uploaderKey, estateAddress);
+            let obj3 = await estatePublishInstance.evaluateTransaction('GetLease', uploaderKey, estateAddress);
             rentData = JSON.parse(obj3.toString());
         } catch (error) {
             console.log(error);

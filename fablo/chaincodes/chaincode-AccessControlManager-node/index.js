@@ -29,6 +29,7 @@ class AccessControlManager extends Contract {
       return "Create Successfully."
     }
   }
+  
   async GetUserAccControl(ctx, key) {
     //Only the organization that public in acc can read
     let pubkey = await this.GetIdentity(ctx);
@@ -40,10 +41,12 @@ class AccessControlManager extends Contract {
 
     return acc.toString();
   }
+
   async UserAccControlExist(ctx, key) {
     const acc = await ctx.stub.getState(key);
     return acc && acc.length > 0;
   }
+
   async GetIdentity(ctx) {
     let org = ctx.clientIdentity.getMSPID();
     let ID = ctx.clientIdentity.getID();
@@ -59,6 +62,7 @@ class AccessControlManager extends Contract {
 
     return pubkey
   }
+
   async Deletekey(ctx, key) {
     const exists = await this.UserAccControlExist(ctx, key);
     if (!exists) {
@@ -66,7 +70,8 @@ class AccessControlManager extends Contract {
     }
     return ctx.stub.deleteState(key);
   }
-  async UpdatePermission(ctx, userPubkey, dataRequester, attribute, endTime) {
+
+  async UpdatePermission(ctx, userPubkey, attribute, endTime) {
     let acc = await ctx.stub.getState(userPubkey);
     let accJson =
     {
@@ -81,9 +86,6 @@ class AccessControlManager extends Contract {
       accJson.Permission = {};
     }
 
-    if (!accJson.Permission[dataRequester]) {
-      accJson.Permission[dataRequester] = {};
-    }
     let attJson;
     // console.log(attribute);
     try {
@@ -97,7 +99,7 @@ class AccessControlManager extends Contract {
     Object.keys(attJson).forEach(async key => {
       // console.log(`${key} : ${attribute[key]}`);
 
-      accJson.Permission[dataRequester][key] = {
+      accJson.Permission[key] = {
         "data": attJson[key],
         "endTime": endTime
       };
@@ -107,7 +109,7 @@ class AccessControlManager extends Contract {
     return "Update Permission successfully." + userPubkey;
   }
 
-  async UpdateOnePermission(ctx, userPubkey, dataRequester, attribute, permit, endTime) {
+  async UpdateOnePermission(ctx, userPubkey, attribute, permit, endTime) {
     let acc = await ctx.stub.getState(userPubkey);
     let accJson =
     {
@@ -122,11 +124,7 @@ class AccessControlManager extends Contract {
       accJson.Permission = {};
     }
 
-    if (!accJson.Permission[dataRequester]) {
-      accJson.Permission[dataRequester] = {};
-    }
-
-    accJson.Permission[dataRequester][attribute] = {
+    accJson.Permission[attribute] = {
       "data": permit,
       "endTime": endTime
     };
@@ -135,7 +133,7 @@ class AccessControlManager extends Contract {
     return "Update Permission successfully." + userPubkey;
   }
 
-  async RevokePermission(ctx, userPubkey, dataRequester, attribute) {
+  async RevokePermission(ctx, userPubkey, attribute) {
     let acc = await ctx.stub.getState(userPubkey);
 
     if (!acc || acc.length === 0) {
@@ -144,35 +142,35 @@ class AccessControlManager extends Contract {
 
     let accJson = JSON.parse(acc.toString());
 
-    if (accJson.Permission[dataRequester] &&
-      accJson.Permission[dataRequester][attribute]) {
-      delete accJson.Permission[dataRequester][attribute];
+    if (accJson.Permission &&
+      accJson.Permission[attribute]) {
+      delete accJson.Permission[attribute];
     }
 
     await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
     return "Permission revoked successfully.";
   }
 
-  async GetPermission(ctx, dataRequester, userPubkey) {
+  async GetPermission(ctx, userPubkey) {
     let acc = await ctx.stub.getState(userPubkey);
     if (!acc || acc.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
     let accJson = JSON.parse(acc.toString());
-    const permissions = accJson.Permission[dataRequester];
+    const permissions = accJson.Permission;
     if (!permissions) {
       throw new Error(`permission denied!`);
     }
     return JSON.stringify(permissions);
   }
 
-  async ConfirmPermission(ctx, dataRequester, userPubkey, attribute) {
+  async ConfirmPermission(ctx, userPubkey, attribute) {
     let acc = await ctx.stub.getState(userPubkey);
 
     if (acc && acc.length) {
       try {
         let accJson = JSON.parse(acc.toString());
-        const permissions = accJson.Permission[dataRequester];
+        const permissions = accJson.Permission;
         if (permissions.hasOwnProperty(key) && permissions.key.data == "true") {
           return true;
         }
@@ -185,7 +183,7 @@ class AccessControlManager extends Contract {
     }
   }
 
-  async ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes) {
+  async ConfirmMutiPermission(ctx, userPubkey, attributes) {
     let acc = await ctx.stub.getState(userPubkey);
     let permit = {};
     if (acc && acc.length) {
@@ -200,7 +198,7 @@ class AccessControlManager extends Contract {
 
       try {
         let accJson = JSON.parse(acc.toString());
-        const permissions = accJson.Permission[dataRequester];
+        const permissions = accJson.Permission;
 
         Object.keys(attJson).forEach(async key => {
           // console.log(`${key} : ${attribute[key]}`);

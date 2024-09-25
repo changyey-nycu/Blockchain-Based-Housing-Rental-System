@@ -17,11 +17,13 @@
             </div>
         </div>
 
+        <!-- list the restrictions in chain -->
         <div class="container mt-3">
             <div class="col-md-5 center-block card" style="float: none; margin: auto">
                 <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">Get Personal Data</h4>
+                    <h4 style="margin:auto" class="font-weight-bold">Assessment Personal Data</h4>
                 </div>
+                <!-- list all the attribute setting in rent step -->
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
                     <label class="form-check-label" for="name">
@@ -53,20 +55,20 @@
                     </label>
                 </div>
                 <div class="mt-3 mb-3 center-block">
-                    <input type="button" class="btn btn-primary" value="get result" id="getResult">
+                    <input type="button" class="btn btn-primary" value="Get Assessment" id="getAssessment">
                 </div>
 
             </div>
         </div>
 
-
+        <!-- show the Assessment results -->
         <div class="container mt-3" id="dataPage">
             <div class="col-md-5 center-block card" style="float: none; margin: auto">
                 <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">Tenant Data</h4>
+                    <h4 style="margin:auto" class="font-weight-bold">Assessment Tenant Results</h4>
                 </div>
                 <div class="input-group mb-3">
-                    <span class="input-group-text">name</span>
+                    <span class="input-group-text">Name</span>
                     <input class="form-control" type="text" id="getName" readonly>
                 </div>
                 <div class="input-group mb-3">
@@ -93,26 +95,28 @@
         var contract_address = '<%= contract_address %>';
         var address = '<%= address %>';
         var pubkey = '<%= pubkey %>';
+        var house = '<%= house %>';
 
         async function buildListener() {
-            $('#getResult').on('click', async function (e) {
+            $('#getAssessment').on('click', async function (e) {
                 let tenantAddress = $("#tenantAddress").val();
-                let name = $("#name").is(":checked");
-                let email = $("#email").is(":checked");
-                let job = $("#job").is(":checked");
-                let salary = $("#salary").is(":checked");
-                let deposit = $("#deposit").is(":checked");
+                // let name = $("#name").is(":checked");
+                // let email = $("#email").is(":checked");
+                // let job = $("#job").is(":checked");
+                // let salary = $("#salary").is(":checked");
+                // let deposit = $("#deposit").is(":checked");
                 $.ajax({
                     type: 'POST',
-                    url: '/leaseSystem/dataSharing/getData',
+                    url: '/leaseSystem/dataSharing/getAssessment',
                     dataType: 'json',
                     data: {
                         tenantAddress: tenantAddress,
-                        name: name,
-                        email: email,
-                        job: job,
-                        salary: salary,
-                        deposit: deposit
+                        // name: name,
+                        // email: email,
+                        // job: job,
+                        // salary: salary,
+                        // deposit: deposit,
+                        house: house
                     }
                 }).then((res) => {
                     alert(res.msg);

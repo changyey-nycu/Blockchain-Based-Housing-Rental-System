@@ -37,7 +37,7 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 
 var caClient;
 var leaseChannel, rentalAgreementInstance;
-var EstatePublishInstance;
+var estatePublishInstance;
 
 var wallet;
 var gateway;
@@ -91,7 +91,7 @@ module.exports = function (dbconnection) {
 
         leaseChannel = await gateway.getNetwork('lease-channel');
         rentalAgreementInstance = await leaseChannel.getContract('RentalAgreement');
-        EstatePublishInstance = await leaseChannel.getContract('EstatePublish');
+        estatePublishInstance = await leaseChannel.getContract('EstatePublish');
     }
     init();
 
@@ -236,17 +236,6 @@ module.exports = function (dbconnection) {
         let { ownerAddress, tenantAddress, houseAddress } = req.body;
         let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
         let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.landlordPubkey, agreement.hashed, houseAddress);
-        // if (result.toString() == "true") {
-        //     await AgreementData.findOneAndUpdate({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress },
-        //         { state: "active" });
-        //     try {
-        //         let result = await EstatePublishInstance.submitTransaction('Signed', agreement.landlordPubkey, houseAddress);
-        //         console.log(result.toString());
-        //     } catch (error) {
-        //         console.log(error);
-        //     }
-
-        // }
         console.log(result.toString());
         return res.send({ msg: result.toString() });
     })

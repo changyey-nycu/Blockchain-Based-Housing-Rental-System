@@ -54,6 +54,20 @@
                                         <input type="text" class="form-control" id="describe" name="describe"
                                             value="<%=HouseData.describe%>" readonly>
                                     </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Rent</label>
+                                        <input type="text" class="form-control" id="rent" name="rent"
+                                            value="<%=rentData.rent%>" readonly>
+                                    </div>
+
+                                    <div class="mx-auto mb-3">
+                                        <label class="form-label">restriction</label>
+                                        <ul class="list-group mx-auto">
+                                            <% for (const key in rentData.restriction) { %>
+                                                <li class="list-group-item"><strong><%= key %> :</strong> <%= rentData.restriction[key] %></li>
+                                            <% } %>
+                                        </ul>
+                                    </div>
 
                                     <div class="mb-3" id="notAdded">
                                         <button class="btn btn-primary" id="add">add favorite</button>
@@ -90,7 +104,7 @@
                 let agentAddress = houseData.agent;
 
                 $.ajax({
-                    url: '/leaseSystem/searchHouse/leasePage/add',
+                    url: '/leaseSystem/searchHouse/leasePage/addFavorite',
                     data: {
                         "houseAddress": houseAddress,
                         "ownerAddress": ownerAddress,

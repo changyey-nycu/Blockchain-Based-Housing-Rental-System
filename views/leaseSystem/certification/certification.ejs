@@ -95,6 +95,7 @@
                         </div>
                         <div>
                             <button class="btn btn-primary btn-success mt-3" id="agentUpload">Submit</button>
+                            <button class="btn btn-primary btn-success mt-3" id="getCert">getCert</div>
                         </div>
                     </form>
                 </div>
@@ -161,6 +162,21 @@
                     type: 'post',
                     success: function (res) {
                         alert(res.msg);
+                    },
+                    error: function (err) {
+                        console.log("error");
+                        alert(err);
+                    }
+                });
+            })
+
+            $('#getCert').on('click', async function (e) {
+                $.ajax({
+                    url: '/leaseSystem/agent/getCert',
+                    type: 'post',
+                    success: function (res) {
+                        alert(res.msg);
+                        window.location.reload();
                     },
                     error: function (err) {
                         console.log("error");

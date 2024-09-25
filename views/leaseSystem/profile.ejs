@@ -5,43 +5,43 @@
         <!-- choose city to show house -->
         <div class="row md-3 mt-3">
             <div class="col-md-8 center-block offset-md-2">
-                <div class="card text-center" style="margin:auto">
+                <div class="card text-center">
                     <div class="card-header">
                         <h4 style="margin:auto" class="font-weight-bold">Profile </h4>
                     </div>
                     <div class="card-body">
-                        <table class="mt-2 table table-striped table-bordered">
+                        <table class="mt-2 table table-striped table-bordered" width="100%" cellpadding="0"
+                            cellspacing="0" style="table-layout:fixed">
                             <tbody>
                                 <tr>
-                                    <td>address</td>
-                                    <td>
+                                    <td>Address</td>
+                                    <td width="80%">
                                         <%= address %>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>pubkey</td>
-                                    <td>
+                                    <td>Pubkey</td>
+                                    <td width="80%">
                                         <%= user.pubkey %>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>agent</td>
+                                    <td>Agent</td>
                                     <%if(user.agent) {%>
-                                        <td>ture</td>
+                                        <td width="80%">ture</td>
                                         <%}else {%>
-                                            <td class="row">
-                                                <div class="col">false</div>
-                                                <div class="col"><button id="getCert">getCert</button></div>
+                                            <td width="80%">
+                                                <div>false &nbsp;<button id="getCert">getCert</button></div>
                                             </td>
                                             <%} %>
 
                                 </tr>
-                                <form action="/leaseSystem/profile/profileUpdate" method="post">
+                                <!-- <form action="/leaseSystem/profile/profileUpdate" method="post">
                                     <tr>
                                         <td>name</td>
                                         <td>
                                             <input type="text" class="form-control" id="name" name="name"
-                                                value="<%= user.name%>">
+                                                value="">
 
                                         </td>
                                     </tr>
@@ -49,7 +49,7 @@
                                         <td></td>
                                         <td><button type="submit">save</button></td>
                                     </tr>
-                                </form>
+                                </form> -->
                             </tbody>
                         </table>
                     </div>
@@ -60,113 +60,124 @@
                         line-height: 20px;
                         text-align: center;">certificate estate and agent</a>
                     </div>
+                    
+                    <div style="margin-top: 10px" class="card text-center">
+
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Personal information Authorize
+                        </div>
+                        <div class="card-body">
+                            <!-- <p>description</p> -->
+                            <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            width: 450px;
+                            height: 40px;
+                            line-height: 20px;
+                            text-align: center;" href="/leaseSystem/dataSharing/authorizeIfo">
+                                click
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        </div>
         <div>
-            <div>
-                <!-- for test -->
-                <div class="row">
-                    <div class="col center-block" style="float: none; margin: auto">
-                        <div style="margin-top: 10px" class="card text-center">
-                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                                Search House
-                            </div>
-                            <!-- <div style="margin-top: 20px">
-                        <iconify-icon
-                            icon="logos:metamask-icon"
-                            width="200"
-                            style="margin: auto"
-                        ></iconify-icon>
-                    </div> -->
-                            <div class="card-body">
-                                <!-- <p>description</p> -->
-                                <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2" style="
-                                width: 450px;
-                                height: 40px;
-                                line-height: 20px;
-                                text-align: center;" href="/leaseSystem/searchHouse">
-                                    click
-                                </a>
-                            </div>
+            <!-- for test -->
+            <div class="row">
+                <!-- <div class="col center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Personal information Authorize
+                        </div>
+
+                        <div class="card-body">
+                            <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2"
+                                href="/leaseSystem/dataSharing/authorizeIfo">
+                                click
+                            </a>
                         </div>
                     </div>
-                    <div class="col center-block" style="float: none; margin: auto">
-                        <div style="margin-top: 10px" class="card text-center">
-                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                                Landlord
-                            </div>
-                            <!-- <div style="margin-top: 20px">
-                        <iconify-icon
-                            icon="logos:metamask-icon"
-                            width="200"
-                            style="margin: auto"
-                        ></iconify-icon>
-                    </div> -->
-                            <div class="card-body">
-                                <!-- <p>description</p> -->
-                                <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2" style="
-                                width: 450px;
-                                height: 40px;
-                                line-height: 20px;
-                                text-align: center;" href="/leaseSystem/landlord">
-                                    click
-                                </a>
-                            </div>
+                </div> -->
+                <div class="col center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Search House
                         </div>
-                    </div>
-                    <div class="col center-block" style="float: none; margin: auto">
-                        <div style="margin-top: 10px" class="card text-center">
-                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                                Agent
-                            </div>
-                            <!-- <div style="margin-top: 20px">
+                        <!-- <div style="margin-top: 20px">
                         <iconify-icon
                             icon="logos:metamask-icon"
                             width="200"
                             style="margin: auto"
                         ></iconify-icon>
                     </div> -->
-                            <div class="card-body">
-                                <!-- <p>description</p> -->
-                                <a id="agent" class="btn btn-secondary btn-lg btn-block mt-2" style="
-                                width: 450px;
-                                height: 40px;
-                                line-height: 20px;
-                                text-align: center;
-                            " href="/leaseSystem/agent">
-                                    click
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col center-block" style="float: none; margin: auto">
-                        <div style="margin-top: 10px" class="card text-center">
-                            <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
-                                Lease Manage
-                            </div>
-                            <!-- <div style="margin-top: 20px">
-                        <iconify-icon
-                            icon="logos:metamask-icon"
-                            width="200"
-                            style="margin: auto"
-                        ></iconify-icon>
-                    </div> -->
-                            <div class="card-body">
-                                <!-- <p>description</p> -->
-                                <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2" style="
-                                width: 450px;
-                                height: 40px;
-                                line-height: 20px;
-                                text-align: center;
-                            " href="/leaseSystem/leaseManage">
-                                    click
-                                </a>
-                            </div>
+                        <div class="card-body">
+                            <!-- <p>description</p> -->
+                            <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2"
+                                href="/leaseSystem/searchHouse">
+                                click
+                            </a>
                         </div>
                     </div>
                 </div>
+                <div class="col center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Landlord
+                        </div>
+                        <!-- <div style="margin-top: 20px">
+                        <iconify-icon
+                            icon="logos:metamask-icon"
+                            width="200"
+                            style="margin: auto"
+                        ></iconify-icon>
+                    </div> -->
+                        <div class="card-body">
+                            <!-- <p>description</p> -->
+                            <a id="landlord" class="btn btn-secondary btn-lg btn-block mt-2"
+                                href="/leaseSystem/landlord">
+                                click
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Agent
+                        </div>
+                        <!-- <div style="margin-top: 20px">
+                        <iconify-icon
+                            icon="logos:metamask-icon"
+                            width="200"
+                            style="margin: auto"
+                        ></iconify-icon>
+                    </div> -->
+                        <div class="card-body">
+                            <!-- <p>description</p> -->
+                            <a id="agent" class="btn btn-secondary btn-lg btn-block mt-2" href="/leaseSystem/agent">
+                                click
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col center-block" style="float: none; margin: auto">
+                    <div style="margin-top: 10px" class="card text-center">
+                        <div style="font-size: 1.5rem; font-weight: bold" class="card-header">
+                            Lease Manage
+                        </div>
+
+                        <div class="card-body">
+                            <!-- <p>description</p> -->
+                            <a id="leaseManage" class="btn btn-secondary btn-lg btn-block mt-2"
+                                href="/leaseSystem/leaseManage">
+                                click
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+        </div>
         </div>
     </body>
     <!-- house manage -->
@@ -174,15 +185,8 @@
     <script>
         async function buildListener() {
             $('#getCert').on('click', async function (e) {
-                let userAddress = $("#userAddress").val();
-                let data;
-                data = {
-                    "userAddress": userAddress,
-                }
-
                 $.ajax({
                     url: '/leaseSystem/agent/getCert',
-                    data: data,
                     type: 'post',
                     success: function (res) {
                         alert(res.msg);
