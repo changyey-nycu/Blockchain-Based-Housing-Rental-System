@@ -340,7 +340,7 @@ module.exports = function (dbconnection) {
         const tenant = req.query.tenant;
         const house = req.query.house;
 
-        let restrictionBuffer  = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
         console.log(restriction);
 
@@ -379,7 +379,7 @@ module.exports = function (dbconnection) {
     router.post('/updatePermission', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const { name, email, job, salary, deposit } = req.body;
-        const { userPubkey, dataRequester } = req.body;
+        const { userPubkey } = req.body;
         let attributes = {
             "name": name,
             "email": email,
@@ -392,7 +392,7 @@ module.exports = function (dbconnection) {
         // save to chain offline sign
         try {
             // userPubkey, dataRequester, attribute, endTime
-            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, dataRequester, attString, "endTime");
+            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, attString, "endTime");
             console.log(result.toString());
             return res.send({ msg: "update success." });
 
@@ -419,76 +419,79 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post('/getData', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const pubkey = req.session.pubkey;
-        const { tenantAddress } = req.body;
-        const { name, email, job, salary, deposit } = req.body;
+    // router.post('/getData', isAuthenticated, async (req, res) => {
+    //     const address = req.session.address;
+    //     const pubkey = req.session.pubkey;
+    //     const { tenantAddress } = req.body;
+    //     const { name, email, job, salary, deposit } = req.body;
 
-        let tenantData = await PersonalData.findOne({ address: tenantAddress });
+    //     let tenantData = await PersonalData.findOne({ address: tenantAddress });
 
-        // get chain Access control
-        let attributes = {};
-        attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
-        // ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes)
-        // let permitBuffer = await accInstance.evaluateTransaction('ConfirmMutiPermission', pubkey, tenantData.pubkey, attributes);
-        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', pubkey, tenantData.pubkey);
-        // console.log(permitBuffer);
-        let permitJson = JSON.parse(permitBuffer.toString());
-        console.log(permitJson);
+    //     // get chain Access control
+    //     let attributes = {};
+    //     attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
+    //     // ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes)
+    //     // let permitBuffer = await accInstance.evaluateTransaction('ConfirmMutiPermission', pubkey, tenantData.pubkey, attributes);
+    //     let permitBuffer = await accInstance.evaluateTransaction('GetPermission', pubkey, tenantData.pubkey);
+    //     // console.log(permitBuffer);
+    //     let permitJson = JSON.parse(permitBuffer.toString());
+    //     console.log(permitJson);
 
-        let data = {};
-        Object.keys(permitJson).forEach(async key => {
-            if (permitJson[key].data == "true" && attributes[key] == true) {
-                data[key] = tenantData[key];
-            }
-            else {
-                data[key] = "permission deny";
-            }
+    //     let data = {};
+    //     Object.keys(permitJson).forEach(async key => {
+    //         if (permitJson[key].data == "true" && attributes[key] == true) {
+    //             data[key] = tenantData[key];
+    //         }
+    //         else {
+    //             data[key] = "permission deny";
+    //         }
 
-        })
-        console.log(data);
+    //     })
+    //     console.log(data);
 
 
-        return res.send({ msg: "done", "data": data });
-    });
+    //     return res.send({ msg: "done", "data": data });
+    // });
 
     router.post('/getAssessment', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const pubkey = req.session.pubkey;
-        const { tenantAddress } = req.body;
+        const { tenantAddress, house } = req.body;
         // const { name, email, job, salary, deposit } = req.body;
         // attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
 
-        let tenantData = await PersonalData.findOne({ address: tenantAddress });
-
-        let restrictionBuffer  = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
-        console.log(restriction);
+        // console.log(restriction);
 
         // ConfirmMutiPermission(ctx, dataRequester, userPubkey, attributes)
         // let permitBuffer = await accInstance.evaluateTransaction('ConfirmMutiPermission', pubkey, tenantData.pubkey, attributes);
-        let permitBuffer = await accInstance.evaluateTransaction('GetPermission', pubkey, tenantData.pubkey);
-        let permitJson = JSON.parse(permitBuffer.toString());
-        console.log(permitJson);
+        let tenantData, permitBuffer, permitJson;
+        try {
+            tenantData = await PersonalData.findOne({ address: tenantAddress });
+            permitBuffer = await accInstance.evaluateTransaction('GetPermission', tenantData.pubkey);
+            permitJson = JSON.parse(permitBuffer.toString());
+        } catch (error) {
+            console.log(error);
+            return res.send({ msg: "The tenant does not set the personal data.", "data": {} });
+        }
+
+        // console.log(permitJson);
 
         let data = {};
-        Object.keys(restriction).forEach(async key => {
-            if (permitJson[key].data == "true") {
-                data[key] = tenantData[key];
-            }
-            else {
-                data[key] = "permission deny";
+        Object.keys(restriction).forEach(async restrictionKey => {
+            Object.keys(permitJson).forEach(async key => {
+                if (key == restrictionKey && permitJson[key].data == "true") {
+                    data[restrictionKey] = tenantData[key];
+                }
+            })
+            if (data[restrictionKey] == undefined) {
+                data[restrictionKey] = "permission deny";
             }
         })
-        console.log(data);
+        // console.log(data);
 
         return res.send({ msg: "done", "data": data });
-    });
-    router.post('/test', async (req, res) => {
-        console.log(req.body);
-
-        return res.send({ msg: "success." });
     });
 
     return router;

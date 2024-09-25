@@ -17,9 +17,9 @@
                             <th scope="col">owner address</th>
                             <th scope="col">agent address</th>
                             <th scope="col">house address</th>
-                            <th scope="col">btn</th>
+                            <th scope="col">details</th>
                             <th scope="col">sign</th>
-                            <th scope="col">acc</th>
+                            <!-- <th scope="col">acc</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -40,7 +40,7 @@
                                 <td><button class="btn btn-primary" id="details-<%= index %>">details</button></td>
                                 <td><button class="btn btn-primary" id="signing-<%= index %>">view and sign
                                         agreement</button></td>
-                                <td><button class="btn btn-primary" id="upload-<%= index %>">acc</button></td>
+                                <!-- <td><button class="btn btn-primary" id="upload-<= index %>">acc</button></td> -->
                             </tr>
                             <%} %>
                     </tbody>
@@ -168,31 +168,31 @@
                     })
                 })
 
-                $(`#upload-${i}`).on('click', async function (e) {
-                    let houseAddress = $(`#houseAddress-${i}`).val();
-                    let ownerAddress = $(`#owner-${i}`).val();
-                    $.ajax({
-                        type: 'POST',
-                        url: '/leaseSystem/leaseManage/upload',
-                        dataType: 'json',
-                        data: {
-                            ownerAddress: ownerAddress,
-                            houseAddress: houseAddress
-                        },
-                        success: function (res) {
-                            console.log('success');
-                            console.log(res);
+                // $(`#upload-${i}`).on('click', async function (e) {
+                //     let houseAddress = $(`#houseAddress-${i}`).val();
+                //     let ownerAddress = $(`#owner-${i}`).val();
+                //     $.ajax({
+                //         type: 'POST',
+                //         url: '/leaseSystem/leaseManage/upload',
+                //         dataType: 'json',
+                //         data: {
+                //             ownerAddress: ownerAddress,
+                //             houseAddress: houseAddress
+                //         },
+                //         success: function (res) {
+                //             console.log('success');
+                //             console.log(res);
 
-                            if (res.url) {
-                                window.location.href = res.url;
-                            }
-                        },
-                        fail: function (xhr, ajaxOptions, thrownError) {
-                            console.log('fail');
-                            reject(false);
-                        },
-                    });
-                })
+                //             if (res.url) {
+                //                 window.location.href = res.url;
+                //             }
+                //         },
+                //         fail: function (xhr, ajaxOptions, thrownError) {
+                //             console.log('fail');
+                //             reject(false);
+                //         },
+                //     });
+                // })
 
             }
 

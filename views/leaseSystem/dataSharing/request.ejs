@@ -24,39 +24,21 @@
                     <h4 style="margin:auto" class="font-weight-bold">Assessment Personal Data</h4>
                 </div>
                 <!-- list all the attribute setting in rent step -->
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="name" value="true" id="name">
-                    <label class="form-check-label" for="name">
-                        name
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="email" value="true" id="email">
-                    <label class="form-check-label" for="email">
-                        email
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="job" value="true" id="job">
-                    <label class="form-check-label" for="job">
-                        job
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="salary" value="true" id="salary">
-                    <label class="form-check-label" for="salary">
-                        salary
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="deposit" value="true" id="deposit">
-                    <label class="form-check-label" for="deposit">
-                        deposit
-                    </label>
+                <div class="mx-auto mb-3">
+                    <h4 class="mt-3 mb-3">restriction setted</h4>
+                    <% for (const key in restriction) { %>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <%= key %>
+                            </span>
+                            <input type="text" class="form-control" value="<%= restriction[key] %>" readonly>
+                        </div>
+                        <% } %>
                 </div>
                 <div class="mt-3 mb-3 center-block">
                     <input type="button" class="btn btn-primary" value="Get Assessment" id="getAssessment">
                 </div>
+
 
             </div>
         </div>
@@ -67,26 +49,14 @@
                 <div class="card-header">
                     <h4 style="margin:auto" class="font-weight-bold">Assessment Tenant Results</h4>
                 </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Name</span>
-                    <input class="form-control" type="text" id="getName" readonly>
-                </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Email</span>
-                    <input class="form-control" type="text" id="getEmail" readonly>
-                </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Job</span>
-                    <input class="form-control" type="text" id="getJob" readonly>
-                </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Salary</span>
-                    <input class="form-control" type="text" id="getSalary" readonly>
-                </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Deposit</span>
-                    <input class="form-control" type="text" id="getDeposit" readonly>
-                </div>
+                <% for (const key in restriction) { %>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">
+                            <%= key %>
+                        </span>
+                        <input type="text" class="form-control" id="<%=key %>" value="" readonly>
+                    </div>
+                    <% } %>
             </div>
         </div>
 
@@ -96,36 +66,25 @@
         var address = '<%= address %>';
         var pubkey = '<%= pubkey %>';
         var house = '<%= house %>';
+        var restriction = JSON.parse('<%- JSON.stringify(restriction) %>');
 
         async function buildListener() {
             $('#getAssessment').on('click', async function (e) {
                 let tenantAddress = $("#tenantAddress").val();
-                // let name = $("#name").is(":checked");
-                // let email = $("#email").is(":checked");
-                // let job = $("#job").is(":checked");
-                // let salary = $("#salary").is(":checked");
-                // let deposit = $("#deposit").is(":checked");
                 $.ajax({
                     type: 'POST',
                     url: '/leaseSystem/dataSharing/getAssessment',
                     dataType: 'json',
                     data: {
                         tenantAddress: tenantAddress,
-                        // name: name,
-                        // email: email,
-                        // job: job,
-                        // salary: salary,
-                        // deposit: deposit,
                         house: house
                     }
                 }).then((res) => {
                     alert(res.msg);
                     console.log(res.data);
-                    $('#getName').val(res.data.name);
-                    $('#getEmail').val(res.data.email);
-                    $('#getJob').val(res.data.job);
-                    $('#getSalary').val(res.data.salary);
-                    $('#getDeposit').val(res.data.deposit);
+                    for (const key in restriction) {
+                        $(`#${key}`).val(res.data[key]);
+                    }
                     $('#dataPage').show();
                 })
             })
