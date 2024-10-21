@@ -63,7 +63,7 @@ module.exports = function (dbconnection) {
         // the information in the network configuration
         caClient = buildCAClient(FabricCAServices, ccp, 'ca.org3.example.com');
 
-        const walletPath = path.join(__dirname, '../../wallet/agreement');
+        const walletPath = path.join(__dirname, '../../wallet/court');
         wallet = await buildWallet(Wallets, walletPath);
 
         mspOrg3 = 'Org3MSP';
@@ -74,7 +74,7 @@ module.exports = function (dbconnection) {
 
         // in a real application this would be done only when a new user was required to be added
         // and would be part of an administrative flow
-        await registerAndEnrollUser(caClient, wallet, mspOrg3, 'agreement' /*, 'org2.department1'*/);
+        await registerAndEnrollUser(caClient, wallet, mspOrg3, 'court' /*, 'org2.department1'*/);
 
 
         // Create a new gateway instance for interacting with the fabric network.
@@ -85,7 +85,7 @@ module.exports = function (dbconnection) {
         //console.log(JSON.stringify(gateway));
         await gateway.connect(ccp, {
             wallet,
-            identity: 'agreement',
+            identity: 'court',
             discovery: { enabled: true, asLocalhost: true }
         });
 
@@ -121,8 +121,8 @@ module.exports = function (dbconnection) {
             return res.send({ error: "address error." });
         }
 
-        let encryptString = address.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
-        let hashed = keccak256(encryptString).toString('hex');
+        // let encryptString = address.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
+        let hashed; // = keccak256(encryptString).toString('hex');
 
         try {
             const agreementData = new AgreementData({
@@ -135,13 +135,12 @@ module.exports = function (dbconnection) {
                 area: area,
                 startDate: startDate,
                 duration: duration,
-                hashed: hashed,
                 state: "unsigned",
                 rent: rent,
                 content: content
             })
+            agreementData.hashed = keccak256(agreementData.toString()).toString("hex");
             // console.log(agreementData);
-
             await agreementData.save();
         } catch (error) {
             console.log(error);
@@ -151,9 +150,8 @@ module.exports = function (dbconnection) {
         try {
             let PartyAkey = createrPubkey;
             let PartyBkey = tenantPubkey;
-            let rentData = hashed;
 
-            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, rentData, hashed);
+            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, houseAddress, hashed);
             console.log(result.toString());
             return res.send({ msg: "create success.", hashed: hashed });
         } catch (error) {

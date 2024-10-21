@@ -160,7 +160,7 @@ module.exports = function (dbconnection1) {
 
         // save to chain
         try {
-            let result = await estateRegisterInstance.submitTransaction('UpdatePersonalEstate', userPubkey, houseAddress, area, date);
+            let result = await estateRegisterInstance.submitTransaction('UploadPersonalEstate', userPubkey, houseAddress, area, date);
             console.log(result.toString());
             return res.send({ msg: "success." });
         } catch (error) {

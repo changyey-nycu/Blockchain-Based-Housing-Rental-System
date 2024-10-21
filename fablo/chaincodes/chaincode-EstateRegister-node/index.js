@@ -23,7 +23,7 @@ class EstateRegister extends Contract {
   //   }
   // }
 
-  async UpdatePersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
+  async UploadPersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
     //only admin can add a new User data
     let type = ctx.clientIdentity.getAttributeValue("hf.Type");
     if (type != "admin") {
@@ -56,14 +56,14 @@ class EstateRegister extends Contract {
     return "Update Estate successfully." + userPubkey;
   }
 
-  async GetPersonEstate(ctx, userPubkey) {
-    let estate = await ctx.stub.getState(userPubkey);
-    if (!estate || estate.length === 0) {
-      throw new Error(`The user key:${userPubkey} does not exist`);
-    }
-    const estateJson = JSON.parse(estate.toString());
-    return JSON.stringify(estateJson);
-  }
+  // async GetPersonEstate(ctx, userPubkey) {
+  //   let estate = await ctx.stub.getState(userPubkey);
+  //   if (!estate || estate.length === 0) {
+  //     throw new Error(`The user key:${userPubkey} does not exist`);
+  //   }
+  //   const estateJson = JSON.parse(estate.toString());
+  //   return JSON.stringify(estateJson);
+  // }
 
   async GetEstate(ctx, userPubkey, estateAddress) {
     let estate = await ctx.stub.getState(userPubkey);
@@ -84,19 +84,19 @@ class EstateRegister extends Contract {
   //   return true;
   // }
 
-  async CheckEstate(ctx, userPubkey, estateAddress) {
-    let estate = await ctx.stub.getState(userPubkey);
-    if (!estate || estate.length === 0) {
-      return false;
-    }
+  // async CheckEstate(ctx, userPubkey, estateAddress) {
+  //   let estate = await ctx.stub.getState(userPubkey);
+  //   if (!estate || estate.length === 0) {
+  //     return false;
+  //   }
 
-    let estateJson = JSON.parse(estate.toString());
-    if (estateJson.Address[estateAddress].owner != userPubkey) {
-      return false;
-    }
+  //   let estateJson = JSON.parse(estate.toString());
+  //   if (estateJson.Address[estateAddress].owner != userPubkey) {
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 }
 
 exports.contracts = [EstateRegister];

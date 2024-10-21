@@ -25,7 +25,7 @@ class EstatePublish extends Contract {
   //   return pubkey;
   // }
 
-  async NewLease(ctx, userPubkey, owner, estateAddress, restrictions, rent) {
+  async NewLeaseItem(ctx, userPubkey, owner, estateAddress, restrictions, rent) {
     let lease = await ctx.stub.getState(userPubkey);
     let leaseJson;
     try {
@@ -72,40 +72,40 @@ class EstatePublish extends Contract {
     return "Add Lease successfully." + userPubkey;
   }
 
-  async NewLeaseBackup(ctx, userPubkey, owner, estateAddress, rent) {
-    let lease = await ctx.stub.getState(userPubkey);
-    let leaseJson;
-    try {
-      if (!lease || lease.length === 0) {
-        throw `The user key:${userPubkey} does not exist`;
-      }
-      leaseJson = JSON.parse(lease.toString());
-    }
-    catch (error) {
-      console.log(error);
-      leaseJson =
-      {
-        Data: {}
-      };
-    }
+  // async NewLeaseBackup(ctx, userPubkey, owner, estateAddress, rent) {
+  //   let lease = await ctx.stub.getState(userPubkey);
+  //   let leaseJson;
+  //   try {
+  //     if (!lease || lease.length === 0) {
+  //       throw `The user key:${userPubkey} does not exist`;
+  //     }
+  //     leaseJson = JSON.parse(lease.toString());
+  //   }
+  //   catch (error) {
+  //     console.log(error);
+  //     leaseJson =
+  //     {
+  //       Data: {}
+  //     };
+  //   }
 
-    if (!leaseJson.Data[estateAddress]) {
-      leaseJson.Data[estateAddress] = {};
-    }
+  //   if (!leaseJson.Data[estateAddress]) {
+  //     leaseJson.Data[estateAddress] = {};
+  //   }
 
-    leaseJson.Data[estateAddress] = {
-      "uploader": userPubkey,
-      "estateAddress": estateAddress,
-      "owner": owner,
-      "rent": rent,
-      "state": "online"
-    }
+  //   leaseJson.Data[estateAddress] = {
+  //     "uploader": userPubkey,
+  //     "estateAddress": estateAddress,
+  //     "owner": owner,
+  //     "rent": rent,
+  //     "state": "online"
+  //   }
 
-    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
-    return "Add Lease successfully." + userPubkey;
-  }
+  //   await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(leaseJson)));
+  //   return "Add Lease successfully." + userPubkey;
+  // }
 
-  async DelLease(ctx, userPubkey, estateAddress) {
+  async DelLeaseItem(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     let leaseJson = JSON.parse(lease.toString());
     if (!lease || lease.length === 0) {
@@ -119,7 +119,7 @@ class EstatePublish extends Contract {
     return "Update Estate successfully." + userPubkey;
   }
 
-  async GetPersonLease(ctx, userPubkey) {
+  async GetPersonLeaseItem(ctx, userPubkey) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {
       throw new Error(`The user key:${userPubkey} does not exist`);
@@ -130,7 +130,7 @@ class EstatePublish extends Contract {
     return JSON.stringify(leaseData);
   }
 
-  async GetLease(ctx, userPubkey, estateAddress) {
+  async GetLeaseItem(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {
       throw new Error(`The user key:${userPubkey} does not exist`);
@@ -141,7 +141,7 @@ class EstatePublish extends Contract {
     return JSON.stringify(leaseData);
   }
 
-  async GetLeaseRestriction(ctx, userPubkey, estateAddress) {
+  async GetLeaseItemRestriction(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {
       throw new Error(`The user key:${userPubkey} does not exist`);
@@ -152,7 +152,7 @@ class EstatePublish extends Contract {
     return JSON.stringify(restrictionData);
   }
 
-  async Signed(ctx, userPubkey, estateAddress) {
+  async LeaseItemSigned(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (!lease || lease.length === 0) {
       throw new Error(`The user key:${userPubkey} does not exist`);
@@ -164,7 +164,7 @@ class EstatePublish extends Contract {
     return "Update Lease Signed successfully.";
   }
 
-  async IsLeaseExist(ctx, userPubkey, estateAddress) {
+  async IsLeaseItemExist(ctx, userPubkey, estateAddress) {
     let lease = await ctx.stub.getState(userPubkey);
     if (lease && lease.length > 0) {
       let leaseJson = JSON.parse(lease.toString());
@@ -175,7 +175,7 @@ class EstatePublish extends Contract {
     }
   }
 
-  async GetAllOnlineLease(ctx) {
+  async GetAllOnlineLeaseItem(ctx) {
     const allResults = [];
     // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
     const iterator = await ctx.stub.getStateByRange('', '');

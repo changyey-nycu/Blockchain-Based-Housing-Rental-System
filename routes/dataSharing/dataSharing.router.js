@@ -55,7 +55,7 @@ module.exports = function (dbconnection) {
         // the information in the network configuration
         caClient = buildCAClient(FabricCAServices, ccp, 'ca.org4.example.com');
 
-        const walletPath = path.join(__dirname, '../../wallet/sharing');
+        const walletPath = path.join(__dirname, '../../wallet/IRS');
         wallet = await buildWallet(Wallets, walletPath);
 
         mspOrg4 = 'Org4MSP';
@@ -66,7 +66,7 @@ module.exports = function (dbconnection) {
 
         // in a real application this would be done only when a new user was required to be added
         // and would be part of an administrative flow
-        await registerAndEnrollUser(caClient, wallet, mspOrg4, 'sharing' /*, 'org1.department1'*/);
+        await registerAndEnrollUser(caClient, wallet, mspOrg4, 'IRS' /*, 'org1.department1'*/);
 
 
         // Create a new gateway instance for interacting with the fabric network.
@@ -77,7 +77,7 @@ module.exports = function (dbconnection) {
         //console.log(JSON.stringify(gateway));
         await gateway.connect(ccp, {
             wallet,
-            identity: 'sharing',
+            identity: 'IRS',
             discovery: { enabled: true, asLocalhost: true }
         });
 
@@ -340,7 +340,7 @@ module.exports = function (dbconnection) {
         const tenant = req.query.tenant;
         const house = req.query.house;
 
-        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
         console.log(restriction);
 
@@ -460,7 +460,7 @@ module.exports = function (dbconnection) {
         // const { name, email, job, salary, deposit } = req.body;
         // attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
 
-        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
         // console.log(restriction);
 

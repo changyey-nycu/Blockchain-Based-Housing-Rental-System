@@ -75,7 +75,7 @@ class AccessControlManager extends Contract {
     let acc = await ctx.stub.getState(userPubkey);
     let accJson =
     {
-      Permission: {} // only user can change
+      Permission: {}
     };
 
     if (acc && acc.length > 0) {
@@ -113,7 +113,7 @@ class AccessControlManager extends Contract {
     let acc = await ctx.stub.getState(userPubkey);
     let accJson =
     {
-      Permission: {} // only user can change
+      Permission: {}
     };
 
     if (acc && acc.length > 0) {

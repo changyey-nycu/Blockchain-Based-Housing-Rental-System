@@ -6,6 +6,7 @@ const Schema = new mongoose.Schema({
         type: String,
     },
     houseAddress: {
+        require: true,
         type: String
     },
     area: {

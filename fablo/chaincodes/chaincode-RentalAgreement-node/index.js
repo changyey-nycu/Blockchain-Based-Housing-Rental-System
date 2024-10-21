@@ -15,23 +15,23 @@ function uint8arrayToStringMethod(myUint8Arr) {
 }
 
 class RentalAgreement extends Contract {
-  async GetIdentity(ctx) {
-    let org = ctx.clientIdentity.getMSPID();
-    let ID = ctx.clientIdentity.getID();
-    let IDBytes = ctx.clientIdentity.getIDBytes();
+  // async GetIdentity(ctx) {
+  //   let org = ctx.clientIdentity.getMSPID();
+  //   let ID = ctx.clientIdentity.getID();
+  //   let IDBytes = ctx.clientIdentity.getIDBytes();
 
-    let secureContext = tls.createSecureContext({
-      cert: uint8arrayToStringMethod(IDBytes)
-    });
-    let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
-    let cert = secureSocket.getCertificate();
-    //console.log(cert)
-    let pubkey = cert.pubkey.toString('hex');
+  //   let secureContext = tls.createSecureContext({
+  //     cert: uint8arrayToStringMethod(IDBytes)
+  //   });
+  //   let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
+  //   let cert = secureSocket.getCertificate();
+  //   //console.log(cert)
+  //   let pubkey = cert.pubkey.toString('hex');
 
-    return pubkey;
-  }
+  //   return pubkey;
+  // }
 
-  async CreateAgreement(ctx, PartyAkey, PartyBkey, rentData, agreementHashed) {
+  async CreateAgreement(ctx, PartyAkey, PartyBkey, houseAddress, agreementHashed) {
     //only admin can create agreement
     let type = ctx.clientIdentity.getAttributeValue("hf.Type");
     if (type != "admin") {
@@ -52,7 +52,7 @@ class RentalAgreement extends Contract {
     }
 
     agreementData.Agreement[agreementHashed] = {
-      "rentData": rentData,
+      "address": houseAddress,
       "partyA": PartyAkey,
       "partyB": PartyBkey,
       "sign": {},
@@ -122,33 +122,33 @@ class RentalAgreement extends Contract {
     return publickeyObject.verify(plaintext, Buffer.from(signature));
   }
 
-  async VerifyAgreementSignTest(ctx, pubkey, agreementHashed) {
-    let agreement = await ctx.stub.getState(pubkey);
-    let agreementData;
+  // async VerifyAgreementSignTest(ctx, pubkey, agreementHashed) {
+  //   let agreement = await ctx.stub.getState(pubkey);
+  //   let agreementData;
 
-    try {
-      agreementData = JSON.parse(agreement.toString());
-    } catch (error) {
-      throw new Error(`The agreement key:${PartyAkey} does not exist`);
-    }
-    try {
-      let A = false, B = false;
-      if (agreementData.Agreement[agreementHashed].sign.PartyA) {
-        // var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
-        // A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
-        A = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyA, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
-      }
-      if (agreementData.Agreement[agreementHashed].sign.PartyB) {
-        // var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
-        // B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
-        B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
-      }
-      return A && B;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
+  //   try {
+  //     agreementData = JSON.parse(agreement.toString());
+  //   } catch (error) {
+  //     throw new Error(`The agreement key:${PartyAkey} does not exist`);
+  //   }
+  //   try {
+  //     let A = false, B = false;
+  //     if (agreementData.Agreement[agreementHashed].sign.PartyA) {
+  //       // var publickeyAObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyA, 'hex');
+  //       // A = publickeyAObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyA));
+  //       A = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyA, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyA.split(","));
+  //     }
+  //     if (agreementData.Agreement[agreementHashed].sign.PartyB) {
+  //       // var publickeyBObject = ecdsa.keyFromPublic(agreementData.Agreement[agreementHashed].partyB, 'hex');
+  //       // B = publickeyBObject.verify(agreementHashed, Buffer.from(agreementData.Agreement[agreementHashed].sign.PartyB));
+  //       B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
+  //     }
+  //     return A && B;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return false;
+  //   }
+  // }
 
   async VerifyAgreementSign(ctx, pubkey, agreementHashed, estateAddress) {
     let agreement = await ctx.stub.getState(pubkey);
@@ -172,7 +172,7 @@ class RentalAgreement extends Contract {
         B = await this.VerifySign(ctx, agreementData.Agreement[agreementHashed].partyB, agreementHashed, agreementData.Agreement[agreementHashed].sign.PartyB.split(","));
       }
       if (A && B) {
-        let estatePublishResponse = await ctx.stub.invokeChaincode("EstatePublish", ["Signed", pubkey, estateAddress], "lease-channel");
+        let estatePublishResponse = await ctx.stub.invokeChaincode("EstatePublish", ["LeaseItemSigned", pubkey, estateAddress], "lease-channel");
         
         if(estatePublishResponse.status != 200){
             throw new Error(certManagerResponse.message);

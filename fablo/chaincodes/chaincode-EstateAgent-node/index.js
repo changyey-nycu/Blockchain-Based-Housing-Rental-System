@@ -9,21 +9,21 @@ function uint8arrayToStringMethod(myUint8Arr) {
 }
 
 class EstateAgent extends Contract {
-  async GetIdentity(ctx) {
-    let org = ctx.clientIdentity.getMSPID();
-    let ID = ctx.clientIdentity.getID();
-    let IDBytes = ctx.clientIdentity.getIDBytes();
+  // async GetIdentity(ctx) {
+  //   let org = ctx.clientIdentity.getMSPID();
+  //   let ID = ctx.clientIdentity.getID();
+  //   let IDBytes = ctx.clientIdentity.getIDBytes();
 
-    let secureContext = tls.createSecureContext({
-      cert: uint8arrayToStringMethod(IDBytes)
-    });
-    let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
-    let cert = secureSocket.getCertificate();
-    //console.log(cert)
-    let pubkey = cert.pubkey.toString('hex');
+  //   let secureContext = tls.createSecureContext({
+  //     cert: uint8arrayToStringMethod(IDBytes)
+  //   });
+  //   let secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
+  //   let cert = secureSocket.getCertificate();
+  //   //console.log(cert)
+  //   let pubkey = cert.pubkey.toString('hex');
 
-    return pubkey;
-  }
+  //   return pubkey;
+  // }
 
   async NewAgent(ctx, userPubkey, expDate) {
     //only admin can add a new User key
