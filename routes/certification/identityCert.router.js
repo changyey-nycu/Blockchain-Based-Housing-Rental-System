@@ -52,7 +52,7 @@ module.exports = function (dbconnection1) {
         // the information in the network configuration
         caClient = buildCAClient(FabricCAServices, ccp, 'ca.org1.example.com');
 
-        const walletPath = path.join(__dirname, '../../wallet/interior');
+        const walletPath = path.join(__dirname, '../../wallet/DLA');
         wallet = await buildWallet(Wallets, walletPath);
 
         mspOrg1 = 'Org1MSP';
@@ -63,7 +63,7 @@ module.exports = function (dbconnection1) {
 
         // in a real application this would be done only when a new user was required to be added
         // and would be part of an administrative flow
-        await registerAndEnrollUser(caClient, wallet, mspOrg1, 'interior' /*, 'org1.department1'*/);
+        await registerAndEnrollUser(caClient, wallet, mspOrg1, 'DLA' /*, 'org1.department1'*/);
 
 
         // Create a new gateway instance for interacting with the fabric network.
@@ -74,7 +74,7 @@ module.exports = function (dbconnection1) {
         //console.log(JSON.stringify(gateway));
         await gateway.connect(ccp, {
             wallet,
-            identity: 'interior',
+            identity: 'DLA',
             discovery: { enabled: true, asLocalhost: true }
         });
 

@@ -11,3 +11,5 @@ wallet
 openssl
 
 config/connection-profile-*.json
+
+public/uploads/

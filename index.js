@@ -1,5 +1,6 @@
 const path = require('path')
 const express = require('express');
+const fileUpload = require("express-fileupload");
 const flash = require('connect-flash');
 const session = require('express-session');
 const passport = require('passport');
@@ -40,6 +41,8 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(fileUpload());
+
 passport.serializeUser(function (user, done) {
     done(null, user);
 });

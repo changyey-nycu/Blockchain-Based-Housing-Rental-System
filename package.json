@@ -17,6 +17,7 @@
     "eth-sig-util": "^3.0.1",
     "ethers": "^5.5.4",
     "express": "^4.19.2",
+    "express-fileupload": "^1.5.1",
     "express-session": "^1.18.0",
     "fabric-ca-client": "^2.2.20",
     "fabric-common": "^2.2.20",

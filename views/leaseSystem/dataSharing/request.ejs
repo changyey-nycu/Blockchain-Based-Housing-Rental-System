@@ -36,7 +36,7 @@
                         <% } %>
                 </div>
                 <div class="mt-3 mb-3 center-block">
-                    <input type="button" class="btn btn-primary" value="Get Assessment" id="getAssessment">
+                    <input type="button" class="btn btn-primary" value="Condition Review" id="conditionReview">
                 </div>
 
 
@@ -69,11 +69,11 @@
         var restriction = JSON.parse('<%- JSON.stringify(restriction) %>');
 
         async function buildListener() {
-            $('#getAssessment').on('click', async function (e) {
+            $('#conditionReview').on('click', async function (e) {
                 let tenantAddress = $("#tenantAddress").val();
                 $.ajax({
                     type: 'POST',
-                    url: '/leaseSystem/dataSharing/getAssessment',
+                    url: '/leaseSystem/dataSharing/conditionReview',
                     dataType: 'json',
                     data: {
                         tenantAddress: tenantAddress,

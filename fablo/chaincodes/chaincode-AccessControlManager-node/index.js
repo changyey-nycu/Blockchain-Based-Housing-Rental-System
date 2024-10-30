@@ -100,7 +100,7 @@ class AccessControlManager extends Contract {
       // console.log(`${key} : ${attribute[key]}`);
 
       accJson.Permission[key] = {
-        "data": attJson[key],
+        "access": attJson[key],
         "endTime": endTime
       };
     })
@@ -125,7 +125,7 @@ class AccessControlManager extends Contract {
     }
 
     accJson.Permission[attribute] = {
-      "data": permit,
+      "access": permit,
       "endTime": endTime
     };
 
@@ -151,7 +151,7 @@ class AccessControlManager extends Contract {
     return "Permission revoked successfully.";
   }
 
-  async GetPermission(ctx, userPubkey) {
+  async GetPermission(ctx, userPubkey, formKey) {
     let acc = await ctx.stub.getState(userPubkey);
     if (!acc || acc.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
@@ -171,7 +171,7 @@ class AccessControlManager extends Contract {
       try {
         let accJson = JSON.parse(acc.toString());
         const permissions = accJson.Permission;
-        if (permissions.hasOwnProperty(key) && permissions.key.data == "true") {
+        if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
           return true;
         }
       } catch (error) {
@@ -202,7 +202,7 @@ class AccessControlManager extends Contract {
 
         Object.keys(attJson).forEach(async key => {
           // console.log(`${key} : ${attribute[key]}`);
-          if (permissions.hasOwnProperty(key) && permissions.key.data == "true") {
+          if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
             permit.key = true;
           }
           else {

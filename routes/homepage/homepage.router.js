@@ -557,7 +557,15 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         const houseAddress = req.query.addr;
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: houseAddress });
-        res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: houseData });
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", address, houseAddress);
+
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${address}/${houseAddress}/${file}`);
+        }
+        
+        res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: houseData, images, currentIndex: 0 });
     });
 
     router.post('/landlord/agent', isAuthenticated, async (req, res) => {
@@ -640,13 +648,44 @@ module.exports = function (dbconnection) {
         return res.send({ msg: "upload success." })
     });
 
+    // initial the upload picture setting
+
     router.post('/landlord/estateUpdate', isAuthenticated, async (req, res) => {
         //  get local data, then update the record in system DB
         const { userAddress, houseAddress, title, roomType, describe } = req.body;
-        
-        if (describe != undefined && describe.toString().length > 300) {
-            return res.send({ msg: "describe too long" });
+        const files = req.files ? req.files.images : null;
+
+        if (describe != undefined && describe.length > 300) {
+            return res.status(400).send("describe too long");
         }
+
+        // 檢查是否有上傳圖片
+        if (files) {
+            // 檢查圖片大小是否超過 10MB
+            const imageFiles = Array.isArray(files) ? files : [files];
+            for (let file of imageFiles) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    return res.status(400).send("image can not more than 10MB!");
+                }
+            }
+
+            const uploadPath = path.join(__dirname, "../..", "public", "uploads", userAddress, houseAddress);
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+
+            imageFiles.forEach((file) => {
+                const filePath = path.join(uploadPath, file.name);
+                file.mv(filePath, (err) => {
+                    if (err) {
+                        return res.status(500).send("can not save the images!");
+                    }
+                });
+            });
+
+        }
+
+
         let houseData;
         try {
             houseData = await HouseData.findOneAndUpdate(
@@ -656,8 +695,18 @@ module.exports = function (dbconnection) {
         } catch (error) {
             console.log(error);
         }
-        // let obj = await HouseData.find({ ownerAddress: userAddress });
-        return res.render('leaseSystem/landlord/estateUpdate', { address: userAddress, HouseData: houseData });
+
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", userAddress, houseAddress);
+        // console.log(dir);
+
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${userAddress}/${houseAddress}/${file}`);
+        }
+
+
+        res.render('leaseSystem/landlord/estatePage', { address: userAddress, HouseData: houseData, images, currentIndex: 0 });
     });
 
     router.post('/landlord/entrustSubmit', isAuthenticated, async (req, res) => {
@@ -668,7 +717,7 @@ module.exports = function (dbconnection) {
             console.log('houseData = ' + houseData);
             return res.send({ 'error': "error", "result": `The house address error.` });
         }
-        
+
         try {
             const digest = await createTransaction(address.toLowerCase(), 'AddEstate', agentPubkey, ownerAddress, owner.pubkey, estateAddress, type);
             return res.send({ 'digest': digest });
@@ -692,8 +741,8 @@ module.exports = function (dbconnection) {
             console.log('houseData.agent = ' + houseData.agent);
             return res.send({ 'error': "error", "result": `The house is agent to ${houseData.agent}.` });
         }
-        console.log(restriction);
-        
+        // console.log(restriction);
+
 
         // check the house is on lease
         let isExist = await estatePublishInstance.evaluateTransaction('IsLeaseItemExist', owner.pubkey, estateAddress);
@@ -823,11 +872,19 @@ module.exports = function (dbconnection) {
 
     router.get('/agent/estatePage', isAuthenticated, async (req, res) => {
         const address = req.session.address;
-        const addr = req.query.addr;
+        const houseAddress = req.query.addr;
         const owner = req.query.owner;
 
-        let houseData = await HouseData.findOne({ ownerAddress: owner, houseAddress: addr });
-        res.render('leaseSystem/agent/agentEstatePage', { address: address, HouseData: houseData });
+        let houseData = await HouseData.findOne({ ownerAddress: owner, houseAddress: houseAddress });
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", owner, houseAddress);
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${owner}/${houseAddress}/${file}`);
+        }
+
+
+        res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: houseData, images, currentIndex: 0 });
     });
 
 
@@ -835,9 +892,38 @@ module.exports = function (dbconnection) {
         //  get local data, then update the record in system DB
         const address = req.session.address;
         const { ownerAddress, houseAddress, title, roomType, describe } = req.body;
-        if (describe.toString().length > 300) {
-            return res.send({ msg: "describe too long" });
+        const files = req.files ? req.files.images : null;
+
+        if (describe != undefined && describe.length > 300) {
+            return res.status(400).send("describe too long");
         }
+
+        // 檢查是否有上傳圖片
+        if (files) {
+            // 檢查圖片大小是否超過 10MB
+            const imageFiles = Array.isArray(files) ? files : [files];
+            for (let file of imageFiles) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    return res.status(400).send("image can not more than 10MB!");
+                }
+            }
+
+            const uploadPath = path.join(__dirname, "../..", "public", "uploads", ownerAddress, houseAddress);
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+
+            imageFiles.forEach((file) => {
+                const filePath = path.join(uploadPath, file.name);
+                file.mv(filePath, (err) => {
+                    if (err) {
+                        return res.status(500).send("can not save the images!");
+                    }
+                });
+            });
+
+        }
+
         let houseData;
         try {
             houseData = await HouseData.findOneAndUpdate(
@@ -848,7 +934,15 @@ module.exports = function (dbconnection) {
             console.log(error);
         }
 
-        return res.render('leaseSystem/agent/agentEstatePage', { address: address, HouseData: houseData });
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", ownerAddress, houseAddress);
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${owner}/${houseAddress}/${file}`);
+        }
+
+
+        res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: houseData, images, currentIndex: 0 });
     });
 
     // setting estate rent data and rent
@@ -910,7 +1004,7 @@ module.exports = function (dbconnection) {
             { address: userAddress, agent: true },
             { name: name, agency: Agency }, { new: true }
         );
-        console.log(userData);
+        // console.log(userData);
         if (!userData) {
             let errors = "The agent data error in system.";
             console.log(errors);
@@ -933,17 +1027,21 @@ module.exports = function (dbconnection) {
             console.log(error);
             data = obj2;
         }
+        // console.log(data);
+        
 
-        let houseList = [];
-        for (let index = 0; index < data.length; index++) {
-            Object.values(data[index].Data).forEach(value => {
-                if (value.state == "online") {
-                    houseList.push(value);
-                }
-            });
-        }
-        allLease = houseList;
-        res.render('leaseSystem/searchHouse', { address: address, houseList: houseList });
+        // let houseList = [];
+        // for (let index = 0; index < data.length; index++) {
+        //     houseList.push(data[index]);
+        //     // Object.values(data[index]).forEach(value => {
+                
+        //     //     if (value.state == "online") {
+        //     //         houseList.push(value);
+        //     //     }
+        //     // });
+        // }
+        allLease = data;
+        res.render('leaseSystem/searchHouse', { address: address, houseList: data });
     });
 
     // view the house detail data
@@ -956,17 +1054,17 @@ module.exports = function (dbconnection) {
 
     router.get('/leasePage', async (req, res) => {
         const address = req.session.address;
-        const addr = req.query.addr;
+        const houseAddress = req.query.addr;
         const uploader = req.query.uploader;
 
         let uploaderData = await Profile.findOne({ pubkey: uploader });
 
-        let houseData = await HouseData.findOne({ ownerAddress: uploaderData.address, houseAddress: addr });
+        let houseData = await HouseData.findOne({ ownerAddress: uploaderData.address, houseAddress: houseAddress });
         if (!houseData) {
-            houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: addr });
+            houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: houseAddress });
         }
 
-        let leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', uploader, addr);
+        let leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', uploader, houseAddress);
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -978,17 +1076,24 @@ module.exports = function (dbconnection) {
         let added = false;
         try {
             if (address != undefined) {
-                let isAdd = await Interest.findOne({ address: address, ownerAddress: uploaderData.address, houseAddress: addr });
-                console.log(isAdd);
+                let isAdd = await Interest.findOne({ address: address, ownerAddress: uploaderData.address, houseAddress: houseAddress });
+                // console.log(isAdd);
 
                 if (isAdd) {
                     added = true;
                 }
             }
         } catch (error) { }
-        
 
-        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added });
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", houseData.ownerAddress, houseAddress);
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${houseData.ownerAddress}/${houseAddress}/${file}`);
+        }
+
+
+        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added, images, currentIndex: 0  });
     });
 
     // tenant add this house to favorite
@@ -1073,13 +1178,15 @@ module.exports = function (dbconnection) {
         if (!allLease.length) {
             let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineLeaseItem');
             let data = JSON.parse(obj2.toString());
-            for (let index = 0; index < data.length; index++) {
-                Object.values(data[index].Data).forEach(value => {
-                    if (value.state == "online") {
-                        allLease.push(value);
-                    }
-                });
-            }
+            // console.log(data);
+            allLease = data;
+            // for (let index = 0; index < data.length; index++) {
+            //     Object.values(data[index].Data).forEach(value => {
+            //         if (value.state == "online") {
+            //             allLease.push(value);
+            //         }
+            //     });
+            // }
         }
 
         allLease.forEach(elelment => {
@@ -1100,20 +1207,20 @@ module.exports = function (dbconnection) {
 
     router.get('/leaseManage/leasePage', async (req, res) => {
         const address = req.session.address;
-        const addr = req.query.addr;
+        const houseAddress = req.query.addr;
         const owner = req.query.owner;
         const agent = req.query.agent;
         let ownerData = await Profile.findOne({ address: owner });
 
-        let houseData = await HouseData.findOne({ ownerAddress: ownerData.address, houseAddress: addr });
+        let houseData = await HouseData.findOne({ ownerAddress: ownerData.address, houseAddress: houseAddress });
 
         let leaseData;
         if (agent == "0x") {
-            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', ownerData.pubkey, addr);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', ownerData.pubkey, houseAddress);
         }
         else {
             let agentData = await Profile.findOne({ address: agent });
-            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', agentData.pubkey, addr);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', agentData.pubkey, houseAddress);
         }
         let data = {};
         try {
@@ -1122,19 +1229,26 @@ module.exports = function (dbconnection) {
             // console.log(error);
             data = leaseData;
         }
-        
+
 
         let added = false;
         try {
             if (address != undefined) {
-                let isAdd = await Interest.findOne({ address: address, ownerAddress: ownerData.address, houseAddress: addr });
+                let isAdd = await Interest.findOne({ address: address, ownerAddress: ownerData.address, houseAddress: houseAddress });
                 if (isAdd) {
                     added = true;
                 }
             }
         } catch (error) { }
 
-        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added });
+        //  images
+        const dir = path.join(__dirname, "../..", "public", "uploads", houseData.ownerAddress, houseAddress);
+        let images = [];
+        if (fs.existsSync(dir)) {
+            images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${houseData.ownerAddress}/${houseAddress}/${file}`);
+        }
+
+        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added , images, currentIndex: 0  });
     });
 
 
