@@ -118,6 +118,12 @@
           ]
         },
         {
+          "name": "Org2",
+          "peers": [
+            "peer0"
+          ]
+        },
+        {
           "name": "Org4",
           "peers": [
             "peer0"
@@ -165,7 +171,7 @@
       "lang": "node",
       "channel": "acc-channel",
       "directory": "./chaincodes/chaincode-AccessControlManager-node",
-      "endorsement": "OR('Org1MSP.member', 'Org4MSP.member')"
+      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org4MSP.member')"
     }
   ]
 }

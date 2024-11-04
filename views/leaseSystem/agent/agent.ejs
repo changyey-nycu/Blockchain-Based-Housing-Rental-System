@@ -21,34 +21,28 @@
                                 <input class="form-control" name="userAddress" id="userAddress" type="text"
                                     value="<%=address %>" readonly>
                             </div>
-                            <table class="mt-2 table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td>agent</td>
-                                        <td>
-                                            <div class="row">
-                                                <div class="col">
-                                                    <%if(user.agent) {%>
-                                                        ture
-                                                        <%}else {%>
-                                                            false
-                                                            <%} %>
-                                                </div>
-                                        </td>
-                                        <td>
-                                            <div class="col"></div>
-                                            <div class="col"><button id="getCert">getCert</button></div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="input-group mt-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">agent licence</span>
+                                </div>
+                                <input class="form-control" name="userAddress" id="userAddress" type="text"
+                                    value="<%=user.agent %>" readonly>
+                            </div>
                         </div>
+
                         <div class="card-body">
                             <a href="/leaseSystem/certification" class="btn btn-secondary btn-lg btn-block mt-2" style="
-                        width: 450px;
+                        width: 250px;
                         height: 40px;
                         line-height: 20px;
-                        text-align: center;">certificate</a>
+                        text-align: center;">Get Certificate</a>
+                        </div>
+                        <div class="card-body">
+                            <button id="getCert" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                        width: 250px;
+                        height: 40px;
+                        line-height: 20px;
+                        text-align: center;">Check Agent Licence
                         </div>
                     </div>
                 </div>

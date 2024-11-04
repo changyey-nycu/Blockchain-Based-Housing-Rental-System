@@ -97,31 +97,6 @@ module.exports = function (dbconnection) {
         }
     };
 
-
-    router.get('/upload', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const pubkey = req.session.pubkey;
-        const owner = req.query.owner;
-        const house = req.query.house;
-        const key = req.query.key;
-        let localData;
-        try {
-            localData = await PersonalData.findOne({ address: address });
-            if (!localData) {
-                localData = new PersonalData({ address: address, pubkey: pubkey });
-                localData.save();
-            }
-        } catch (error) {
-            console.log(error);
-        }
-        // console.log(localData);
-
-        res.render('leaseSystem/dataSharing/upload', {
-            address: address, pubkey: pubkey, owner: owner, ownerPubkey: key
-            , house: house, tenantData: localData, contract_address: contract_address
-        });
-    });
-
     router.get('/authorizeIfo', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const pubkey = req.session.pubkey;
@@ -167,18 +142,18 @@ module.exports = function (dbconnection) {
     router.post('/saveData', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         const pubkey = req.session.pubkey;
-        const { nameInput, emailInput, phoneInput, jobInput, salaryInput, depositInput, ownerAddress, ownerPubkey, houseAddress } = req.body;
+        const { jobInput, salaryInput, depositInput, ownerAddress, ownerPubkey, houseAddress } = req.body;
 
         let localData;
         try {
             localData = await PersonalData.findOne({ address: address });
             if (!localData) {
-                localData = new PersonalData({ address: address, pubkey: pubkey, name: nameInput, email: emailInput, phone: phoneInput, job: jobInput, salary: salaryInput, deposit: depositInput });
+                localData = new PersonalData({ address: address, pubkey: pubkey, job: jobInput, salary: salaryInput, deposit: depositInput });
                 localData.save();
             }
             else {
                 localData = await PersonalData.findOneAndUpdate({ address: address },
-                    { name: nameInput, email: emailInput, phone: phoneInput, job: jobInput, salary: salaryInput, deposit: depositInput }, { new: true });
+                    { job: jobInput, salary: salaryInput, deposit: depositInput }, { new: true });
             }
             res.render('leaseSystem/dataSharing/upload', {
                 address: address, pubkey: pubkey, owner: ownerAddress, ownerPubkey: ownerPubkey,
@@ -190,33 +165,33 @@ module.exports = function (dbconnection) {
         }
     })
 
-    router.post('/updatePermission', isAuthenticated, async (req, res) => {
-        const address = req.session.address;
-        const { name, email, job, salary, deposit } = req.body;
-        const { userPubkey } = req.body;
-        let attributes = {
-            "name": name,
-            "email": email,
-            "job": job,
-            "salary": salary,
-            "deposit": deposit
-        }
-        let attString = JSON.stringify(attributes);
+    // router.post('/updatePermission', isAuthenticated, async (req, res) => {
+    //     const address = req.session.address;
+    //     const { name, email, job, salary, deposit } = req.body;
+    //     const { userPubkey } = req.body;
+    //     let attributes = {
+    //         "name": name,
+    //         "email": email,
+    //         "job": job,
+    //         "salary": salary,
+    //         "deposit": deposit
+    //     }
+    //     let attString = JSON.stringify(attributes);
 
-        // save to chain offline sign
-        try {
-            // userPubkey, dataRequester, attribute, endTime
-            let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, attString, "endTime");
-            console.log(result.toString());
-            return res.send({ msg: "update success." });
+    //     // save to chain offline sign
+    //     try {
+    //         // userPubkey, dataRequester, attribute, endTime
+    //         let result = await accInstance.submitTransaction('UpdatePermission', userPubkey, attString, "endTime");
+    //         console.log(result.toString());
+    //         return res.send({ msg: "update success." });
 
-            // const digest = await createTransaction(address.toLowerCase(), 'UpdatePermission', userPubkey, dataRequester, attString, "endTime");
-            // return res.send({ 'digest': digest });
-        } catch (error) {
-            console.log(error);
-            return res.send({ msg: "update error." });
-        }
-    });
+    //         // const digest = await createTransaction(address.toLowerCase(), 'UpdatePermission', userPubkey, dataRequester, attString, "endTime");
+    //         // return res.send({ 'digest': digest });
+    //     } catch (error) {
+    //         console.log(error);
+    //         return res.send({ msg: "update error." });
+    //     }
+    // });
 
     router.post('/revokePermission', isAuthenticated, async (req, res) => {
         const { userPubkey, dataRequester, attribute } = req.body;
@@ -257,16 +232,33 @@ module.exports = function (dbconnection) {
             return res.send({ msg: "The tenant does not set the personal data.", "data": {} });
         }
 
-        // console.log(permitJson);
-
         let data = {};
         Object.keys(restriction).forEach(async restrictionKey => {
             Object.keys(permitJson).forEach(async key => {
                 if (key == restrictionKey && permitJson[key].access == "true") {
-                    if(restriction[restrictionKey] < tenantData[key])
-                        data[restrictionKey]="pass";
-                    else
-                        data[restrictionKey]="fail";
+                    switch (key) {
+                        case "job":
+                            if (restriction[restrictionKey] == tenantData[key])
+                                data[restrictionKey] = "pass";
+                            else
+                                data[restrictionKey] = "fail";
+                            break;
+                        case "salary":
+                            if (restriction[restrictionKey] <= tenantData[key])
+                                data[restrictionKey] = "pass";
+                            else
+                                data[restrictionKey] = "fail";
+                            break;
+                        case "deposit":
+                            if (restriction[restrictionKey] <= tenantData[key])
+                                data[restrictionKey] = "pass";
+                            else
+                                data[restrictionKey] = "fail";
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
             })
             if (data[restrictionKey] == undefined) {

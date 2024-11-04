@@ -9,21 +9,6 @@ const DataSchema = new mongoose.Schema({
         require: true,
         type: String,
     },
-    birth: {
-        type: String
-    }, 
-    name: {
-        type: String
-    },
-    email: {
-        type: String
-    },
-    phone: {
-        type: String
-    },
-    IDNumber: {
-        type: String
-    },
     job: {
         type: String
     },

@@ -34,6 +34,7 @@ var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
 var caClient;
 var registerChannel, estateRegisterInstance;
 var leaseChannel, estateAgentInstance, estatePublishInstance;
+var accChannel, accInstance;
 var wallet;
 var gateway;
 var adminUser;
@@ -42,6 +43,7 @@ var addEstate = {};
 var acceptEstate = {};
 var rejectEstate = {};
 var newLeaseItem = {};
+var updatePermission = {};
 
 const require_signature = "LeaseSystem?nonce:778";
 
@@ -108,6 +110,9 @@ module.exports = function (dbconnection) {
         leaseChannel = await gateway.getNetwork('lease-channel');
         estateAgentInstance = await leaseChannel.getContract('EstateAgent');
         estatePublishInstance = await leaseChannel.getContract('EstatePublish');
+
+        accChannel = await gateway.getNetwork('acc-channel');
+        accInstance = await accChannel.getContract('AccessControlManager');
     }
     init();
 
@@ -337,6 +342,10 @@ module.exports = function (dbconnection) {
                 endorsementStore = newLeaseItem;
                 var endorsement = leaseChannel.channel.newEndorsement('EstatePublish');
                 break;
+            case 'UpdatePermission':
+                endorsementStore = updatePermission;
+                var endorsement = accChannel.channel.newEndorsement('AccessControlManager');
+                break;
         }
 
         var paras = [];
@@ -375,6 +384,9 @@ module.exports = function (dbconnection) {
             case 'NewLeaseItem':
                 endorsementStore = newLeaseItem;
                 break;
+            case 'UpdatePermission':
+                endorsementStore = updatePermission;
+                break;
         }
         if (typeof (endorsementStore) == "undefined") {
             return new Promise(function (reslove, reject) {
@@ -390,7 +402,15 @@ module.exports = function (dbconnection) {
         let endorsement = endorsementStore[arguments[0]];
         endorsement.sign(arguments[2]);
         // console.log(endorsement);
-        let proposalResponses = await endorsement.send({ targets: leaseChannel.channel.getEndorsers() });
+
+        let proposalResponses;
+        if (arguments[1] == 'UpdatePermission') {
+            proposalResponses = await endorsement.send({ targets: accChannel.channel.getEndorsers() });
+        }
+        else {
+            proposalResponses = await endorsement.send({ targets: leaseChannel.channel.getEndorsers() });
+        }
+
         // console.log(proposalResponses);
         // console.log('proposalResponses = ' + JSON.stringify(proposalResponses));
         // console.log('responses[0] = ' + JSON.stringify(proposalResponses.responses[0]));
@@ -444,6 +464,9 @@ module.exports = function (dbconnection) {
             case 'NewLeaseItem':
                 endorsementStore = newLeaseItem;
                 break;
+            case 'UpdatePermission':
+                endorsementStore = updatePermission;
+                break;
         }
         if (typeof (endorsementStore) == "undefined") {
             return new Promise(function (reslove, reject) {
@@ -456,8 +479,14 @@ module.exports = function (dbconnection) {
         let commit = endorsementStore[arguments[0]]
         commit.sign(arguments[2])
         let commitSendRequest = {};
-        commitSendRequest.requestTimeout = 300000
-        commitSendRequest.targets = leaseChannel.channel.getCommitters();
+        commitSendRequest.requestTimeout = 300000;
+        if (arguments[1] == 'UpdatePermission') {
+            commitSendRequest.targets = accChannel.channel.getCommitters();
+        }
+        else {
+            commitSendRequest.targets = leaseChannel.channel.getCommitters();
+        }
+
         let commitResponse = await commit.send(commitSendRequest);
 
         if (commitResponse['status'] == "SUCCESS") {
@@ -564,7 +593,7 @@ module.exports = function (dbconnection) {
         if (fs.existsSync(dir)) {
             images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${address}/${houseAddress}/${file}`);
         }
-        
+
         res.render('leaseSystem/landlord/estatePage', { address: address, HouseData: houseData, images, currentIndex: 0 });
     });
 
@@ -1028,13 +1057,13 @@ module.exports = function (dbconnection) {
             data = obj2;
         }
         // console.log(data);
-        
+
 
         // let houseList = [];
         // for (let index = 0; index < data.length; index++) {
         //     houseList.push(data[index]);
         //     // Object.values(data[index]).forEach(value => {
-                
+
         //     //     if (value.state == "online") {
         //     //         houseList.push(value);
         //     //     }
@@ -1093,7 +1122,7 @@ module.exports = function (dbconnection) {
         }
 
 
-        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added, images, currentIndex: 0  });
+        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added, images, currentIndex: 0 });
     });
 
     // tenant add this house to favorite
@@ -1146,6 +1175,27 @@ module.exports = function (dbconnection) {
             return res.send({ msg: "update success, please waiting for owner accept and create the agreement" });
         } catch (error) {
             return res.send({ msg: "update error" });
+        }
+    });
+
+
+    // Access control offline sign PART
+
+    router.post('/updatePermission', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        const { job, salary, deposit, endTime } = req.body;
+        let user = await Profile.findOne({ address: address });
+        let attributes = {
+            "job": job,
+            "salary": salary,
+            "deposit": deposit
+        }
+        try {
+            const digest = await createTransaction(address.toLowerCase(), 'UpdatePermission', user.pubkey, JSON.stringify(attributes), endTime);
+            return res.send({ 'digest': digest });
+        } catch (e) {
+            console.log('e = ' + e);
+            return res.send({ 'error': "error", "result": e });
         }
     });
 
@@ -1248,7 +1298,7 @@ module.exports = function (dbconnection) {
             images = fs.readdirSync(dir).filter((file) => file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".png")).map((file) => `/uploads/${houseData.ownerAddress}/${houseAddress}/${file}`);
         }
 
-        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added , images, currentIndex: 0  });
+        res.render('leaseSystem/leasePage', { address: address, HouseData: houseData, rentData: data, added: added, images, currentIndex: 0 });
     });
 
 

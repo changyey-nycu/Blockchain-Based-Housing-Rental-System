@@ -168,32 +168,6 @@
                     })
                 })
 
-                // $(`#upload-${i}`).on('click', async function (e) {
-                //     let houseAddress = $(`#houseAddress-${i}`).val();
-                //     let ownerAddress = $(`#owner-${i}`).val();
-                //     $.ajax({
-                //         type: 'POST',
-                //         url: '/leaseSystem/leaseManage/upload',
-                //         dataType: 'json',
-                //         data: {
-                //             ownerAddress: ownerAddress,
-                //             houseAddress: houseAddress
-                //         },
-                //         success: function (res) {
-                //             console.log('success');
-                //             console.log(res);
-
-                //             if (res.url) {
-                //                 window.location.href = res.url;
-                //             }
-                //         },
-                //         fail: function (xhr, ajaxOptions, thrownError) {
-                //             console.log('fail');
-                //             reject(false);
-                //         },
-                //     });
-                // })
-
             }
 
             for (let index = 0; index < rentData.length; index++) {

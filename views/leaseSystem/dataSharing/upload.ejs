@@ -28,21 +28,6 @@
                                 value="<%=pubkey%>" readonly>
                         </div>
                         <div class="input-group mb-3">
-                            <span class="input-group-text">name</span>
-                            <input type="text" class="form-control" id="nameInput" name="nameInput"
-                                value="<%=tenantData.name%>">
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">email</span>
-                            <input type="text" class="form-control" id="emailInput" name="emailInput"
-                                value="<%=tenantData.email%>">
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">phone</span>
-                            <input type="text" class="form-control" id="phoneInput" name="phoneInput"
-                                value="<%=tenantData.phone%>">
-                        </div>
-                        <div class="input-group mb-3">
                             <span class="input-group-text">job</span>
                             <input type="text" class="form-control" id="jobInput" name="jobInput"
                                 value="<%=tenantData.job%>">
@@ -71,19 +56,6 @@
                 <div style="margin-top: 10px" class="card ">
                     <div class="card-header text-center">
                         <h4 style="margin:auto" class="font-weight-bold">Access Control</h4>
-                    </div>
-                    <!-- <form action="" method="post"> -->
-                    <div class="form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="name" id="name">
-                        <label class="form-check-label" for="name">
-                            name
-                        </label>
-                    </div>
-                    <div class="form-check mt-3 ms-2">
-                        <input class="form-check-input" type="checkbox" value="email" id="email">
-                        <label class="form-check-label" for="email">
-                            email
-                        </label>
                     </div>
                     <div class="form-check mt-3 ms-2">
                         <input class="form-check-input" type="checkbox" value="job" id="job">
@@ -119,6 +91,11 @@
         var contract_address = '<%= contract_address %>';
         var address = '<%= address %>';
         var pubkey = '<%= pubkey %>';
+
+        Date.prototype.addDays = function (days) {
+            this.setDate(this.getDate() + days);
+            return this;
+        }
 
         const preventMalleability = (sig, ecdsa) => {
             const halfOrder = ecdsa.n.shrn(1);
@@ -176,76 +153,56 @@
                 personalIdentityAddress
             );
             $('#send').on('click', async function (e) {
-                let name = $("#name").is(":checked");
-                let email = $("#email").is(":checked");
                 let job = $("#job").is(":checked");
                 let salary = $("#salary").is(":checked");
                 let deposit = $("#deposit").is(":checked");
-                // $.ajax({
-                //     type: 'POST',
-                //     url: '/leaseSystem/dataSharing/updatePermission',
-                //     dataType: 'json',
-                //     data: {
-                //         userPubkey: pubkey,
-                //         dataRequester: ownerPubkey,
-                //         name: name,
-                //         email: email,
-                //         job: job,
-                //         salary: salary,
-                //         deposit: deposit
-                //     }
-                // }).then((res) => {
-                //     alert(res.msg);
-                // })
-                // window.location.reload();
+                let endTime = new Date();
 
                 let response, result;
                 response = await ajaxAwait(
-                    '/leaseSystem/dataSharing/updatePermission',
+                    '/leaseSystem/updatePermission',
                     {
-                        userPubkey: pubkey,
-                        name: name,
-                        email: email,
                         job: job,
                         salary: salary,
-                        deposit: deposit
+                        deposit: deposit,
+                        endTime: endTime.addDays(7)
                     }
                 );
                 console.log('response = ' + response.result);
-                alert(response.result)
-                // if (response.error) {
-                //     return alert(`error :${response.result}`);
-                // }
-                // let encryptKey = await personalIdentityInstance.methods
-                //     .getEncryptMaterial('HLFPrivateKey')
-                //     .call({ from: account });
-                // let privateKey = await ethereum.request({
-                //     method: 'eth_decrypt',
-                //     params: [encryptKey, account],
-                // });
-                // let signature_string;
-                // signature_string = sign(privateKey, response.digest);
-                // response = await ajaxAwait(
-                //     '/leaseSystem/dataSharing/proposalAndCreateCommit',
-                //     { signature: signature_string, func: 'UpdatePermission' }
-                // );
-                // if (response.error) {
-                //     return alert(`error :${response.result}`);
-                // }
+                // alert(response.result)
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
+                let encryptKey = await personalIdentityInstance.methods
+                    .getEncryptMaterial('HLFPrivateKey')
+                    .call({ from: account });
+                let privateKey = await ethereum.request({
+                    method: 'eth_decrypt',
+                    params: [encryptKey, account],
+                });
+                let signature_string;
+                signature_string = sign(privateKey, response.digest);
+                response = await ajaxAwait(
+                    '/leaseSystem/proposalAndCreateCommit',
+                    { signature: signature_string, func: 'UpdatePermission' }
+                );
+                if (response.error) {
+                    return alert(`error :${response.result}`);
+                }
 
-                // result = response.result;
-                // signature_string = sign(privateKey, response.commitDigest);
-                // response = await ajaxAwait('/leaseSystem/dataSharing/commitSend', {
-                //     signature: signature_string,
-                //     func: 'UpdatePermission'
-                // });
-                // if (response.error) {
-                //     return alert(`error: ${response.result}`);
-                // }
+                result = response.result;
+                signature_string = sign(privateKey, response.commitDigest);
+                response = await ajaxAwait('/leaseSystem/commitSend', {
+                    signature: signature_string,
+                    func: 'UpdatePermission'
+                });
+                if (response.error) {
+                    return alert(`error: ${response.result}`);
+                }
 
-                // if (alert(`${result}`)) {
-                //     window.location.reload();
-                // }
+                if (alert(`${result}`)) {
+                    window.location.reload();
+                }
                 window.location.reload();
             })
 

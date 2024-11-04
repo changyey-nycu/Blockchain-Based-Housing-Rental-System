@@ -85,7 +85,7 @@
                         <span class="input-group-text">per month</span>
                     </div>
                     <div class="col-12 mt-2 mb-3">
-                        <label class="form-label">Restriction</label><button id="add-button">add</button>
+                        <label class="form-label">Condition</label><button id="add-button">add</button>
                         <div id="input-container">
                         </div>
                         <!-- <button id="show-json-button">show</button> -->
@@ -153,7 +153,7 @@
         async function buildListener() {
             let rowCount = 0;
 
-            const options = ['gender', 'job', 'salary']; // 定義選項
+            const options = [ 'job', 'salary', 'deposit']; // 定義選項
 
             $('#add-button').click(function () {
                 rowCount++; // 增加計數器
