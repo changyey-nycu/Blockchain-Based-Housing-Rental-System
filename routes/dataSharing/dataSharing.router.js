@@ -270,5 +270,29 @@ module.exports = function (dbconnection) {
         return res.send({ msg: "done", "data": data });
     });
 
+
+    // Evaluation
+    router.post('/test/GetPermission', async (req, res) => {
+        const { tenantPubkey, landlordPubkey } = req.body;
+        try {
+            let permitBuffer = await accInstance.evaluateTransaction('GetPermission', tenantPubkey, landlordPubkey);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+
+    router.post('/test/GetLeaseItemRestriction', async (req, res) => {
+        const { pubkey, house } = req.body;
+        try {
+            let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+
     return router;
 }

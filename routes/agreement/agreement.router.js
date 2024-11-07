@@ -115,7 +115,8 @@ module.exports = function (dbconnection) {
         const address = req.session.address;
         let { houseOwner, houseAddress,
             createrPubkey, tenantAddress, tenantPubkey, agentAddress,
-            area, startDate, duration, rent, content } = req.body;
+            houseArea, startDate, endDate, rent, content } = req.body;
+        // console.log(req.body);
 
         if (address != houseOwner && address != agentAddress) {
             return res.send({ error: "address error." });
@@ -132,14 +133,15 @@ module.exports = function (dbconnection) {
                 tenantPubkey: tenantPubkey,
                 houseOwner: houseOwner,
                 houseAddress: houseAddress,
-                area: area,
+                area: houseArea,
                 startDate: startDate,
-                duration: duration,
+                endDate: endDate,
                 state: "unsigned",
                 rent: rent,
                 content: content
             })
             agreementData.hashed = keccak256(agreementData.toString()).toString("hex");
+            hashed = agreementData.hashed;
             // console.log(agreementData);
             await agreementData.save();
         } catch (error) {
@@ -191,7 +193,7 @@ module.exports = function (dbconnection) {
     router.post("/signAgreement", isAuthenticated, async (req, res) => {
         let { address, ownerAddress, tenantAddress, houseAddress } = req.body;
         let signature = req.body['signature[]'];
-
+        
         let type;
         try {
             let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
@@ -199,6 +201,7 @@ module.exports = function (dbconnection) {
                 let error = "error: agreement not exist.";
                 throw error;
             }
+            
             if (address == ownerAddress) {
                 type = "PartyA";
                 if (verifiedSignature(signature, agreement.landlordPubkey, agreement.hashed)) {
@@ -239,25 +242,60 @@ module.exports = function (dbconnection) {
     })
 
 
-    // router.post("/test", async (req, res) => {
-    //     let { address, PartyAkey, agreementHashed } = req.body;
-    //     let obj = await rentalAgreementInstance.evaluateTransaction('GetAgreement', PartyAkey, agreementHashed);
-    //     let signature;
-    //     try {
-    //         let objson = JSON.parse(obj);
-    //         signature = objson.sign.PartyA.split(",");
-    //     } catch (error) {
-    //         console.log(error);
-    //         console.log(obj);
-    //         return res.send({ msg: "error." });
-    //     }
+    // Evaluation
+    router.post("/test/CreateAgreement", async (req, res) => {
+        let { address, houseAddress,
+            createrPubkey, tenantAddress, tenantPubkey, agentAddress,
+            area, startDate, duration, rent, content } = req.body;
 
+        let encryptString = address.toString() + tenantAddress.toString() + houseAddress.toString() + startDate.toString();
+        let hashed = keccak256(encryptString).toString('hex');
 
-    //     console.log(verifiedSignature(signature, PartyAkey, agreementHashed));
+        try {
+            let PartyAkey = createrPubkey;
+            let PartyBkey = tenantPubkey;
 
+            let result = await rentalAgreementInstance.submitTransaction('CreateAgreement', PartyAkey, PartyBkey, houseAddress, hashed);
+            // console.log(result.toString());
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    })
 
-    //     return res.send({ msg: "done." });
-    // })
+    router.post("/test/SignAgreement", async (req, res) => {
+        let { address, ownerAddress, tenantAddress, houseAddress } = req.body;
+        let signature = req.body['signature[]'];
+
+        let type;
+        try {
+            let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+            if (!agreement) {
+                let error = "error: agreement not exist.";
+                throw error;
+            }
+            type = "PartyA";
+            if (verifiedSignature(signature, agreement.landlordPubkey, agreement.hashed)) {
+                let result = await rentalAgreementInstance.submitTransaction('SignAgreement', agreement.landlordPubkey, agreement.tenantPubkey, agreement.hashed, signature, type);
+                return res.status(200).send({ msg: "success." });
+            }
+
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+        return res.status(400).send({ msg: "error." });
+    })
+
+    router.post("/test/VerifyAgreementSign", async (req, res) => {
+        let { ownerAddress, tenantAddress, houseAddress } = req.body;
+        let agreement = await AgreementData.findOne({ landlordAddress: ownerAddress, tenantAddress: tenantAddress, houseAddress: houseAddress });
+        let result = await rentalAgreementInstance.submitTransaction('VerifyAgreementSign', agreement.landlordPubkey, agreement.hashed, houseAddress);
+        // console.log(result.toString());
+        return res.send({ msg: result.toString() });
+    })
+
 
 
     return router;

@@ -27,7 +27,7 @@ const agreementSchema = new mongoose.Schema({
     startDate: {
         type: String
     },
-    duration: {
+    endDate: {
         type: String
     },
     hashed: {

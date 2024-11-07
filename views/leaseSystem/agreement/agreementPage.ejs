@@ -27,7 +27,7 @@
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">House Area</span>
-                        <input type="text" class="form-control" value="<%=agreement.area%>" readonly>
+                        <input type="text" class="form-control" value="15" readonly>
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Rent</span>
@@ -35,19 +35,18 @@
                             readonly>
                     </div>
                     <div class="input-group mb-3">
-                        <span class="input-group-text">starting date</span>
+                        <span class="input-group-text">start date</span>
                         <input type="text" class="form-control" id="startDate" name="startDate"
                             value="<%=agreement.startDate%>" readonly>
                     </div>
                     <div class="input-group mb-3">
-                        <span class="input-group-text">Duration</span>
-                        <input type="text" class="form-control" id="duration" name="duration"
-                            value="<%=agreement.duration%>" readonly>
+                        <span class="input-group-text">end date</span>
+                        <input type="text" class="form-control" id="endDate" name="endDate" value="2025/06/30" readonly>
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Agreement Content</span>
-                        <input type="text" class="form-control" id="content" name="content"
-                            value="<%=agreement.content%>" readonly>
+                        <textarea id="content" class="form-control" name="content" rows="4" cols="50"
+                            readonly><%=agreement.content%></textarea>
                     </div>
                 </div>
             </div>
@@ -73,11 +72,11 @@
                             <% } %>
                     </div>
                     <% if (agreement.partyASign && agreement.partyBSign) {%>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Verify both Sign</span>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Verify both Sign</span>
                             <input type="button" value="Verify" id="VerifySign">
                             <% } %>
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -162,14 +161,14 @@
                 alert(response.msg);
                 window.location.reload();
             });
-            
+
             $('#VerifySign').on('click', async function (e) {
                 // async SignAgreement(ctx, PartyAkey, PartyBkey, agreementHashed, signature, type)
                 let landlordAddress = $("#landlordAddress").val();
                 let tenant = $("#tenantAddress").val();
                 let house = $("#houseAddress").val();
                 let response;
-                
+
                 response = await ajaxAwait(
                     '/leaseSystem/agreement/verifySign',
                     {

@@ -6,9 +6,8 @@
                 <a href="/leaseSystem/leaseManage">back</a>
             </div>
             <div class="col-md-5 center-block card" style="float: none; margin: auto">
-                <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">Tenant Data</h4>
-                </div>
+                <h3 style="margin:auto" class="card-header font-weight-bold">Tenant Data</h3>
+
                 <div class="input-group mb-3">
                     <span class="input-group-text">Tenant Address</span>
                     <input type="text" class="form-control" id="tenantAddress" name="tenantAddress" value="<%=tenant%>"
@@ -20,12 +19,10 @@
         <!-- list the restrictions in chain -->
         <div class="container mt-3">
             <div class="col-md-5 center-block card" style="float: none; margin: auto">
-                <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">Assessment Personal Data</h4>
-                </div>
+                <h3 style="margin:auto" class="card-header font-weight-bold">Condition Review</h3>
                 <!-- list all the attribute setting in rent step -->
-                <div class="mx-auto mb-3">
-                    <h4 class="mt-3 mb-3">Condition setted</h4>
+                <div class="mx-auto">
+                    <h5 class="mt-3 mb-3 font-weight-bold">House Condition Setted</h5>
                     <% for (const key in restriction) { %>
                         <div class="input-group mb-3">
                             <span class="input-group-text">
@@ -35,7 +32,7 @@
                         </div>
                         <% } %>
                 </div>
-                <div class="mt-3 mb-3 center-block">
+                <div class="mt-3 mb-3 mx-auto center-block">
                     <input type="button" class="btn btn-primary" value="Condition Review" id="conditionReview">
                 </div>
 
@@ -47,7 +44,7 @@
         <div class="container mt-3" id="dataPage">
             <div class="col-md-5 center-block card" style="float: none; margin: auto">
                 <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">Assessment Tenant Results</h4>
+                    <h4 style="margin:auto" class="font-weight-bold">Review Tenant Results</h4>
                 </div>
                 <% for (const key in restriction) { %>
                     <div class="input-group mb-3">

@@ -9,12 +9,14 @@
             </div>
             <div class="col-md-5 center-block" style="float: none; margin: auto">
                 <div>
-                    <h1 style="margin:auto" class="font-weight-bold">estate agent</h2>
+                    <h1 style="margin:auto" class="font-weight-bold">Entrust a Estate Agent</h2>
                 </div>
-                <div class="card">
-                    <h4 style="margin:auto" class="font-weight-bold card-header">House Data</h4>
+                <div class="card mt-3">
+                    <div style="font-size: 1.5rem; font-weight: bold" class="card-header text-center">
+                        House Data
+                    </div>
 
-                    <div style="margin-top: 10px" class="card text-center">
+                    <div style="margin-top: 10px" class="text-center">
                         <form>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Title</span>
@@ -48,24 +50,20 @@
                                 <input type="text" class="form-control" id="describe" name="describe"
                                     value="<%=HouseData.describe%>" readonly>
                             </div>
-                            <div class="col-12 mb-3">
-                                <label class="form-label">Picture</label>
-                                <input type="file" class="form-control" id="picture" name="picture" readonly>
-                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- list agent option -->
 
-        <!-- list agent -->
         <div class="container mt-3">
-            <div class="col-md-5 card" style="float: none; margin: auto">
-                <div class="card-header">
-                    <h4 style="margin:auto" class="font-weight-bold">choose an option</h4>
+            <div class="col-md-5 card center-block" style="float: none; margin: auto">
+                <div style="font-size: 1.5rem; font-weight: bold" class="card-header text-center">
+                    Choose Estate Agent
                 </div>
+
                 <div>
+                    <label style="margin:auto" class="font-weight-bold">Choose a Entrustment Plan</label>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="option" id="Leasing" value="Leasing">
                         <label class="form-check-label" for="Leasing">Only Agency Leasing</label>
@@ -81,7 +79,7 @@
                 <table class="table table-hover table-bordered table-sm">
                     <thead>
                         <tr>
-                            <th scope="col">name</th>
+                            <!-- <th scope="col">name</th> -->
                             <th scope="col">address</th>
                             <!-- <th scope="col">pubkey</th> -->
                             <th scope="col">select</th>
@@ -91,10 +89,10 @@
                         <% for (let index=0; index < agentList.length; index++) {%>
                             <!-- <form action="" method="dialog"> -->
                             <tr>
-                                <td scope="col">
-                                    <input class="form-control" type="text" id="name-<%= index %>"
-                                        name="name-<%= index %>" value="<%=agentList[index].name%>" readonly>
-                                </td>
+                                <!-- <td scope="col">
+                                    <input class="form-control" type="text" id="name-< index %>"
+                                        name="name-< index %>" value="<agentList[index].name%>" readonly>
+                                </td> -->
                                 <td scope="col">
                                     <input class="form-control" type="text" id="agentAddress-<%= index %>"
                                         name="agentAddress-<%= index %>" value="<%=agentList[index].address%>" readonly>
@@ -103,7 +101,8 @@
                                         
                                     </td> -->
                                 <td scope="col">
-                                    <button type="submit" class="btn btn-primary" id="entrustSubmit-<%= index %>">entrust</button>
+                                    <button type="submit" class="btn btn-primary"
+                                        id="entrustSubmit-<%= index %>">entrust</button>
                                 </td>
                             </tr>
                             <!-- </form> -->

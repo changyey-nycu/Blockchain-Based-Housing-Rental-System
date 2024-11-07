@@ -57,12 +57,12 @@
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
-                            <th scope="col">house address</th>
-                            <th scope="col">owner address</th>
-                            <th scope="col">uploader pubkey</th>
-                            <th scope="col">person want to sign</th>
+                            <th scope="col">House address</th>
+                            <th scope="col">Owner address</th>
+                            <th scope="col">Uploader Pubkey</th>
+                            <th scope="col">Person Want to Sign</th>
                             <th scope="col">Create Agreement</th>
-                            <th scope="col">acc</th>
+                            <th scope="col">Condition Review</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,7 +87,7 @@
                                             (signerList[i].agreement==true) { signIndex=i; } } } %>
 
                                             <% if(signIndex==-1){ %>
-                                                <option value="" selected>---select a person to sign---</option>
+                                                <option value="" selected>---Select a Person to Sign---</option>
                                                 <%for (let i=0; i < signerList.length; i++) {
                                                     if(signerList[i].houseAddress==rentData[index].estateAddress){%>
                                                     <option value="<%= signerList[i].address %>">
@@ -108,7 +108,7 @@
                                                 Agreement</button></td>
                                         <%}%>
 
-                                            <td><button class="btn btn-primary" id="request-<%= index %>">acc</button>
+                                            <td><button class="btn btn-primary" id="request-<%= index %>">Condition Review</button>
                                             </td>
                             </tr>
                             <%} %>

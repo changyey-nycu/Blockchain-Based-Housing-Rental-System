@@ -61,7 +61,7 @@
                         <div style="margin-top: 10px" class="card text-center">
                             <form method="post" action="/leaseSystem/agent/profileUpdate">
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Name</span>
+                                    <span class="input-group-text">Nick Name</span>
                                     <input type="text" class="form-control" id="name" name="name"
                                         value="<%=user.name%>">
                                 </div>
@@ -70,35 +70,29 @@
                                     <input type="text" class="form-control" id="userAddress" name="userAddress"
                                         value="<%=address%>" readonly>
                                 </div>
-                                <div class="input-group mb-3">
+                                <!-- <div class="input-group mb-3">
                                     <span class="input-group-text">Agency</span>
                                     <input type="text" class="form-control" id="Agency" name="Agency"
-                                        value="<%=user.agency%>">
-                                </div>
+                                        value="">
+                                </div> -->
                                 <div class="input-group mb-3; row">
                                     <div class="col"><button class="btn btn-primary" type="submit"
                                             id="save">save</button></div>
                                     <div class="col"><button class="btn btn-primary" type="reset">reset</button></div>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- house manage link -->
-                <div class="container mt-3">
-                    <div class="col-md-5 center-block" style="float: none; margin: auto">
-                        <div class="card-body">
-                            <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
+                            <div class="card-body">
+                                <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
                                 line-height: 20px;
                                 text-align: center;
                             " href="/leaseSystem/agent/manageAgreement">
-                                Manage Agreement
-                            </a>
-                        </div>
-                        <!-- <div class="card-body">
+                                    Manage Agreement
+                                </a>
+                            </div>
+                            <!-- <div class="card-body">
                             <a id="leaseHouse" class="btn btn-secondary btn-lg btn-block mt-2" style="
                                 width: 450px;
                                 height: 40px;
@@ -108,8 +102,13 @@
                                 Manage Estate
                             </a>
                         </div> -->
+
+                        </div>
                     </div>
                 </div>
+
+                <!-- house manage link -->
+
                 <!-- lease contract link -->
 
                 <% } %>

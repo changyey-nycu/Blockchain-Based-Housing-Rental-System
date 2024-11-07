@@ -27,8 +27,8 @@
                     <% if (houseData.agent !="0x" ) { %>
                         <div class="input-group mb-3">
                             <span class="input-group-text">Agent Address</span>
-                            <input type="text" class="form-control" id="agent" name="agent"
-                                value="<%=houseData.agent%>" readonly>
+                            <input type="text" class="form-control" id="agent" name="agent" value="<%=houseData.agent%>"
+                                readonly>
                         </div>
                         <%} %>
                             <div class="input-group mb-3">
@@ -75,6 +75,10 @@
                             <input type="text" class="form-control" id="userPubkey" name="userPubkey"
                                 value="<%=userData.pubkey%>" readonly>
                         </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">House Address</span>
+                            <input type="text" class="form-control" value="<%=houseData.houseAddress%>" readonly>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -87,8 +91,8 @@
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Agent Address</span>
-                                <input type="text" class="form-control" id="userAddress" name="userAddress" value="<%=userData.address%>"
-                                    readonly>
+                                <input type="text" class="form-control" id="userAddress" name="userAddress"
+                                    value="<%=userData.address%>" readonly>
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Agent Pubkey</span>
@@ -127,16 +131,18 @@
                                     <h4 style="margin:auto" class="font-weight-bold">Agreement</h4>
                                 </div>
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Starting Date</span>
+                                    <span class="input-group-text">Start Date</span>
                                     <input type="text" class="form-control" id="startDate" name="startDate" value="">
                                 </div>
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Duration</span>
-                                    <input type="text" class="form-control" id="duration" name="duration" value="">
+                                    <span class="input-group-text">End Date</span>
+                                    <input type="text" class="form-control" id="endDate" name="endDate" value="">
                                 </div>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Agreement Content</span>
-                                    <input type="text" class="form-control" id="content" name="content" value="">
+                                    <!-- <input type="text" class="form-control" id="content" name="content" value=""> -->
+                                    <textarea id="content" class="form-control" name="content" rows="4"
+                                        cols="50"></textarea>
                                 </div>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Create Agreement</span>
@@ -181,11 +187,11 @@
 
             $('#CreateAgreement').on('click', async function (e) {
                 let content = $("#content").val();
-                let duration = $("#duration").val();
+                let endDate = $("#endDate").val();
                 let startDate = $("#startDate").val();
                 let leaseData = {
                     "content": content,
-                    "duration": duration,
+                    "endDate": endDate,
                     "startDate": startDate
                 }
 
@@ -198,8 +204,8 @@
                         agentAddress: houseData.agent,
                         houseOwner: houseData.ownerAddress,
                         houseAddress: houseData.houseAddress,
-                        area: houseData.area,
-                        duration: leaseData.duration,
+                        houseArea: houseData.area,
+                        endDate: leaseData.endDate,
                         startDate: leaseData.startDate,
                         rent: rentData.rent,
                         content: leaseData.content,
@@ -210,12 +216,12 @@
                 if (response.error) {
                     console.log(response.error);
                 }
-                
+
                 // console.log(response.hashed);
                 try {
                     if (response.hashed) {
                         // alert(response.msg);
-                        
+
                         let result = await ajaxAwait(
                             '/leaseSystem/leaseManage/agreementCreateDone',
                             {

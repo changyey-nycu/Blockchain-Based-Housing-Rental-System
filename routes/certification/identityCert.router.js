@@ -122,7 +122,7 @@ module.exports = function (dbconnection1) {
         res.render('leaseSystem/certification/certification', { address: address, pubkey: pubkey });
     });
 
-    router.post('/estateUpload', async (req, res) => {
+    router.post('/estateUpload', isAuthenticated, async (req, res) => {
         const { name, userAddress, userPubkey, IDNumber, houseAddress, area, date } = req.body;
         // check id pair did
         let hashed = keccak256(IDNumber).toString('hex');
@@ -169,7 +169,7 @@ module.exports = function (dbconnection1) {
         }
     });
 
-    router.post('/agentUpload', async (req, res) => {
+    router.post('/agentUpload', isAuthenticated, async (req, res) => {
         const { name, userAddress, userPubkey, IDNumber, date } = req.body;
 
         // check id pair did
@@ -220,6 +220,58 @@ module.exports = function (dbconnection1) {
             return res.send({ msg: "error." })
         }
     });
+
+    // Evaluation /leaseSystem/certification/test
+
+    router.post('/test/UploadPersonalEstate', async (req, res) => {
+        const { userPubkey, houseAddress, area, date } = req.body;
+
+        try {
+            let result = await estateRegisterInstance.submitTransaction('UploadPersonalEstate', userPubkey, houseAddress, area, date);
+            // console.log(result.toString());
+            
+            return res.send({ msg: "success." });
+        } catch (error) {
+            // console.log(error);
+            return res.send({ msg: "error." });
+        }
+    });
+
+    router.post('/test/GetEstate', async (req, res) => {
+        const { pubkey, houseAddress } = req.body;
+
+        try {
+            let estateData = await estateRegisterInstance.evaluateTransaction('GetEstate', pubkey, houseAddress);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+
+    router.post('/test/NewAgent', async (req, res) => {
+        const { userPubkey, date } = req.body;
+
+        try {
+            let result = await estateAgentInstance.submitTransaction('NewAgent', userPubkey, date);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+
+    router.post('/test/GetAgentCertificate', async (req, res) => {
+        const { pubkey } = req.body;
+        try {
+            let result = await estateAgentInstance.evaluateTransaction('GetAgentCertificate', pubkey);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+     
 
     return router;
 }

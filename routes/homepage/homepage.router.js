@@ -1407,5 +1407,70 @@ module.exports = function (dbconnection) {
         res.send({ url: 'dataSharing/upload?owner=' + ownerAddress + '&house=' + houseAddress + '&key=' + ownerPubkey });
     });
 
+    // Evaluation
+
+    // offline sign
+    function sign(privateKey, digest) {
+        const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
+        const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
+        var halfOrderSig = preventMalleability(sig, ecdsa);
+        const signature = Buffer.from(halfOrderSig.toDER());
+        var signature_string = '';
+        for (var i = 0; i < signature.length; i++) {
+            signature_string += signature[i].toString();
+            signature_string += '/';
+        }
+        signature_string = signature_string.slice(0, -1);
+        return signature_string;
+    }
+
+    // UpdatePermission NewLeaseItem RejectEstate AcceptEstate AddEstate
+    router.post('/test/offlineSign', async (req, res) => {
+        var startTime = process.hrtime();
+
+
+        const digest = await createTransaction("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', 'aaa', 'aaa', 'aaa', 0, -1);
+
+
+        let privateKey = "edf0fd70810a7804d4f668f27123edac8512d93bb3fbcb227130f9d0d39eddb9";
+
+        let = signature_string = sign(privateKey, digest);
+
+        let signature_buffer = convertSignature(signature_string)
+        let response = await proposalAndCreateCommit("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', signature_buffer);
+        signature_string = sign(privateKey, response.commitDigest);
+
+
+        signature_buffer = convertSignature(signature_string);
+        response = await commitSend("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', signature_buffer);
+
+        var endTime = process.hrtime(startTime);
+        console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+        return res.send({ msg: `success` });
+    })
+
+    router.post('/test/GetLeaseItem', async (req, res) => {
+        const { pubkey, houseAddress } = req.body;
+        try {
+            let leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', pubkey, houseAddress);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+        
+    });
+
+
+    router.post('/test/GetAgentEstate', isAuthenticated, async (req, res) => {
+        try {
+            let agentOnChain = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey, estateAddress);
+            return res.status(200).send({ msg: "success." });
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ msg: "error." });
+        }
+    });
+
     return router;
 }

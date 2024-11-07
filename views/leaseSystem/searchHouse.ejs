@@ -39,30 +39,31 @@
         </div> -->
         <!-- list all searching house -->
         <div class="container mt-3">
+            <h2 class="font-weight-bold">Search Listing House</h2>
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
                         <!-- <th scope="col">Picture</th> -->
-                        <th scope="col">house address</th>
-                        <th scope="col">price</th>
-                        <th scope="col">uploader key</th>
-                        <th scope="col">Details</th>
+                        <th scope="col">House address</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Uploader Pubkey</th>
+                        <th scope="col">Watch Details</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <!-- <th scope="row">example Picture</th> -->
+                    <!-- <tr>
                         <td scope="row">example address</td>
                         <td>example price</td>
                         <td>example uploader</td>
                         <td>example Details</td>
-                    </tr>
+                    </tr> -->
                     <% for (let index=0; index < houseList.length; index++) {%>
                         <tr>
                             <!-- <th scope="row">example Picture</th> -->
                             <td scope="row">
                                 <input type="text" id="estateAddress-<%= index %>" name="estateAddress-<%= index %>"
-                                    value="<%=houseList[index].estateAddress%>" readonly>
+                                    value="<%=houseList[index].estateAddress%>" hidden>
+                                <%=houseList[index].estateAddress%>
                             </td>
                             <td>
                                 <%=houseList[index].rent%>
