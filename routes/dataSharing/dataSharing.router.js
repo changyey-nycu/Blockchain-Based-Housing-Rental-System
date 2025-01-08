@@ -129,7 +129,7 @@ module.exports = function (dbconnection) {
         const tenant = req.query.tenant;
         const house = req.query.house;
 
-        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetListingCondiction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
         console.log(restriction);
 
@@ -216,7 +216,7 @@ module.exports = function (dbconnection) {
         // const { name, email, job, salary, deposit } = req.body;
         // attributes.name = name; attributes.email = email; attributes.job = job; attributes.salary = salary; attributes.deposit = deposit;
 
-        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
+        let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetListingCondiction', pubkey, house);
         let restriction = JSON.parse(restrictionBuffer.toString());
         // console.log(restriction);
 
@@ -271,7 +271,8 @@ module.exports = function (dbconnection) {
     });
 
 
-    // Evaluation
+    // Evaluation leaseSystem/dataSharing/test
+    /*
     router.post('/test/GetPermission', async (req, res) => {
         const { tenantPubkey, landlordPubkey } = req.body;
         try {
@@ -283,16 +284,16 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post('/test/GetLeaseItemRestriction', async (req, res) => {
+    router.post('/test/GetListingCondiction', async (req, res) => {
         const { pubkey, house } = req.body;
         try {
-            let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetLeaseItemRestriction', pubkey, house);
+            let restrictionBuffer = await estatePublishInstance.evaluateTransaction('GetListingCondiction', pubkey, house);
             return res.status(200).send({ msg: "success." });
         } catch (error) {
             console.log(error);
             return res.status(400).send({ msg: "error." });
         }
     });
-
+    */
     return router;
 }

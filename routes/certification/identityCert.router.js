@@ -222,18 +222,17 @@ module.exports = function (dbconnection1) {
     });
 
     // Evaluation /leaseSystem/certification/test
-
+    /*
     router.post('/test/UploadPersonalEstate', async (req, res) => {
         const { userPubkey, houseAddress, area, date } = req.body;
-
         try {
-            let result = await estateRegisterInstance.submitTransaction('UploadPersonalEstate', userPubkey, houseAddress, area, date);
+            let result = await estateRegisterInstance.submitTransaction('TestUploadPersonalEstate', userPubkey, houseAddress, area, date);
             // console.log(result.toString());
-            
+
             return res.send({ msg: "success." });
         } catch (error) {
             // console.log(error);
-            return res.send({ msg: "error." });
+            return res.status(400).send({ msg: "error." });
         }
     });
 
@@ -253,7 +252,7 @@ module.exports = function (dbconnection1) {
         const { userPubkey, date } = req.body;
 
         try {
-            let result = await estateAgentInstance.submitTransaction('NewAgent', userPubkey, date);
+            let result = await estateAgentInstance.submitTransaction('TestNewAgent', userPubkey, date);
             return res.status(200).send({ msg: "success." });
         } catch (error) {
             console.log(error);
@@ -271,7 +270,7 @@ module.exports = function (dbconnection1) {
             return res.status(400).send({ msg: "error." });
         }
     });
-     
+    */
 
     return router;
 }

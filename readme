@@ -1,8 +1,13 @@
 # mongodb
 docker run --name mongodb -d -p 27017:27017 mongo:4.4.29
 
-# DID chain
-docker run --name DID --detach --publish 8545:8545 trufflesuite/ganache-cli:latest --seed 0 --gasPrice 0
+# DID Chain
+1. docker run --name DID --detach --publish 8545:8545 trufflesuite/ganache-cli:latest --seed 0 --gasPrice 0
+2. complie IdentityManager.sol
+3. 0xe092b1fa25DF5786D151246E492Eed3d15EA4dAA deploy IdentityManager.sol
+4. copy IdentityManager_metadata.json to contract/identityChain/IdentityManager.json
+
+you can change the deploy account in server_config.json
 
 Available Accounts
 ==================
@@ -18,7 +23,8 @@ Available Accounts
 (9) 0x75c4Fb2e81a6d3420125F5145182F528d1699146 (100 ETH)    
 
 Lower Case
-(4) 0xe092b1fa25df5786d151246e492eed3d15ea4daa
+(0) 0xe092b1fa25df5786d151246e492eed3d15ea4daa
+(4) 0x6f03947036cba3279b07cd6ea5ca674ca51e52ba
 (5) 0x889735777f51c84272a7feb0d763280179a529a9
 (6) 0x2c46bcb6da3ae85da881edeed4ec2fe92670f90f
 
@@ -36,34 +42,46 @@ Private Keys
 (9) 0x2d9d98ee99c8f7c664125ff2b3b91f356e880917b2d9fc508ffe1b647bd7a9fd
 
 
-# offline signature bug
-result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
+# Rental House Chain
+使用fablo 1.2.0建置
+https://github.com/hyperledger-labs/fablo/tree/1.2.0
 
+1. 於/fablo目錄中,執行./fablo up
+2. 複製connection-profile(connection-profile-org1.json 4個json檔)到config目錄中
+
+在搬運後,可能會有無法編譯的bug,以下方法可能可以解決:
+1. 在一個只有fablo file的目錄,執行./fablo init node
+2. 將產生的fablo-config.json及chaincode內的index.js替代
+
+# Start the System
+1. setup DID chain
+2. complie and deploy IdentityManager.sol
+3. setup Rental House Chain
+4. install nodemon
+5. npm install
+6. npm start
+
+# DID chain flow
+1. Legal person register, audit and then bind account
+2. User register and audit
+3. User bind account and wait contract address appear
+4. encrypt csr and pem, and then upload
 
 # note
-did json file : abi -> output.abi in Solidity compiler ver 8.19
-註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
+1. 注意DID json file的格式(abi -> output.abi in Solidity compiler ver 8.19)
+2. 註冊用的csr,其中CN(Common Name)的項目需與identity(metamask address)相同
 
+# offline sign bug
+原本用於智能合約中function的身分限制方法無法使用
+result: "Cannot read properties of undefined (reading 'clientIdentity')" -> getIdentity() { ctx.clientIdentity }
 
-人員
+# Test System Environment
+OS:     Ubuntu2204
+node:   v16.20.1
+npm:    8.19.4
 
-屋主 - 出租方
-仲介 - 受屋主委托的出租方
-租戶 - 有租屋需求者
+docker: 24.0.5
+docker-compose:  1.29.2
 
-
-組織
-ORG1 System
-ORG2 內政部地政司(Ministry of Interior/Land Administration)
-ORG3 財政部國稅局(Ministry of Finance/National Taxation Bureau)
-ORG4 司法院(Judicial Yuan)
-
-
-資料庫
-
-DID : 個資
-系統 : 房屋資料
-司法院 : 合約資料
-內政部地政司 : 不動產/證照
-
-house state : {new, online 公告中, entrust 委託, signing 簽約中, lesae 出租}
+Solidity compiler:  0.8.19+commit(using remix)
+fablo:  1.2.0

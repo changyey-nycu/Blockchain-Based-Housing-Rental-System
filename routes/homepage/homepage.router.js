@@ -27,6 +27,12 @@ const FabricCAServices = require('fabric-ca-client');
 const { buildCAClient, enrollAdmin, registerAndEnrollUser, getAdminIdentity, buildCertUser } = require('../../util/CAUtil');
 const { buildCCPOrg2, buildWallet } = require('../../util/AppUtil');
 
+// For testing
+const elliptic = require('elliptic')
+const EC = elliptic.ec;
+const ecdsaCurve = elliptic.curves['p256'];
+const ecdsa = new EC(ecdsaCurve);
+
 // hash function
 var cryptoSuite = fabric_common.Utils.newCryptoSuite();
 var hashFunction = cryptoSuite.hash.bind(cryptoSuite);
@@ -42,7 +48,7 @@ var adminUser;
 var addEstate = {};
 var acceptEstate = {};
 var rejectEstate = {};
-var newLeaseItem = {};
+var newListing = {};
 var updatePermission = {};
 
 const require_signature = "LeaseSystem?nonce:778";
@@ -338,8 +344,8 @@ module.exports = function (dbconnection) {
                 endorsementStore = rejectEstate;
                 var endorsement = leaseChannel.channel.newEndorsement('EstateAgent');
                 break;
-            case 'NewLeaseItem':
-                endorsementStore = newLeaseItem;
+            case 'NewListing':
+                endorsementStore = newListing;
                 var endorsement = leaseChannel.channel.newEndorsement('EstatePublish');
                 break;
             case 'UpdatePermission':
@@ -381,8 +387,8 @@ module.exports = function (dbconnection) {
             case 'RejectEstate':
                 endorsementStore = rejectEstate;
                 break;
-            case 'NewLeaseItem':
-                endorsementStore = newLeaseItem;
+            case 'NewListing':
+                endorsementStore = newListing;
                 break;
             case 'UpdatePermission':
                 endorsementStore = updatePermission;
@@ -461,8 +467,8 @@ module.exports = function (dbconnection) {
             case 'RejectEstate':
                 endorsementStore = rejectEstate;
                 break;
-            case 'NewLeaseItem':
-                endorsementStore = newLeaseItem;
+            case 'NewListing':
+                endorsementStore = newListing;
                 break;
             case 'UpdatePermission':
                 endorsementStore = updatePermission;
@@ -540,7 +546,7 @@ module.exports = function (dbconnection) {
 
             // change local database
             try {
-                if (!response.error && func == "NewLeaseItem") {
+                if (!response.error && func == "NewListing") {
                     let obj = await HouseData.findOneAndUpdate({ ownerAddress: req.session.address, houseAddress: estateAddress }, { state: "online" });
                 }
                 else if (!response.error && func == "AcceptEstate") {
@@ -739,7 +745,8 @@ module.exports = function (dbconnection) {
     });
 
     router.post('/landlord/entrustSubmit', isAuthenticated, async (req, res) => {
-        let { address, agentPubkey, estateAddress, ownerAddress, type } = req.body;
+        const address = req.session.address;
+        let { agentPubkey, estateAddress, ownerAddress, type } = req.body;
         let owner = await Profile.findOne({ address: ownerAddress });
         let houseData = await HouseData.findOne({ ownerAddress: address, houseAddress: estateAddress });
         if (!houseData) {
@@ -756,8 +763,9 @@ module.exports = function (dbconnection) {
         }
     });
 
-    router.post('/landlord/NewLeaseItem', isAuthenticated, async (req, res) => {
-        let { address, estateAddress, rent, restriction } = req.body;
+    router.post('/landlord/NewListing', isAuthenticated, async (req, res) => {
+        const address = req.session.address;
+        let { estateAddress, rent, restriction } = req.body;
         let owner = await Profile.findOne({ address: address });
 
         // check if the house owner and is agent for someone
@@ -774,7 +782,7 @@ module.exports = function (dbconnection) {
 
 
         // check the house is on lease
-        let isExist = await estatePublishInstance.evaluateTransaction('IsLeaseItemExist', owner.pubkey, estateAddress);
+        let isExist = await estatePublishInstance.evaluateTransaction('IsListingExist', owner.pubkey, estateAddress);
         // let isExist = await estatePublishInstance.evaluateTransaction('GetLease', owner.pubkey, estateAddress);
         // let a = JSON.parse(isExist.toString())
 
@@ -788,7 +796,7 @@ module.exports = function (dbconnection) {
         // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLeaseItem', owner.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
+            const digest = await createTransaction(address.toLowerCase(), 'NewListing', owner.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -860,16 +868,18 @@ module.exports = function (dbconnection) {
             }
         })
 
+        agreement.sort((a, b) => (a.estateAddress > b.estateAddress) ? 1 : ((b.estateAddress > a.estateAddress) ? -1 : 0));
+
         res.render('leaseSystem/agent/manageAgreement', { address: address, agreement: agreement, 'contract_address': contract_address });
     });
 
     router.post('/agent/AcceptEstate', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let { ownerAddress, estateAddress } = req.body;
-        let owner = await Profile.findOne({ address: address });
+        let agent = await Profile.findOne({ address: address });
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'AcceptEstate', owner.pubkey, estateAddress);
+            const digest = await createTransaction(address.toLowerCase(), 'AcceptEstate', agent.pubkey, estateAddress);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e)
@@ -991,7 +1001,7 @@ module.exports = function (dbconnection) {
         res.render('leaseSystem/agent/agentRent', { address: address, HouseData: houseData, contract_address: contract_address });
     });
 
-    router.post('/agent/NewLeaseItem', isAuthenticated, async (req, res) => {
+    router.post('/agent/NewListing', isAuthenticated, async (req, res) => {
         const address = req.session.address;
         let { ownerAddress, estateAddress, rent, restriction } = req.body;
         let owner = await Profile.findOne({ address: ownerAddress });
@@ -1005,8 +1015,8 @@ module.exports = function (dbconnection) {
         }
 
         // check the house is on lease
-        let isExist = await estatePublishInstance.evaluateTransaction('IsLeaseItemExist', owner.pubkey, estateAddress);
-        let isExistAgent = await estatePublishInstance.evaluateTransaction('IsLeaseItemExist', agent.pubkey, estateAddress);
+        let isExist = await estatePublishInstance.evaluateTransaction('IsListingExist', owner.pubkey, estateAddress);
+        let isExistAgent = await estatePublishInstance.evaluateTransaction('IsListingExist', agent.pubkey, estateAddress);
         if (isExist.toString() == "true" && isExistAgent.toString() == "true") {
             console.log('exist = ' + isExist + " , " + isExistAgent);
             return res.send({ 'error': "error", "result": "The house is already published." });
@@ -1017,7 +1027,7 @@ module.exports = function (dbconnection) {
         // let dataHash = keccak256(hashedString).toString('hex');
 
         try {
-            const digest = await createTransaction(address.toLowerCase(), 'NewLeaseItem', agent.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
+            const digest = await createTransaction(address.toLowerCase(), 'NewListing', agent.pubkey, houseData.ownerAddress, estateAddress, restriction, rent);
             return res.send({ 'digest': digest });
         } catch (e) {
             console.log('e = ' + e);
@@ -1048,7 +1058,7 @@ module.exports = function (dbconnection) {
     // show all rent data in blockchain
     router.get('/searchHouse', async (req, res) => {
         const address = req.session.address;
-        let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineLeaseItem');
+        let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineListing');
         let data = {};
         try {
             data = JSON.parse(obj2.toString());
@@ -1093,7 +1103,7 @@ module.exports = function (dbconnection) {
             houseData = await HouseData.findOne({ agent: uploaderData.address, houseAddress: houseAddress });
         }
 
-        let leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', uploader, houseAddress);
+        let leaseData = await estatePublishInstance.evaluateTransaction('GetListing', uploader, houseAddress);
         let data = {};
         try {
             data = JSON.parse(leaseData.toString());
@@ -1216,7 +1226,7 @@ module.exports = function (dbconnection) {
         let rentData = [];
         let data = {};
         try {
-            let leaseData = await estatePublishInstance.evaluateTransaction('GetPersonLeaseItem', user.pubkey);
+            let leaseData = await estatePublishInstance.evaluateTransaction('GetPersonListing', user.pubkey);
             data = JSON.parse(leaseData.toString());
         } catch (error) {
             data = {};
@@ -1226,7 +1236,7 @@ module.exports = function (dbconnection) {
         })
 
         if (!allLease.length) {
-            let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineLeaseItem');
+            let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineListing');
             let data = JSON.parse(obj2.toString());
             // console.log(data);
             allLease = data;
@@ -1266,11 +1276,11 @@ module.exports = function (dbconnection) {
 
         let leaseData;
         if (agent == "0x") {
-            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', ownerData.pubkey, houseAddress);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetListing', ownerData.pubkey, houseAddress);
         }
         else {
             let agentData = await Profile.findOne({ address: agent });
-            leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', agentData.pubkey, houseAddress);
+            leaseData = await estatePublishInstance.evaluateTransaction('GetListing', agentData.pubkey, houseAddress);
         }
         let data = {};
         try {
@@ -1368,7 +1378,7 @@ module.exports = function (dbconnection) {
         let tenant = await Profile.findOne({ address: signer }, 'address pubkey');
         let rentData = {};
         try {
-            let obj3 = await estatePublishInstance.evaluateTransaction('GetLeaseItem', uploaderKey, estateAddress);
+            let obj3 = await estatePublishInstance.evaluateTransaction('GetListing', uploaderKey, estateAddress);
             rentData = JSON.parse(obj3.toString());
         } catch (error) {
             console.log(error);
@@ -1407,70 +1417,297 @@ module.exports = function (dbconnection) {
         res.send({ url: 'dataSharing/upload?owner=' + ownerAddress + '&house=' + houseAddress + '&key=' + ownerPubkey });
     });
 
-    // Evaluation
-
-    // offline sign
-    function sign(privateKey, digest) {
-        const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
-        const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
-        var halfOrderSig = preventMalleability(sig, ecdsa);
-        const signature = Buffer.from(halfOrderSig.toDER());
-        var signature_string = '';
-        for (var i = 0; i < signature.length; i++) {
-            signature_string += signature[i].toString();
-            signature_string += '/';
+    // Evaluation leaseSystem/
+    /* for Testing
+        // offline sign
+        const preventMalleability = (sig, ecdsa) => {
+            const halfOrder = ecdsa.n.shrn(1);
+            if (sig.s.cmp(halfOrder) === 1) {
+                const bigNum = ecdsa.n;
+                sig.s = bigNum.sub(sig.s);
+            }
+            return sig;
+        };
+    
+        function sign(privateKey, digest) {
+            const signKey = ecdsa.keyFromPrivate(privateKey, 'hex');
+            const sig = ecdsa.sign(Buffer.from(digest, 'hex'), signKey);
+            var halfOrderSig = preventMalleability(sig, ecdsa);
+            const signature = Buffer.from(halfOrderSig.toDER());
+            var signature_string = '';
+            for (var i = 0; i < signature.length; i++) {
+                signature_string += signature[i].toString();
+                signature_string += '/';
+            }
+            signature_string = signature_string.slice(0, -1);
+            return signature_string;
         }
-        signature_string = signature_string.slice(0, -1);
-        return signature_string;
-    }
-
-    // UpdatePermission NewLeaseItem RejectEstate AcceptEstate AddEstate
-    router.post('/test/offlineSign', async (req, res) => {
-        var startTime = process.hrtime();
-
-
-        const digest = await createTransaction("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', 'aaa', 'aaa', 'aaa', 0, -1);
-
-
-        let privateKey = "edf0fd70810a7804d4f668f27123edac8512d93bb3fbcb227130f9d0d39eddb9";
-
-        let = signature_string = sign(privateKey, digest);
-
-        let signature_buffer = convertSignature(signature_string)
-        let response = await proposalAndCreateCommit("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', signature_buffer);
-        signature_string = sign(privateKey, response.commitDigest);
-
-
-        signature_buffer = convertSignature(signature_string);
-        response = await commitSend("0x63ceefeea954c0a540c177528d40d50b72328707", 'funName', signature_buffer);
-
-        var endTime = process.hrtime(startTime);
-        console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
-        return res.send({ msg: `success` });
-    })
-
-    router.post('/test/GetLeaseItem', async (req, res) => {
-        const { pubkey, houseAddress } = req.body;
-        try {
-            let leaseData = await estatePublishInstance.evaluateTransaction('GetLeaseItem', pubkey, houseAddress);
-            return res.status(200).send({ msg: "success." });
-        } catch (error) {
-            console.log(error);
-            return res.status(400).send({ msg: "error." });
-        }
-        
-    });
-
-
-    router.post('/test/GetAgentEstate', isAuthenticated, async (req, res) => {
-        try {
-            let agentOnChain = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey, estateAddress);
-            return res.status(200).send({ msg: "success." });
-        } catch (error) {
-            console.log(error);
-            return res.status(400).send({ msg: "error." });
-        }
-    });
+    
+        // UpdatePermission NewListing RejectEstate AcceptEstate AddEstate
+        router.post('/test/offlineSign', async (req, res) => {
+            var startTime = process.hrtime();
+    
+            const digest = await createTransaction("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'funName', 'aaa', 'aaa', 'aaa', 0, -1);
+    
+    
+            let privateKey = "2735d63dcd56aa8b8c880f73448fcf1df6865544822ee7990fbffe96e205c36d";
+    
+            let signature_string = sign(privateKey, digest);
+    
+            let signature_buffer = convertSignature(signature_string)
+            let response = await proposalAndCreateCommit("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'funName', signature_buffer);
+            signature_string = sign(privateKey, response.commitDigest);
+    
+    
+            signature_buffer = convertSignature(signature_string);
+            response = await commitSend("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'funName', signature_buffer);
+    
+            var endTime = process.hrtime(startTime);
+            console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+            return res.send({ msg: `success` });
+        })
+    
+        router.post('/test/AddEstate', async (req, res) => {
+    
+            let { agentPubkey, ownerAddress, pubkey, estateAddress, type } = req.body;
+    
+            // var startTime = process.hrtime();
+            const digest = await createTransaction("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'AddEstate', agentPubkey, ownerAddress, pubkey, estateAddress, type);
+    
+            let privateKey = "2735d63dcd56aa8b8c880f73448fcf1df6865544822ee7990fbffe96e205c36d";
+    
+            let signature_string = sign(privateKey, digest);
+    
+            let signature_buffer = convertSignature(signature_string)
+            let response = await proposalAndCreateCommit("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'AddEstate', signature_buffer);
+            signature_string = sign(privateKey, response.commitDigest);
+    
+    
+            signature_buffer = convertSignature(signature_string);
+            response = await commitSend("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'AddEstate', signature_buffer);
+    
+            // var endTime = process.hrtime(startTime);
+            // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+            return res.send({ msg: `success` });
+        })
+    
+        router.post('/test/RejectEstate', async (req, res) => {
+            try {
+                let { agentPubkey, estateAddress } = req.body;
+    
+                // var startTime = process.hrtime();
+                const digest = await createTransaction("0x889735777f51c84272a7feb0d763280179a529a9", 'RejectEstate', agentPubkey, estateAddress);
+    
+                let privateKey = "b77736e613ee0e072132fa899247fcec2315b92b7a92fff7615fb1e3f2218fef";
+    
+                let signature_string = sign(privateKey, digest);
+    
+                let signature_buffer = convertSignature(signature_string)
+                let response = await proposalAndCreateCommit("0x889735777f51c84272a7feb0d763280179a529a9", 'RejectEstate', signature_buffer);
+                signature_string = sign(privateKey, response.commitDigest);
+    
+    
+                signature_buffer = convertSignature(signature_string);
+                response = await commitSend("0x889735777f51c84272a7feb0d763280179a529a9", 'RejectEstate', signature_buffer);
+    
+                // var endTime = process.hrtime(startTime);
+                // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+                return res.send({ msg: `success` });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: `error` });
+            }
+    
+        })
+    
+        router.post('/test/AcceptEstate', async (req, res) => {
+            try {
+                let { agentPubkey, estateAddress } = req.body;
+    
+                // var startTime = process.hrtime();
+                const digest = await createTransaction("0x889735777f51c84272a7feb0d763280179a529a9", 'AcceptEstate', agentPubkey, estateAddress);
+    
+                let privateKey = "b77736e613ee0e072132fa899247fcec2315b92b7a92fff7615fb1e3f2218fef";
+    
+                let signature_string = sign(privateKey, digest);
+    
+                let signature_buffer = convertSignature(signature_string)
+                let response = await proposalAndCreateCommit("0x889735777f51c84272a7feb0d763280179a529a9", 'AcceptEstate', signature_buffer);
+                signature_string = sign(privateKey, response.commitDigest);
+    
+    
+                signature_buffer = convertSignature(signature_string);
+                response = await commitSend("0x889735777f51c84272a7feb0d763280179a529a9", 'AcceptEstate', signature_buffer);
+    
+                // var endTime = process.hrtime(startTime);
+                // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+                return res.send({ msg: `success` });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: `error` });
+            }
+    
+        })
+    
+        router.post('/test/GetAgentEstate', async (req, res) => {
+            const { pubkey, estateAddress } = req.body;
+            try {
+                let agentOnChain = await estateAgentInstance.evaluateTransaction('GetAgentEstate', pubkey, estateAddress);
+                return res.status(200).send({ msg: "success." });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: "error." });
+            }
+        });
+    
+    
+        router.post('/test/NewListing', async (req, res) => {
+    
+            let { pubkey, ownerAddress, estateAddress, restriction, rent } = req.body;
+    
+    
+            // var startTime = process.hrtime();
+            try {
+                const digest = await createTransaction("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'NewListing', pubkey, ownerAddress, estateAddress, restriction, rent);
+    
+                let privateKey = "2735d63dcd56aa8b8c880f73448fcf1df6865544822ee7990fbffe96e205c36d";
+    
+                let signature_string = sign(privateKey, digest);
+    
+                let signature_buffer = convertSignature(signature_string)
+                let response = await proposalAndCreateCommit("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'NewListing', signature_buffer);
+                signature_string = sign(privateKey, response.commitDigest);
+    
+    
+                signature_buffer = convertSignature(signature_string);
+                response = await commitSend("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'NewListing', signature_buffer);
+                return res.send({ msg: `success` });
+            } catch (error) {
+                console.log(error);
+                return res.send({ msg: `error` });
+            }
+    
+    
+            // var endTime = process.hrtime(startTime);
+            // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+    
+        })
+    
+        router.post('/test/system/NewListing', async (req, res) => {
+    
+            let { pubkey, ownerAddress, estateAddress, restriction, rent } = req.body;
+    
+    
+            try {
+                let result = await estatePublishInstance.submitTransaction('TestNewListing', pubkey, ownerAddress, estateAddress, restriction, rent);
+                // console.log(result.toString());
+    
+                return res.send({ msg: "success." });
+            } catch (error) {
+                // console.log(error);
+                return res.status(400).send({ msg: "error." });
+            }
+    
+            // var endTime = process.hrtime(startTime);
+            // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+    
+        })
+    
+        router.post('/test/GetAllOnlineListing', async (req, res) => {
+            var startTime = process.hrtime();
+            let obj2 = await estatePublishInstance.evaluateTransaction('GetAllOnlineListing');
+            let data = JSON.parse(obj2.toString());
+    
+            var endTime = process.hrtime(startTime);
+            console.log(`${data.length} Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+            return res.send({ msg: `success` });
+        })
+    
+        router.post('/test/GetOnlineListing', async (req, res) => {
+            let { bookmark } = req.body;
+            var startTime = process.hrtime();
+            let obj2 = await estatePublishInstance.evaluateTransaction('TestGetOnlineListing');
+            let data = JSON.parse(obj2.toString());
+            console.log(data.length);
+    
+            var endTime = process.hrtime(startTime);
+            console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+            return res.send({ msg: `success` });
+        })
+    
+        router.post('/test/GetListing', async (req, res) => {
+            const { pubkey, houseAddress } = req.body;
+            try {
+                let leaseData = await estatePublishInstance.evaluateTransaction('GetListing', pubkey, houseAddress);
+                return res.status(200).send({ msg: "success." });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: "error." });
+            }
+        });
+    
+    
+        router.post('/test/UpdatePermission', async (req, res) => {
+            try {
+                let { pubkey, attributes, endTime } = req.body;
+    
+                // var startTime = process.hrtime();
+                const digest = await createTransaction("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'UpdatePermission', pubkey, JSON.stringify(attributes), endTime);
+    
+                let privateKey = "2735d63dcd56aa8b8c880f73448fcf1df6865544822ee7990fbffe96e205c36d";
+    
+                let signature_string = sign(privateKey, digest);
+    
+                let signature_buffer = convertSignature(signature_string)
+                let response = await proposalAndCreateCommit("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'UpdatePermission', signature_buffer);
+                signature_string = sign(privateKey, response.commitDigest);
+    
+    
+                signature_buffer = convertSignature(signature_string);
+                response = await commitSend("0x6f03947036cba3279b07cd6ea5ca674ca51e52ba", 'UpdatePermission', signature_buffer);
+    
+                // var endTime = process.hrtime(startTime);
+                // console.log(`Time taken: ${endTime[0]}s ${endTime[1] / 1000000}ms`);
+                return res.send({ msg: `success` });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: `error` });
+            }
+    
+        })
+    
+        router.post('/test/GetPermission', async (req, res) => {
+            const { tenantPubkey, landlordPubkey } = req.body;
+            try {
+                let permitBuffer = await accInstance.evaluateTransaction('GetPermission', tenantPubkey, landlordPubkey);
+                return res.status(200).send({ msg: "success." });
+            } catch (error) {
+                console.log(error);
+                return res.status(400).send({ msg: "error." });
+            }
+        });
+    
+    
+    
+        router.post('/test/login', async (req, res, next) => {
+            let { identity, pubkey } = req.body;   //DID  userType=>user: 0   org: 1
+            // console.log(req.body);
+            req.session.address = identity;
+            req.session.pubkey = pubkey;
+            if (identity) {
+    
+                req.hashed = identity;
+                req.pubkey = pubkey;
+                next();
+    
+            } else {
+                return res.status(400).send({ 'msg': `${identity} not exist` });
+            }
+        },
+            async function (req, res) {
+                res.send({ url: "/leaseSystem/profile" });
+            }); 
+    */
 
     return router;
 }

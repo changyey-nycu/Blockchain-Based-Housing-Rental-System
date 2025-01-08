@@ -109,29 +109,29 @@ class AccessControlManager extends Contract {
     return "Update Permission successfully." + userPubkey;
   }
 
-  async UpdateOnePermission(ctx, userPubkey, attribute, permit, endTime) {
-    let acc = await ctx.stub.getState(userPubkey);
-    let accJson =
-    {
-      Permission: {}
-    };
+  // async UpdateOnePermission(ctx, userPubkey, attribute, permit, endTime) {
+  //   let acc = await ctx.stub.getState(userPubkey);
+  //   let accJson =
+  //   {
+  //     Permission: {}
+  //   };
 
-    if (acc && acc.length > 0) {
-      accJson = JSON.parse(acc.toString());
-    }
+  //   if (acc && acc.length > 0) {
+  //     accJson = JSON.parse(acc.toString());
+  //   }
 
-    if (!accJson.Permission) {
-      accJson.Permission = {};
-    }
+  //   if (!accJson.Permission) {
+  //     accJson.Permission = {};
+  //   }
 
-    accJson.Permission[attribute] = {
-      "access": permit,
-      "endTime": endTime
-    };
+  //   accJson.Permission[attribute] = {
+  //     "access": permit,
+  //     "endTime": endTime
+  //   };
 
-    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
-    return "Update Permission successfully." + userPubkey;
-  }
+  //   await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(accJson)));
+  //   return "Update Permission successfully." + userPubkey;
+  // }
 
   async RevokePermission(ctx, userPubkey, attribute) {
     let acc = await ctx.stub.getState(userPubkey);
@@ -151,7 +151,7 @@ class AccessControlManager extends Contract {
     return "Permission revoked successfully.";
   }
 
-  async GetPermission(ctx, userPubkey, formKey) {
+  async GetPermission(ctx, userPubkey, reviewerKey) {
     let acc = await ctx.stub.getState(userPubkey);
     if (!acc || acc.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
@@ -164,58 +164,58 @@ class AccessControlManager extends Contract {
     return JSON.stringify(permissions);
   }
 
-  async ConfirmPermission(ctx, userPubkey, attribute) {
-    let acc = await ctx.stub.getState(userPubkey);
+  // async ConfirmPermission(ctx, userPubkey, attribute) {
+  //   let acc = await ctx.stub.getState(userPubkey);
 
-    if (acc && acc.length) {
-      try {
-        let accJson = JSON.parse(acc.toString());
-        const permissions = accJson.Permission;
-        if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
-          return true;
-        }
-      } catch (error) {
-        return false;
-      }
-    }
-    else {
-      return false;
-    }
-  }
+  //   if (acc && acc.length) {
+  //     try {
+  //       let accJson = JSON.parse(acc.toString());
+  //       const permissions = accJson.Permission;
+  //       if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
+  //         return true;
+  //       }
+  //     } catch (error) {
+  //       return false;
+  //     }
+  //   }
+  //   else {
+  //     return false;
+  //   }
+  // }
 
-  async ConfirmMutiPermission(ctx, userPubkey, attributes) {
-    let acc = await ctx.stub.getState(userPubkey);
-    let permit = {};
-    if (acc && acc.length) {
-      let attJson;
-      // console.log(attribute);
-      try {
-        attJson = JSON.parse(attributes.toString());
-      } catch (error) {
-        console.log(attributes.toString());
-        attJson = attributes;
-      }
+  // async ConfirmMutiPermission(ctx, userPubkey, attributes) {
+  //   let acc = await ctx.stub.getState(userPubkey);
+  //   let permit = {};
+  //   if (acc && acc.length) {
+  //     let attJson;
+  //     // console.log(attribute);
+  //     try {
+  //       attJson = JSON.parse(attributes.toString());
+  //     } catch (error) {
+  //       console.log(attributes.toString());
+  //       attJson = attributes;
+  //     }
 
-      try {
-        let accJson = JSON.parse(acc.toString());
-        const permissions = accJson.Permission;
+  //     try {
+  //       let accJson = JSON.parse(acc.toString());
+  //       const permissions = accJson.Permission;
 
-        Object.keys(attJson).forEach(async key => {
-          // console.log(`${key} : ${attribute[key]}`);
-          if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
-            permit.key = true;
-          }
-          else {
-            permit.key = false;
-          }
+  //       Object.keys(attJson).forEach(async key => {
+  //         // console.log(`${key} : ${attribute[key]}`);
+  //         if (permissions.hasOwnProperty(key) && permissions.key.access == "true") {
+  //           permit.key = true;
+  //         }
+  //         else {
+  //           permit.key = false;
+  //         }
 
-        })
+  //       })
 
-      } catch (error) {
-        throw new Error(`permission denied! ${error}`);
-      }
-    }
-    return JSON.stringify(permit);
-  }
+  //     } catch (error) {
+  //       throw new Error(`permission denied! ${error}`);
+  //     }
+  //   }
+  //   return JSON.stringify(permit);
+  // }
 }
 exports.contracts = [AccessControlManager];

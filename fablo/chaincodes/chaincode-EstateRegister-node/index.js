@@ -97,6 +97,42 @@ class EstateRegister extends Contract {
 
   //   return true;
   // }
+  
+  /*  For Testing
+  
+    async TestUploadPersonalEstate(ctx, userPubkey, estateAddress, estateArea, date) {
+      //only admin can add a new User data
+      let type = ctx.clientIdentity.getAttributeValue("hf.Type");
+      if (type != "admin") {
+        throw new Error(`only admin can execute.`);
+      }
+  
+      // let estate = await ctx.stub.getState(userPubkey);
+      let estateJson =
+      {
+        Address: {}
+      };
+  
+      // if (estate && estate.length > 0) {
+      //   estateJson = JSON.parse(estate.toString());
+      // }
+  
+      // console.log(estateJson);
+  
+      if (!estateJson.Address[estateAddress]) {
+        estateJson.Address[estateAddress] = {};
+      }
+  
+      estateJson.Address[estateAddress] = {
+        "address": estateAddress,
+        "area": estateArea,
+        "date": date
+      }
+  
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(estateJson)));
+      return "Update Estate successfully." + userPubkey;
+    }
+  */
 }
 
 exports.contracts = [EstateRegister];

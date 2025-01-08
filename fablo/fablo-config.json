@@ -171,7 +171,7 @@
       "lang": "node",
       "channel": "acc-channel",
       "directory": "./chaincodes/chaincode-AccessControlManager-node",
-      "endorsement": "OR('Org1MSP.member', 'Org2MSP.member', 'Org4MSP.member')"
+      "endorsement": "OR('Org2MSP.member', 'Org4MSP.member')"
     }
   ]
 }

@@ -93,11 +93,30 @@ class EstateAgent extends Contract {
     //   throw new Error(`only the agent can execute.`);
     // }
 
-    let agentJson = JSON.parse(agent.toString());
-    agentJson.Agreement[estateAddress].state = "accept";
+    // *** Cannot set properties of undefined (setting 'state') ***
+    try {
+      let agentJson = JSON.parse(agent.toString());
+      agentJson.Agreement[estateAddress].state = "accept";
 
-    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
-    return "accept success";
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
+      return "accept success";
+    } catch (error) {
+      let agentJson = JSON.parse(agent.toString());
+
+      agentJson.Agreement[estateAddress] = {
+        "ownerAddress": "ownerAddress",
+        "estateAddress": estateAddress,
+        "type": "type",
+        "state": "propose"
+      };
+      agentJson.Agreement[estateAddress].state = "accept";
+
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
+      return "accept error";
+    }
+
+
+    // return "accept success";
   }
 
   async RejectEstate(ctx, userPubkey, estateAddress) {
@@ -110,12 +129,26 @@ class EstateAgent extends Contract {
     // if (userPubkey != key) {
     //   throw new Error(`only the agent can execute.`);
     // }
+    try {
+      let agentJson = JSON.parse(agent.toString());
+      agentJson.Agreement[estateAddress].state = "reject";
 
-    let agentJson = JSON.parse(agent.toString());
-    agentJson.Agreement[estateAddress].state = "reject";
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
+      return "reject success";
+    } catch (error) {
+      let agentJson = JSON.parse(agent.toString());
+      agentJson.Agreement[estateAddress] = {
+        "ownerAddress": "ownerAddress",
+        "estateAddress": estateAddress,
+        "type": "type",
+        "state": "propose"
+      };
+      agentJson.Agreement[estateAddress].state = "reject";
 
-    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
-    return "reject success";
+      await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentJson)));
+      return "reject error";
+    }
+
   }
 
   async GetAgentCertificate(ctx, userPubkey) {
@@ -145,12 +178,36 @@ class EstateAgent extends Contract {
     if (!agent || agent.length === 0) {
       throw new Error(`The user acc key:${userPubkey} does not exist`);
     }
-    
+
     let agentJson = JSON.parse(agent.toString());
     const agentData = agentJson.Agreement[estateAddress];
 
     return JSON.stringify(agentData);
   }
+  /*  For Testing
+  async TestNewAgent(ctx, userPubkey, expDate) {
+    //only admin can add a new User key
+    let type = ctx.clientIdentity.getAttributeValue("hf.Type");
+    // let agent = await ctx.stub.getState(userPubkey);
+
+    if (type != "admin") {
+      throw new Error(`only admin can execute.`);
+    }
+
+    let agentData =
+    {
+      Certificate: {},
+      Agreement: {}
+    };
+
+    agentData.Certificate = {
+      "address": userPubkey,
+      "expDate": expDate
+    }
+    await ctx.stub.putState(userPubkey, Buffer.from(JSON.stringify(agentData)));
+    return "Create Successfully.";
+  }
+  */
 
 }
 
